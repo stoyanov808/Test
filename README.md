@@ -19,21 +19,22 @@ If you downloaded the GitHub ZIP instead, extract it and open a terminal in **`T
 cd "$HOME\Desktop\Test-main"
 ```
 
-In the Codex cloud environment, the repository is already downloaded. Use `cd /workspace/Test` instead. Run each command below on its own line from the repository folder; these npm commands also work in PowerShell:
+Run these commands on separate lines from the repository folder; they also work in PowerShell:
 
 ```bash
 npm ci
-npm run build
-npm run dev -- --port 5173 --strictPort
+npm start
 ```
 
-Keep that terminal running. If you ran the commands on your own computer, open **[http://localhost:5173/](http://localhost:5173/)** in your browser. If the server runs in a cloud environment or a remote container, open its **forwarded preview for port 5173**; your computer's `localhost` does not point to the remote server. Open the preview at its root path `/`.
+`npm start` opens the game in your default browser and binds to `127.0.0.1`. Keep that terminal running. It normally uses port 5173, and chooses the next available port if that port is occupied. If the browser does not open automatically, copy the **Local** address printed by Vite into your browser.
 
-For a production preview, run `npm run preview -- --port 4173 --strictPort` after building, then open **[http://localhost:4173/](http://localhost:4173/)** (or forward port 4173). The generated `dist` folder can also be served with `python3 -m http.server 8080 --directory dist`; open **[http://localhost:8080/](http://localhost:8080/)**, without adding `/dist` or `/Test` to the address.
+In the Codex cloud environment, the repository is already downloaded. Use `cd /workspace/Test`, run `npm ci`, then `npm run dev -- --port 5173 --strictPort`. Open the environment's **forwarded preview for port 5173** at its root path `/`; your computer's `localhost` does not point to the remote server.
+
+For a production preview, run `npm run build` then `npm run preview`, and open the **Local** address it prints (normally **[http://localhost:4173/](http://localhost:4173/)**). The generated `dist` folder can also be served with `python3 -m http.server 8080 --directory dist`; open **[http://localhost:8080/](http://localhost:8080/)**, without adding `/dist` or `/Test` to the address.
 
 The GitHub repository link shows the source code. Pushing the source to GitHub does not create a hosted game or enable GitHub Pages.
 
-If `localhost:5173` returns 404 on the same computer as the server, try `http://127.0.0.1:5173/`. To check a fresh port, run `npm run dev -- --port 5174 --strictPort` from the folder containing this game's `package.json`, then open `http://127.0.0.1:5174/`. The terminal must show `VITE` and `ready`; if it shows an error or the fresh address still returns 404, share the full terminal output and browser address so the server can be identified.
+If the game returns 404, check the command shown in the terminal. A command such as `vite --host 0.0.0.0 5174` treats `5174` as the project folder, which makes Vite serve the wrong directory. Stop it with Ctrl+C and run **`npm start`** or **`npm run dev`** without extra arguments, from the folder containing this game's `package.json`. Open the actual **Local** address printed by Vite. If needed, use `127.0.0.1` in place of `localhost` while keeping the printed port. The terminal must show `VITE` and `ready`; share the full output and browser address if it still fails.
 
 Select BG / EN at the top, or open Settings. Audio starts after interaction; mute and volume are adjustable. Choose the base bet before a paid round. The interface separates the base bet from the actual debit, including the locked price of purchased features. Booster selection costs nothing until Spin. Bonus purchases and God Mode require an exact-price confirmation and never stack with booster charges.
 
@@ -67,7 +68,7 @@ Approximately 96% is a calibration target for the non-God modes. Hunt is 3.57 pe
 
 ## Validation
 
-Tests are **optional to play the game**. `npm run dev` starts the game; `npm run test:browser` launches a separate automated browser.
+Tests are **optional to play the game**. `npm start` opens the game; `npm run test:browser` launches a separate automated browser.
 
 For the engine tests:
 
@@ -75,14 +76,14 @@ For the engine tests:
 npm test
 ```
 
-For browser tests, keep the development server running in its terminal. Open a **second terminal** in the same game folder, install Playwright's Chromium, and run the suite:
+For browser tests, install Playwright's Chromium and run the suite:
 
 ```bash
 npx playwright install chromium
 npm run test:browser
 ```
 
-The suite defaults to `http://127.0.0.1:5173/`. If your server uses port 5174, set the address before running the suite. In Windows PowerShell:
+The suite starts its own development server on an available port and closes it when finished. You do not need another terminal or a running game server. To test an already running development server instead, set `SLOT_BASE_URL` to its actual address. In Windows PowerShell, for example:
 
 ```powershell
 $env:SLOT_BASE_URL = "http://127.0.0.1:5174/"
