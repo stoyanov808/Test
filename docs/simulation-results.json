@@ -1,0 +1,330 @@
+{
+  "configuration": "studentski-1",
+  "calibrationTarget": 0.96,
+  "roundsPerMode": null,
+  "seed": null,
+  "generatedAt": "2026-10-06T19:05:58.302Z",
+  "god": {
+    "theoreticalSuccessProbability": 0.048,
+    "theoreticalRtp": 0.96,
+    "perOpportunityProbability": 0.23075803249924676
+  },
+  "standardVip": {
+    "configuredProbability": 0.000001,
+    "theoreticalRtpContribution": 0.02
+  },
+  "results": [
+    {
+      "mode": "standard",
+      "rounds": 500000,
+      "seed": 400091,
+      "stakeCents": 10000000,
+      "payoutCents": 9716288,
+      "rtp": 0.9716288,
+      "rtp95": [
+        0.9096045403729845,
+        1.0336530596270153
+      ],
+      "hitRate": 0.223396,
+      "profitableRate": 0.092938,
+      "bonusFrequency": 0.002466,
+      "maxWinFrequency": 0,
+      "observedMaxWins": 0,
+      "meanSpins": 1.020416
+    },
+    {
+      "mode": "hunt",
+      "rounds": 2000000,
+      "seed": 2655027592,
+      "stakeCents": 80000000,
+      "payoutCents": 73947201,
+      "rtp": 0.9243400125,
+      "rtp95": [
+        0.887136198223114,
+        0.961543826776886
+      ],
+      "hitRate": 0.1895295,
+      "profitableRate": 0.0684745,
+      "bonusFrequency": 0.013188,
+      "maxWinFrequency": 0,
+      "observedMaxWins": 0,
+      "meanSpins": 1.10878
+    },
+    {
+      "mode": "frames",
+      "rounds": 500000,
+      "seed": 1014304333,
+      "stakeCents": 60000000,
+      "payoutCents": 58044051,
+      "rtp": 0.96740085,
+      "rtp95": [
+        0.9309182247456458,
+        1.0038834752543542
+      ],
+      "hitRate": 0.2113,
+      "profitableRate": 0.022668,
+      "bonusFrequency": 0.00231,
+      "maxWinFrequency": 0,
+      "observedMaxWins": 0,
+      "meanSpins": 1.019024
+    },
+    {
+      "mode": "wild",
+      "rounds": 500000,
+      "seed": 3668740102,
+      "stakeCents": 250000000,
+      "payoutCents": 239522761,
+      "rtp": 0.958091044,
+      "rtp95": [
+        0.9504289091998358,
+        0.9657531788001642
+      ],
+      "hitRate": 0.660174,
+      "profitableRate": 0.232586,
+      "bonusFrequency": 0.0011,
+      "maxWinFrequency": 0,
+      "observedMaxWins": 0,
+      "meanSpins": 1.00904
+    },
+    {
+      "mode": "god",
+      "rounds": 500000,
+      "seed": 2028208575,
+      "stakeCents": 10000000000,
+      "payoutCents": 9548800000,
+      "rtp": 0.95488,
+      "rtp95": [
+        0.943059447975255,
+        0.9667005520247449
+      ],
+      "hitRate": 0.047744,
+      "profitableRate": 0.047744,
+      "bonusFrequency": 0,
+      "maxWinFrequency": 0.047744,
+      "observedMaxWins": 23872,
+      "meanSpins": 1
+    },
+    {
+      "mode": "buy-dorm",
+      "rounds": 500000,
+      "seed": 387677048,
+      "stakeCents": 1000000000,
+      "payoutCents": 961208821,
+      "rtp": 0.961208821,
+      "rtp95": [
+        0.9500378048643869,
+        0.9723798371356132
+      ],
+      "hitRate": 0.935826,
+      "profitableRate": 0.200968,
+      "bonusFrequency": 1,
+      "maxWinFrequency": 0.00006,
+      "observedMaxWins": 30,
+      "meanSpins": 8.183038
+    },
+    {
+      "mode": "buy-friday",
+      "rounds": 500000,
+      "seed": 3042112817,
+      "stakeCents": 3000000000,
+      "payoutCents": 2862841195,
+      "rtp": 0.9542803983333333,
+      "rtp95": [
+        0.9400103207453299,
+        0.9685504759213368
+      ],
+      "hitRate": 0.882464,
+      "profitableRate": 0.071844,
+      "bonusFrequency": 1,
+      "maxWinFrequency": 0.00159,
+      "observedMaxWins": 795,
+      "meanSpins": 10.137838
+    },
+    {
+      "mode": "buy-december",
+      "rounds": 500000,
+      "seed": 1401581290,
+      "stakeCents": 10000000000,
+      "payoutCents": 9606933264,
+      "rtp": 0.9606933264,
+      "rtp95": [
+        0.9546965283951944,
+        0.9666901244048057
+      ],
+      "hitRate": 0.990466,
+      "profitableRate": 0.22303,
+      "bonusFrequency": 1,
+      "maxWinFrequency": 0.010372,
+      "observedMaxWins": 5186,
+      "meanSpins": 12.029342
+    }
+  ],
+  "totalPaidRounds": 5500000,
+  "configurationParameters": {
+    "version": "studentski-1",
+    "schemaVersion": 1,
+    "reels": 5,
+    "rows": 4,
+    "betsCents": [
+      10,
+      20,
+      40,
+      60,
+      100,
+      200,
+      500,
+      1000,
+      2000
+    ],
+    "defaultBetCents": 20,
+    "initialBalanceCents": 1000000,
+    "refillCents": 1000000,
+    "historyLimit": 100,
+    "autoplayLimit": 100,
+    "capMultiplier": 20000,
+    "payoutDenominator": 1000000,
+    "partyLimit": 25,
+    "retriggerLimit": 3,
+    "retriggerSpins": 2,
+    "framesAddedPerSpin": 2,
+    "wildMultiplierLimit": 3,
+    "baseFrameProbability": 0.12,
+    "baseWildProbability": 0.008,
+    "maxNudgeSteps": 2,
+    "god": {
+      "costMultiplier": 1000,
+      "successProbability": 0.048,
+      "attempts": 3,
+      "positions": 5,
+      "opportunityProbability": 0.23075803249924676
+    },
+    "standardVipProbability": 0.000001,
+    "paytable": {
+      "book": [
+        3000,
+        30000,
+        1600000
+      ],
+      "coffee": [
+        3000,
+        30000,
+        1600000
+      ],
+      "noodles": [
+        3000,
+        30000,
+        1600000
+      ],
+      "doner": [
+        3000,
+        30000,
+        1600000
+      ],
+      "female": [
+        6000,
+        60000,
+        3200000
+      ],
+      "male": [
+        6000,
+        60000,
+        3200000
+      ],
+      "dj": [
+        6000,
+        60000,
+        3200000
+      ],
+      "couple": [
+        6000,
+        60000,
+        3200000
+      ]
+    },
+    "prices": {
+      "standard": 1,
+      "hunt": 2,
+      "frames": 6,
+      "wild": 25,
+      "god": 1000
+    },
+    "buyPrices": {
+      "dorm": 100,
+      "friday": 300,
+      "december": 1000
+    },
+    "modes": {
+      "standard": {
+        "blend": 1,
+        "focusWeight": 0,
+        "scatterProbability": 0.065
+      },
+      "hunt": {
+        "blend": 1,
+        "focusWeight": 0,
+        "scatterProbability": 0.0484
+      },
+      "frames": {
+        "blend": 0.554,
+        "focusWeight": 0,
+        "scatterProbability": 0.065
+      },
+      "wild": {
+        "blend": 1,
+        "focusWeight": 0.101,
+        "scatterProbability": 0.065
+      },
+      "god": {
+        "blend": 1,
+        "focusWeight": 0,
+        "scatterProbability": 0
+      }
+    },
+    "bonuses": {
+      "dorm": {
+        "spins": 8,
+        "energy": 1,
+        "wildCount": 0,
+        "blend": 0.964,
+        "focusWeight": 0,
+        "scatterProbability": 0.035
+      },
+      "friday": {
+        "spins": 10,
+        "energy": 3,
+        "wildCount": 1,
+        "blend": 0.244,
+        "focusWeight": 0,
+        "scatterProbability": 0.035
+      },
+      "december": {
+        "spins": 12,
+        "energy": 5,
+        "wildCount": 2,
+        "blend": 0.034,
+        "focusWeight": 0,
+        "scatterProbability": 0.035
+      }
+    },
+    "homeSymbols": [
+      "book",
+      "coffee",
+      "noodles",
+      "doner",
+      "male"
+    ]
+  },
+  "baseBetCents": 20,
+  "validationRuns": [
+    {
+      "baseSeed": 400091,
+      "roundsPerMode": 500000,
+      "modes": "all except hunt"
+    },
+    {
+      "baseSeed": 591823,
+      "roundsPerMode": 2000000,
+      "modes": "hunt"
+    }
+  ]
+}
