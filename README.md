@@ -4,16 +4,28 @@
 
 ## Play and develop
 
-Requires Node.js 24 and npm. Use this existing checkout; cloud tasks are already isolated. Do not create a Git worktree unless explicitly requested.
+Requires Node.js 24 and npm. On your own computer, download the repository first:
 
 ```bash
-cd /workspace/Test
+git clone https://github.com/stoyanov808/Test.git
+cd Test
+```
+
+In the Codex cloud environment, the repository is already downloaded. Use `cd /workspace/Test` instead. Run each command below on its own line from the repository folder:
+
+```bash
 npm ci --cache /tmp/studentski-grad-npm-cache --no-audit --no-fund
 npm run build
 npm run dev -- --port 5173 --strictPort
 ```
 
-The development server listens on port **5173**. A production preview is available with `npm run preview -- --port 4173`. The generated `dist` folder can also be served with any static HTTP server, for example `python3 -m http.server 8080 --directory dist`.
+Keep that terminal running. If you ran the commands on your own computer, open **[http://localhost:5173/](http://localhost:5173/)** in your browser. If the server runs in a cloud environment or a remote container, open its **forwarded preview for port 5173**; your computer's `localhost` does not point to the remote server. Open the preview at its root path `/`.
+
+For a production preview, run `npm run preview -- --port 4173 --strictPort` after building, then open **[http://localhost:4173/](http://localhost:4173/)** (or forward port 4173). The generated `dist` folder can also be served with `python3 -m http.server 8080 --directory dist`; open **[http://localhost:8080/](http://localhost:8080/)**, without adding `/dist` or `/Test` to the address.
+
+The GitHub repository link shows the source code. Pushing the source to GitHub does not create a hosted game or enable GitHub Pages.
+
+If `localhost:5173` returns 404 on the same computer as the server, try `http://127.0.0.1:5173/`. To check a fresh port, run `npm run dev -- --port 5174 --strictPort` from the folder containing this game's `package.json`, then open `http://127.0.0.1:5174/`. The terminal must show `VITE` and `ready`; if it shows an error or the fresh address still returns 404, share the full terminal output and browser address so the server can be identified.
 
 Select BG / EN at the top, or open Settings. Audio starts after interaction; mute and volume are adjustable. Choose the base bet before a paid round. The interface separates the base bet from the actual debit, including the locked price of purchased features. Booster selection costs nothing until Spin. Bonus purchases and God Mode require an exact-price confirmation and never stack with booster charges.
 
