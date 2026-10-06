@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { chromium, type Page } from 'playwright';
@@ -20,7 +21,10 @@ declare global {
 const baseURL = process.env.SLOT_BASE_URL ?? 'http://127.0.0.1:5173';
 const output = resolve('test-results');
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
+// Use the cloud's installed browser only where that Linux executable exists.
+// Windows and macOS use the browser downloaded by `npx playwright install chromium`.
+const systemChromium = process.platform === 'linux' && existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined;
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || systemChromium, headless: true });
 const results: { name: string; passed: boolean; durationMs: number; error?: string }[] = [];
 const runtimeErrors: string[] = [];
 const failedRequests: string[] = [];

@@ -4,17 +4,25 @@
 
 ## Play and develop
 
-Requires Node.js 24 and npm. On your own computer, download the repository first:
+Requires npm and a supported Node.js version: **20.19+ in the Node 20 series, or 22.12+**. Node **22.16.0 works** with the project's Vite 7.1.7. The Codex cloud environment uses Node 24.
+
+On your own computer, clone the repository:
 
 ```bash
 git clone https://github.com/stoyanov808/Test.git
 cd Test
 ```
 
-In the Codex cloud environment, the repository is already downloaded. Use `cd /workspace/Test` instead. Run each command below on its own line from the repository folder:
+If you downloaded the GitHub ZIP instead, extract it and open a terminal in **`Test-main`**, the folder containing `package.json`. For example, in Windows PowerShell:
+
+```powershell
+cd "$HOME\Desktop\Test-main"
+```
+
+In the Codex cloud environment, the repository is already downloaded. Use `cd /workspace/Test` instead. Run each command below on its own line from the repository folder; these npm commands also work in PowerShell:
 
 ```bash
-npm ci --cache /tmp/studentski-grad-npm-cache --no-audit --no-fund
+npm ci
 npm run build
 npm run dev -- --port 5173 --strictPort
 ```
@@ -59,12 +67,37 @@ Approximately 96% is a calibration target for the non-God modes. Hunt is 3.57 pe
 
 ## Validation
 
+Tests are **optional to play the game**. `npm run dev` starts the game; `npm run test:browser` launches a separate automated browser.
+
+For the engine tests:
+
 ```bash
 npm test
+```
+
+For browser tests, keep the development server running in its terminal. Open a **second terminal** in the same game folder, install Playwright's Chromium, and run the suite:
+
+```bash
+npx playwright install chromium
 npm run test:browser
 ```
 
-Engine suite: **27 passed, no skipped tests**. Browser suite: **19 passed** at desktop and phone sizes, including language/currency, modifier behavior, single debits under rapid input, all buys, bonus reload equivalence, genuine VIP success/failure, bounded autoplay and 44-pixel controls. Browser tests require the development server on port 5173 and `/usr/bin/chromium`; override `SLOT_BASE_URL` for another server. They use isolated browser storage. Screenshots and results are written to ignored `test-results/`.
+The suite defaults to `http://127.0.0.1:5173/`. If your server uses port 5174, set the address before running the suite. In Windows PowerShell:
+
+```powershell
+$env:SLOT_BASE_URL = "http://127.0.0.1:5174/"
+npm run test:browser
+```
+
+In Bash:
+
+```bash
+SLOT_BASE_URL=http://127.0.0.1:5174/ npm run test:browser
+```
+
+The runner uses Playwright's installed Chromium on Windows and macOS. On Linux it uses `/usr/bin/chromium` when present, otherwise Playwright's installed Chromium. To choose an executable explicitly, set `CHROMIUM_PATH` to its full path (for example, `$env:CHROMIUM_PATH = "C:\path\to\chrome.exe"` in PowerShell). An unset `CHROMIUM_PATH` is the recommended default.
+
+Engine suite: **27 passed, no skipped tests**. Browser suite: **19 passed** at desktop and phone sizes, including language/currency, modifier behavior, single debits under rapid input, all buys, bonus reload equivalence, genuine VIP success/failure, bounded autoplay and 44-pixel controls. They use isolated browser storage. Screenshots and results are written to ignored `test-results/`.
 
 Reproduce the recorded simulations:
 
