@@ -1,114 +1,89 @@
 # СТУДЕНТСКИ ГРАД
 
-**„Утре съм на лекции.“** An original illustrated browser slot with virtual euro balances, Bulgarian and English interfaces, and original synthesized audio. Version one keeps **5 reels × 4 rows**, **1,024 initial ways**, and up to **32,768 ways** through splitting. All characters are adult university students.
+**„Утре съм на лекции.“** A rebuilt browser slot set in Sofia's student nightlife, with original ink illustrations, Bulgarian/English controls and virtual euro balances.
 
-## Play and develop
+Version 2 uses a **6 × 5 board and scatter pays**: eight matching symbols anywhere win. It replaces the first version's left-to-right ways, fixed reel Wilds and unrelated VIP lottery with cascades, persistent position multipliers, xWays, infections, Bombs and extra-shot bonus spins, based on Duck Hunters' publicly observable rules.
 
-Requires npm and a supported Node.js version: **20.19+ in the Node 20 series, or 22.12+**. Node **22.16.0 works** with the project's Vite 7.1.7. The Codex cloud environment uses Node 24.
+![Studentski Grad version 2, original Sofia illustrations and the 6×5 board](docs/screenshots/studentski-grad-desktop.png)
 
-On your own computer, clone the repository:
+[Phone view](docs/screenshots/studentski-grad-mobile.png) · [8 December feature](docs/screenshots/studentski-grad-december.png)
 
-```bash
-git clone https://github.com/stoyanov808/Test.git
-cd Test
-```
+## Play on Windows, macOS or Linux
 
-If you downloaded the GitHub ZIP instead, extract it and open a terminal in **`Test-main`**, the folder containing `package.json`. For example, in Windows PowerShell:
+Requires npm and Node **20.19+ in the Node 20 series, or 22.12+**. Node 22.16.0 is supported.
 
-```powershell
-cd "$HOME\Desktop\Test-main"
-```
-
-Run these commands on separate lines from the repository folder; they also work in PowerShell:
+Clone this repository, or extract the GitHub ZIP and open a terminal in `Test-main`, the folder containing `package.json`:
 
 ```bash
 npm ci
 npm start
 ```
 
-`npm start` opens the game in your default browser and binds to `127.0.0.1`. Keep that terminal running. It normally uses port 5173, and chooses the next available port if that port is occupied. If the browser does not open automatically, copy the **Local** address printed by Vite into your browser.
+Keep that terminal running. `npm start` opens your default browser at the actual local address and chooses an available port. If the browser does not open, copy the **Local** URL printed by Vite. You can also run plain `npm run dev` and open its printed address.
 
-In the Codex cloud environment, the repository is already downloaded. Use `cd /workspace/Test`, run `npm ci`, then `npm run dev -- --port 5173 --strictPort`. Open the environment's **forwarded preview for port 5173** at its root path `/`; your computer's `localhost` does not point to the remote server.
+**Use these commands without extra port arguments in PowerShell.** A command printed as `vite --host 0.0.0.0 5174` treats `5174` as a project folder and serves an empty directory, causing 404. Stop it with Ctrl+C and use `npm start` or `npm run dev` without additional arguments.
 
-For a production preview, run `npm run build` then `npm run preview`, and open the **Local** address it prints (normally **[http://localhost:4173/](http://localhost:4173/)**). The generated `dist` folder can also be served with `python3 -m http.server 8080 --directory dist`; open **[http://localhost:8080/](http://localhost:8080/)**, without adding `/dist` or `/Test` to the address.
+In Codex cloud, use the existing `/workspace/Test` checkout and `npm run dev -- --port 5173 --strictPort`, then open the environment's forwarded port 5173 preview. Your computer's localhost points to your computer rather than a remote cloud server.
 
-The GitHub repository link shows the source code. Pushing the source to GitHub does not create a hosted game or enable GitHub Pages.
+For a production build, run `npm run build`, then `npm run preview` and open its printed Local address. Serve the generated `dist` directory at an HTTP server's root. The GitHub source repository itself is not a hosted game.
 
-If the game returns 404, check the command shown in the terminal. A command such as `vite --host 0.0.0.0 5174` treats `5174` as the project folder, which makes Vite serve the wrong directory. Stop it with Ctrl+C and run **`npm start`** or **`npm run dev`** without extra arguments, from the folder containing this game's `package.json`. Open the actual **Local** address printed by Vite. If needed, use `127.0.0.1` in place of `localhost` while keeping the printed port. The terminal must show `VITE` and `ready`; share the full output and browser address if it still fails.
+## What the rewrite does
 
-Select BG / EN at the top, or open Settings. Audio starts after interaction; mute and volume are adjustable. Choose the base bet before a paid round. The interface separates the base bet from the actual debit, including the locked price of purchased features. Booster selection costs nothing until Spin. Bonus purchases and God Mode require an exact-price confirmation and never stack with booster charges.
+- Nine paying symbols: books, coffee, noodles, doner and beer; four illustrated adult student/nightlife characters.
+- **8–9 / 10–11 / 12+** matching physical positions pay anywhere, without starting on reel one. A Wild substitutes; extra-shot tokens do not.
+- Winning symbols disappear, replacements drop, and the new board is evaluated again. Symbol counts change as the board cascades; there is no fictional ways counter or changing reel height.
+- Winning positions become ×2, then double on subsequent winning removals up to ×8192. Participating marked multipliers add; neutral positions do not inflate that sum. Progress belongs to a cell and stays behind when symbols fall.
+- xWays reveals a common symbol and boosts positions by ×2/×4/×8. Infectious badges resolve in sequence and affect already revealed matching symbols. Bombs clear regular symbols, protect Wild/Bonus, double affected cells and resolve before replacements fall.
+- Dorm, Friday and 8 December bonuses have **7/8/10 starting spins** and **1/2/3 distinct random upgrades**: Infectious xWays, 5×5 Bombs and +2 shots. Wild arrivals vary; buys do not impose a fixed maximum number of Wilds.
+- Normal / xBet / Day 2 / Day 64 / Day 1024 cost **1× / 2× / 2.8× / 90× / 3000×** the base bet. Day modes initialize every cell at the advertised multiplier. Direct buys cost **70× / 200× / 600×**; Lucky Draw costs **235×** and selects tiers with **50% / 25% / 25%** probabilities.
+- Eligible extra-spin offers show their exact euro price, retain the position grid and locked stake, and contain no Bonus symbols. The whole continuation chain shares the **30,000×** cap. The disclosed extra-spin quotation formula is an original implementation; the publisher's private formula is unavailable.
+- Integer-cent accounting and atomic saved outcomes prevent repeated charges or payouts on reload. Version 2 leaves the previous version's save untouched. Invalid data has download, retry and explicit reset controls.
 
-Space starts a spin while idle; Space or tapping the reels skips the current presentation. Big-win and bonus cards have a Continue button. Autoplay is bounded to 100 paid rounds and can be stopped; the current purchased round always finishes. **Refill adds €10,000 virtual euros** while idle.
+Space spins while idle and skips presentation while busy. Tapping the reels also skips. Normal/turbo, mute/volume, BG/EN, history, paytable and bounded autoplay are available. Refill adds €10,000 virtual euros.
 
-## Implemented features
+## Research and mathematics
 
-- Sticky-note copies increase multiplicity; Scatters and VIP passes never split.
-- Full-reel nudging Wilds increase to 3×. Wild contributions add within a reel and multiply across reels through the documented ways formula.
-- Dorm, Friday, and 8 December bonuses have their own painted environment, music layer, introduction and end card. Frames, Wild progress and party energy persist through upgrades. At most three retriggers award two spins each.
-- Five paid modes, three direct buys, illustrated paytable, exact rules, history, normal/turbo speed, and touch controls.
-- Genuine five-position VIP collection: three opportunities per unlocked position, 4.8% success, 1,000× cost, and 20,000× payout or zero. At €0.20 bet this is a €200 debit and €4,000 success payout.
-- Integer-cent accounting, once-per-spin half-up rounding, a whole-round 20,000× cap, explicit state transitions, and atomic saved outcomes. Purchased rounds resume after reload without a second debit or payout. Invalid saves stay untouched and can be downloaded or explicitly replaced.
+[Duck Hunters research](docs/DUCK-HUNTERS-REDESIGN.md) cites official rules, public demo assets and timestamped official footage. [Research comparison](docs/RESEARCH.md) covers the other Nolimit City titles. [Presentation](docs/PRESENTATION.md) explains how the Studentski Grad artwork and animation sequence follow the findings.
 
-## Research and measured mathematics
+[Mathematics](docs/MATHEMATICS.md) specifies the implemented payout formula, distributions, continuation pricing and accounting. [Simulation results](docs/simulation-results.json) must match the current engine/configuration hashes. The commercial game's private reel strips and theoretical mathematics are unavailable; this demo uses independent distributions and measured results. Do not treat a target or sample mean as a certified return, or as a guarantee that a playing session makes a profit.
 
-The pre-code study inspected three official sheets and feature descriptions across six Nolimit City titles, plus directly decoded official footage. [Research](docs/RESEARCH.md) contains exact source citations. [Presentation study](docs/PRESENTATION.md) separates timestamped visual observations from measured audio dynamics and documents the limits of the clips.
+The nine-symbol numeric paytable and current feature prices are verified against the official public guest demo. The filtered public initialization data and symbol mapping are recorded in [paytable evidence](docs/duck-hunters-public-paytable.json). Only the original sampler distributions and Extra Spin pricing differ from unavailable publisher mathematics.
 
-[Mathematics](docs/MATHEMATICS.md) defines every interaction, distribution and rounding rule. [Simulation results](docs/simulation-results.json) report **5.5 million paid rounds** through the same engine as the game, against actual debits.
+## Validate
 
-| Mode | Measured return |
-| --- | ---: |
-| Standard | 97.16% |
-| Bonus hunt | 92.43% |
-| All frames | 96.74% |
-| Guaranteed Wild | 95.81% |
-| God | 95.49% sampled; **96% exact theoretical** |
-| Buy Dorm / Friday / December | 96.12% / 95.43% / 96.07% |
+Version 2 passed **53 engine tests**, **27 browser checks** across desktop and touch layouts, and a production-build play/reload check. The recorded independent simulation covers **5,000,000 paid rounds** plus a separate **1,000,000 source-round Extra Spin cohort**; measured returns and uncertainty are documented rather than inferred from the commercial game.
 
-Approximately 96% is a calibration target for the non-God modes. Hunt is 3.57 percentage points below that target in the measured run; its approximate 95% interval is 88.71–96.15%. The report includes uncertainty, hits, bonus frequencies and maximum-win frequencies for every mode. A short simulation observing zero rare Standard maximum wins does not establish a zero probability. Changing the grid or distributions requires new calibration.
-
-## Validation
-
-Tests are **optional to play the game**. `npm start` opens the game; `npm run test:browser` launches a separate automated browser.
-
-For the engine tests:
+Engine tests and the production build:
 
 ```bash
 npm test
+npm run build
 ```
 
-For browser tests, install Playwright's Chromium and run the suite:
+Optional automated browser tests start and close their own server:
 
 ```bash
 npx playwright install chromium
 npm run test:browser
 ```
 
-The suite starts its own development server on an available port and closes it when finished. You do not need another terminal or a running game server. To test an already running development server instead, set `SLOT_BASE_URL` to its actual address. In Windows PowerShell, for example:
+On Linux the runner can use `/usr/bin/chromium` when installed. Windows/macOS use Playwright's downloaded Chromium. Set `CHROMIUM_PATH` only to an existing explicit browser executable. `SLOT_BASE_URL` optionally tests an already running development server without closing it.
+
+A reproducible simulation (PowerShell):
 
 ```powershell
-$env:SLOT_BASE_URL = "http://127.0.0.1:5174/"
-npm run test:browser
+$env:SIM_ROUNDS = '500000'
+$env:SIM_STANDARD_ROUNDS = '1000000'
+$env:SIM_EXTRA_ROUNDS = '1000000'
+$env:SIM_SEED = '3751045193'
+$env:SIM_OUTPUT = 'docs/simulation-results.json'
+npm run simulate
 ```
 
-In Bash:
+For Bash, prefix the same variables on the `npm run simulate` command. `SIM_MODE` selects a specific mode or buy. Simulation outputs include actual-debit return, confidence intervals, win/profit frequencies, payout quantiles, modifier counts, bonuses, cascades and accounting checks.
 
-```bash
-SLOT_BASE_URL=http://127.0.0.1:5174/ npm run test:browser
-```
+## Original assets
 
-The runner uses Playwright's installed Chromium on Windows and macOS. On Linux it uses `/usr/bin/chromium` when present, otherwise Playwright's installed Chromium. To choose an executable explicitly, set `CHROMIUM_PATH` to its full path (for example, `$env:CHROMIUM_PATH = "C:\path\to\chrome.exe"` in PowerShell). An unset `CHROMIUM_PATH` is the recommended default.
+All production artwork is directly authored SVG path geometry in `public/art-v2`, using a consistent ink/ochre/rust/mint palette. No commercial game artwork, web photographs, reference-video frames or generated raster backgrounds are shipped. Four scenes depict Sofia dorm blocks, a dorm interior, student nightlife and an 8 December stage. The original synthesized audio uses no recorded commercial soundtrack. Oswald and Manrope include Cyrillic support and their font licenses.
 
-Engine suite: **27 passed, no skipped tests**. Browser suite: **19 passed** at desktop and phone sizes, including language/currency, modifier behavior, single debits under rapid input, all buys, bonus reload equivalence, genuine VIP success/failure, bounded autoplay and 44-pixel controls. They use isolated browser storage. Screenshots and results are written to ignored `test-results/`.
-
-Reproduce the recorded simulations:
-
-```bash
-SIM_ROUNDS=500000 SIM_SEED=400091 SIM_OUTPUT=docs/simulation-results.json npm run simulate
-SIM_ROUNDS=2000000 SIM_MODE=hunt SIM_SEED=591823 SIM_MERGE=1 SIM_OUTPUT=docs/simulation-results.json npm run simulate
-```
-
-## Source layout
-
-`src/engine` owns configuration, seeded/injectable randomness, evaluation, the state machine, accounting and persistence. `src/render` owns Canvas2D presentation and consumes already settled results. `src/audio.ts` synthesizes the soundtrack and effects. `src/i18n.ts`, `src/menus.ts` and `src/main.ts` provide the bilingual interface and orchestration.
-
-The artwork in `public/art` was generated originally for this game, with vector fallbacks. The game uses no commercial game assets or recorded soundtrack. Oswald and Manrope include Cyrillic support; their SIL Open Font Licenses are included in `public/fonts`.
+The earlier research and mathematics are preserved in `docs/archive/v1` for historical reference, and do not describe the current game.

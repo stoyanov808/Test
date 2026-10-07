@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "title": "Duck Hunters official public guest demo initialization",
+    "publicLaunchUrl": "https://demo.nolimitcdn.com/loader/game-loader.html?game=DuckHunters&operator=FANPAGE_DEMO&language=en&device=desktop&playForFunCurrency=EUR",
+    "initializationEndpoint": "https://demo.nolimitcity.com/EjsFrontWeb/fs",
+    "retrievedAt": "2026-10-07T05:39:09.430Z",
+    "gameClientVersion": "1.1.176",
+    "clientUrl": "https://demo.nolimitcdn.com/games/DuckHunters/1.1.176/game.js",
+    "clientSha256": "8f6518dd22fe2fe5b4bd36ed2605d4d266452a84282dcbc394c05f374a7f2f40",
+    "filteredInitializationSha256": "feb75dbe4fb3645a9e6f43ea3ceea5073762a538107e68bcd06ce24a720a4b6f",
+    "renderedPaytableConfirmed": true,
+    "renderedPaytableReceiptSha256": "486c691fbf719de654ea631c35d965e6d293eb61754c84f11463a1db7106f55b"
+  },
+  "units": {
+    "rawSymbolValues": "Publisher paytable units; divide by20 for base-bet multipliers, as rendered by this version of its public client.",
+    "normalizedPaytable": "Multiplier of base bet before participating position multipliers.",
+    "featurePrices": "Multiplier of base bet debited to enter the feature.",
+    "countBrackets": [
+      "8–9",
+      "10–11",
+      "12+"
+    ]
+  },
+  "regularSymbolCount": 9,
+  "rawSymbolValues": {
+    "M1": {
+      "8": 6,
+      "9": 6,
+      "10": 20,
+      "11": 20,
+      "12": 100
+    },
+    "L1": {
+      "8": 2,
+      "9": 2,
+      "10": 8,
+      "11": 8,
+      "12": 40
+    },
+    "L2": {
+      "8": 2,
+      "9": 2,
+      "10": 6,
+      "11": 6,
+      "12": 35
+    },
+    "L3": {
+      "8": 2,
+      "9": 2,
+      "10": 5,
+      "11": 5,
+      "12": 30
+    },
+    "L4": {
+      "8": 2,
+      "9": 2,
+      "10": 4,
+      "11": 4,
+      "12": 25
+    },
+    "M4": {
+      "8": 3,
+      "9": 3,
+      "10": 12,
+      "11": 12,
+      "12": 50
+    },
+    "L5": {
+      "8": 2,
+      "9": 2,
+      "10": 3,
+      "11": 3,
+      "12": 20
+    },
+    "M3": {
+      "8": 3,
+      "9": 3,
+      "10": 14,
+      "11": 14,
+      "12": 60
+    },
+    "M2": {
+      "8": 4,
+      "9": 4,
+      "10": 16,
+      "11": 16,
+      "12": 70
+    }
+  },
+  "normalizedPaytable": [
+    {
+      "referenceSymbol": "L5",
+      "studentskiSymbol": "book",
+      "8-9": 0.1,
+      "10-11": 0.15,
+      "12+": 1
+    },
+    {
+      "referenceSymbol": "L4",
+      "studentskiSymbol": "coffee",
+      "8-9": 0.1,
+      "10-11": 0.2,
+      "12+": 1.25
+    },
+    {
+      "referenceSymbol": "L3",
+      "studentskiSymbol": "noodles",
+      "8-9": 0.1,
+      "10-11": 0.25,
+      "12+": 1.5
+    },
+    {
+      "referenceSymbol": "L2",
+      "studentskiSymbol": "doner",
+      "8-9": 0.1,
+      "10-11": 0.3,
+      "12+": 1.75
+    },
+    {
+      "referenceSymbol": "L1",
+      "studentskiSymbol": "beer",
+      "8-9": 0.1,
+      "10-11": 0.4,
+      "12+": 2
+    },
+    {
+      "referenceSymbol": "M4",
+      "studentskiSymbol": "female",
+      "8-9": 0.15,
+      "10-11": 0.6,
+      "12+": 2.5
+    },
+    {
+      "referenceSymbol": "M3",
+      "studentskiSymbol": "male",
+      "8-9": 0.15,
+      "10-11": 0.7,
+      "12+": 3
+    },
+    {
+      "referenceSymbol": "M2",
+      "studentskiSymbol": "dj",
+      "8-9": 0.2,
+      "10-11": 0.8,
+      "12+": 3.5
+    },
+    {
+      "referenceSymbol": "M1",
+      "studentskiSymbol": "bouncer",
+      "8-9": 0.3,
+      "10-11": 1,
+      "12+": 5
+    }
+  ],
+  "featurePrices": [
+    {
+      "name": "BOOSTED_BET",
+      "type": "BOOSTED_BET",
+      "additionalTypes": [],
+      "price": 2
+    },
+    {
+      "name": "BOOSTED_BET_STATE_2",
+      "type": "BOOSTED_BET",
+      "additionalTypes": [],
+      "price": 2.8
+    },
+    {
+      "name": "BOOSTED_BET_STATE_64",
+      "type": "BOOSTED_BET",
+      "additionalTypes": [],
+      "price": 90
+    },
+    {
+      "name": "BOOSTED_BET_STATE_1024",
+      "type": "BOOSTED_BET",
+      "additionalTypes": [],
+      "price": 3000
+    },
+    {
+      "name": "FREESPIN_3_SCATTERS",
+      "type": "FREESPIN",
+      "additionalTypes": [],
+      "price": 70
+    },
+    {
+      "name": "FREESPIN_4_SCATTERS",
+      "type": "FREESPIN",
+      "additionalTypes": [],
+      "price": 200
+    },
+    {
+      "name": "FREESPIN_5_SCATTERS",
+      "type": "FREESPIN",
+      "additionalTypes": [],
+      "price": 600
+    },
+    {
+      "name": "LUCKY_DRAW",
+      "type": "FREESPIN",
+      "additionalTypes": [],
+      "price": 235
+    }
+  ],
+  "limitations": [
+    "The captured guest initialization does not disclose complete reel strips or mode-specific random outcome probabilities. Matching these public values does not establish identical publisher RTP or volatility.",
+    "The placeholder M5 in the generic client paytable template has no public initialization value and is not a regular paying symbol in this captured version.",
+    "Guest session keys, player identifiers, private operator tokens and publisher assets are omitted."
+  ],
+  "publisherAdvertisedRtp": {
+    "scope": "Publisher advertised mode RTPs for the current public guest configuration; these are not measured Studentski Grad returns or a disclosure of publisher random probabilities.",
+    "source": "Rendered official game rules, public guest client version 1.1.176, observed 7 October 2026.",
+    "percent": {
+      "base": 96.05,
+      "xBet": 96.03,
+      "Day2": 96.04,
+      "Day64": 96.04,
+      "Day1024": 96.05,
+      "DuckHuntBuy": 95.87,
+      "HawkEyeBuy": 96.07,
+      "BigGameBuy": 96.0,
+      "LuckyDrawBuy": 95.96
+    }
+  }
+}

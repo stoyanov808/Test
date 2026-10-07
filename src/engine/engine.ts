@@ -1,167 +1,200 @@
 import { BONUS_ORDER, CONFIG, PAYING_SYMBOLS, roundPriceCents } from './config';
 import { assertMoney, settledPayout } from './accounting';
-import { countScatters, evaluateWays } from './evaluator';
+import { countScatters, evaluateScatterPays } from './evaluator';
 import { SeededRandom, defaultRandomFactory } from './rng';
 import type { RandomFactory, RandomGenerator } from './rng';
-import type { ActiveRound, BonusTier, Grid, Mode, RoundChoice, Session, SpinPresentation, WildState } from './types';
+import type { ActiveRound, BonusTier, BonusUpgrade, CascadeStep, CellPosition, Grid, Mode, ModifierEvent, NumberGrid, RoundChoice, Session, SpinPresentation, SymbolId, WildState } from './types';
 
 export const emptyFrames = (): boolean[][] => Array.from({length:CONFIG.reels},()=>Array<boolean>(CONFIG.rows).fill(false));
-export const emptyGrid = (): Grid => Array.from({length:CONFIG.reels},()=>Array(CONFIG.rows).fill('book'));
-const copyFrames = (frames:boolean[][]): boolean[][] => frames.map(reel=>reel.slice());
-function clone(session: Session): Session {
-  return {...session, activeRound: session.activeRound ? {...session.activeRound, frames:copyFrames(session.activeRound.frames),wilds:session.activeRound.wilds.map(w=>({...w}))} : null};
+export const emptyGrid = (): Grid => Array.from({length:CONFIG.reels},()=>Array<SymbolId>(CONFIG.rows).fill('book'));
+export const positionGrid = (value=1): NumberGrid => Array.from({length:CONFIG.reels},()=>Array<number>(CONFIG.rows).fill(value));
+const copyNumbers=(matrix:NumberGrid):NumberGrid=>matrix.map(column=>column.slice());
+const copyGrid=(grid:Grid):Grid=>grid.map(column=>column.slice());
+const framesOf=(multipliers:NumberGrid):boolean[][]=>multipliers.map(column=>column.map(value=>value>1));
+const largestMultiplier=(multipliers:NumberGrid):number=>Math.max(1,...multipliers.flat());
+const key=(position:CellPosition):string=>`${position.reel}:${position.row}`;
+const boosted=(value:number,factor:number):number=>Math.min(CONFIG.positionMultiplierLimit,value*factor);
+const isPaying=(symbol:SymbolId):boolean=>(PAYING_SYMBOLS as readonly string[]).includes(symbol);
+const wildsOf=(grid:Grid,multipliers:NumberGrid,id:string):WildState[]=>grid.flatMap((column,reel)=>column.flatMap((symbol,row)=>symbol==='wild'?[{id:`${id}-${reel}-${row}`,reel,row,multiplier:multipliers[reel][row],steps:0}]:[]));
+function clone(session:Session):Session {
+  return {...session,activeRound:session.activeRound?{...session.activeRound,choice:{...session.activeRound.choice},frames:session.activeRound.frames.map(column=>column.slice()),wilds:session.activeRound.wilds.map(wild=>({...wild})),positionMultipliers:copyNumbers(session.activeRound.positionMultipliers),upgrades:session.activeRound.upgrades.slice()}:null};
 }
-function assertIdle(session: Session): void { if (session.activeRound || session.presentation) throw new Error('ROUND_ACTIVE'); }
-function requireBet(bet: number): void { if (!(CONFIG.betsCents as readonly number[]).includes(bet)) throw new Error('INVALID_BET'); }
-function requireChoice(choice:RoundChoice): void {
-  if (!choice || (choice.kind==='mode' ? !Object.hasOwn(CONFIG.prices,choice.mode) : choice.kind!=='buy' || !Object.hasOwn(CONFIG.buyPrices,choice.bonus))) throw new Error('INVALID_CHOICE');
+function assertIdle(session:Session):void {if(session.activeRound||session.presentation)throw new Error('ROUND_ACTIVE');}
+function requireBet(bet:number):void {if(!(CONFIG.betsCents as readonly number[]).includes(bet))throw new Error('INVALID_BET');}
+function requireChoice(choice:RoundChoice):void {
+  if(!choice||(choice.kind==='mode'?!Object.hasOwn(CONFIG.prices,choice.mode):choice.kind==='buy'?!Object.hasOwn(CONFIG.buyPrices,choice.bonus):choice.kind!=='lucky'&&choice.kind!=='extra'))throw new Error('INVALID_CHOICE');
 }
+export function createSession(seed=(Date.now()>>>0),balanceCents:number=CONFIG.initialBalanceCents):Session {
+  assertMoney(balanceCents);return{version:CONFIG.schemaVersion,phase:'idle',balanceCents,betCents:CONFIG.defaultBetCents,selectedMode:'standard',rngState:new SeededRandom(seed).state,roundSequence:0,activeRound:null,presentation:null,history:[],extraSpinOffer:null};
+}
+export function selectBet(session:Session,betCents:number):Session {assertIdle(session);requireBet(betCents);return{...session,betCents,extraSpinOffer:null};}
+export function setMode(session:Session,mode:Mode):Session {assertIdle(session);requireChoice({kind:'mode',mode});return{...session,selectedMode:mode,extraSpinOffer:null};}
+export function refillDemo(session:Session):Session {assertIdle(session);const balanceCents=session.balanceCents+CONFIG.refillCents;assertMoney(balanceCents);return{...session,balanceCents};}
 
-export function createSession(seed = (Date.now() >>> 0), balanceCents: number = CONFIG.initialBalanceCents): Session {
-  assertMoney(balanceCents);
-  return {version:CONFIG.schemaVersion,phase:'idle',balanceCents,betCents:CONFIG.defaultBetCents,selectedMode:'standard',rngState:new SeededRandom(seed).state,roundSequence:0,activeRound:null,presentation:null,history:[]};
+function randomPaying(rng:RandomGenerator):SymbolId {
+  const total=CONFIG.symbolWeights.reduce((sum,weight)=>sum+weight,0);
+  let draw=rng.next()*total;
+  for(let i=0;i<PAYING_SYMBOLS.length;i++){draw-=CONFIG.symbolWeights[i];if(draw<0)return PAYING_SYMBOLS[i];}
+  return PAYING_SYMBOLS[PAYING_SYMBOLS.length-1];
 }
-export function selectBet(session:Session, betCents:number):Session { assertIdle(session); requireBet(betCents); return {...session,betCents}; }
-export function setMode(session:Session, mode:Mode):Session { assertIdle(session); requireChoice({kind:'mode',mode}); return {...session,selectedMode:mode}; }
-export function refillDemo(session:Session):Session { assertIdle(session); const balanceCents=session.balanceCents+CONFIG.refillCents; assertMoney(balanceCents); return {...session,balanceCents}; }
-
-function addFrames(frames:boolean[][], rng:RandomGenerator, count:number): void {
-  const available:{reel:number;row:number}[]=[];
-  for (let reel=0;reel<CONFIG.reels;reel++) for (let row=0;row<CONFIG.rows;row++) if (!frames[reel][row]) available.push({reel,row});
-  for (let i=0;i<count&&available.length;i++) { const index=rng.integer(available.length); const cell=available.splice(index,1)[0]; frames[cell.reel][cell.row]=true; }
+export function chooseBonusUpgrades(tier:BonusTier,rng:RandomGenerator):BonusUpgrade[] {
+  const available:BonusUpgrade[]=['infectious','bomb','shots'];const selected:BonusUpgrade[]=[];
+  for(let i=0;i<CONFIG.bonuses[tier].upgradesCount;i++)selected.push(available.splice(rng.integer(available.length),1)[0]);
+  return selected;
 }
-function ensureBonusMechanics(round:ActiveRound, rng:RandomGenerator): void {
-  if (!round.tier) return;
-  if (round.tier==='december') round.frames=round.frames.map(reel=>reel.map(()=>true));
-  const count=CONFIG.bonuses[round.tier].wildCount;
-  while (round.wilds.length<count) {
-    const available=Array.from({length:CONFIG.reels},(_,i)=>i).filter(reel=>!round.wilds.some(w=>w.reel===reel));
-    round.wilds.push({id:`${round.id}-wild-${round.wilds.length+1}`,reel:available[rng.integer(available.length)],multiplier:1,steps:0});
-  }
+export interface CascadeOptions { tier?:BonusTier|null; upgrades?:BonusUpgrade[]; mode?:Mode; remainingCapCents?:number; noBonus?:boolean }
+function newSymbol(rng:RandomGenerator,options:CascadeOptions):SymbolId {
+  const tier=options.tier??null;
+  const profile=tier?CONFIG.bonuses[tier]:CONFIG.modes[options.mode??'standard'];
+  let chance=rng.next();
+  if(tier){const shotProbability=CONFIG.bonuses[tier].shotProbability;if(chance<shotProbability)return'shot';chance-=shotProbability;}
+  if(chance<profile.wildProbability)return'wild';chance-=profile.wildProbability;
+  if(chance<profile.xwaysProbability)return options.upgrades?.includes('infectious')?'infectious':'xways';chance-=profile.xwaysProbability;
+  if(chance<profile.bombProbability)return'bomb';
+  return randomPaying(rng);
 }
-function moveWilds(wilds:WildState[], rng:RandomGenerator):WildState[] {
-  const available=Array.from({length:CONFIG.reels},(_,i)=>i);
-  return wilds.map(wild=>{
-    const reel=available.splice(rng.integer(available.length),1)[0];
-    const steps=Math.min(1+rng.integer(CONFIG.maxNudgeSteps),CONFIG.wildMultiplierLimit-wild.multiplier);
-    return {...wild,reel,steps,multiplier:Math.min(CONFIG.wildMultiplierLimit,wild.multiplier+steps)};
-  });
-}
-function generateGrid(rng:RandomGenerator, blend:number, focusWeight:number, scatterProbability:number, wilds:WildState[], hunt:boolean):Grid {
-  const grid:Grid=[];
-  for (let reel=0;reel<CONFIG.reels;reel++) {
-    const column:Grid[number]=[];
-    for (let row=0;row<CONFIG.rows;row++) {
-      const focused=focusWeight>0&&rng.chance(focusWeight);
-      column.push(focused?'couple':rng.chance(blend)?PAYING_SYMBOLS[rng.integer(PAYING_SYMBOLS.length)]:CONFIG.homeSymbols[reel]);
-    }
-    if (wilds.some(wild=>wild.reel===reel)) column.fill('wild');
-    else if ((hunt && reel===0) || rng.chance(scatterProbability)) column[rng.integer(CONFIG.rows)]='scatter';
-    grid.push(column);
+function initialSpinGrid(rng:RandomGenerator,options:CascadeOptions):Grid {
+  const grid=Array.from({length:CONFIG.reels},()=>Array.from({length:CONFIG.rows},()=>newSymbol(rng,options)));
+  if(!options.tier&&!options.noBonus){
+    const mode=options.mode??'standard';
+    for(let reel=0;reel<CONFIG.reels;reel++)if((mode==='hunt'&&reel===1)||rng.chance(CONFIG.modes[mode].scatterProbability))grid[reel][rng.integer(CONFIG.rows)]='scatter';
   }
   return grid;
 }
-function presentation(round:ActiveRound):SpinPresentation {
-  return {id:`${round.id}:${round.spinIndex}`,kind:'spin',grid:emptyGrid(),frames:copyFrames(round.frames),wilds:[],wins:[],payoutCents:0,roundTotalCents:round.payoutCents,scatters:0,energyUsed:round.tier?round.energy:1,energyAfter:round.tier?round.energy:1,tier:round.tier,bonusAwarded:null,upgradedTo:null,retrigger:false,maxWin:false,roundComplete:false,intro:false,events:[],roundCostCents:round.costCents,lockedBetCents:round.betCents,choice:round.choice};
-}
-function settle(session:Session, round:ActiveRound, view:SpinPresentation, requested:number):void {
-  view.payoutCents=settledPayout(requested,round.payoutCents,round.capCents);
-  round.payoutCents+=view.payoutCents; session.balanceCents+=view.payoutCents;
-  assertMoney(session.balanceCents); view.roundTotalCents=round.payoutCents;
-  if (round.payoutCents===round.capCents) {view.maxWin=true;round.spinsRemaining=0;view.events.push('maximum-win');}
-}
-function finishIfNeeded(session:Session, round:ActiveRound, view:SpinPresentation):void {
-  if (round.spinsRemaining>0 && !view.maxWin) return;
-  view.roundComplete=true;
-  session.history=[{id:round.id,choice:round.choice,betCents:round.betCents,costCents:round.costCents,payoutCents:round.payoutCents,spins:round.spinIndex,maxWin:view.maxWin},...session.history].slice(0,CONFIG.historyLimit);
-  session.activeRound=null;
-  if (round.tier) view.events.push('bonus-end');
-}
-function processVip(session:Session, round:ActiveRound, rng:RandomGenerator):void {
-  round.spinIndex++; const view=presentation(round);view.kind='vip';
-  const locked=Array<boolean>(CONFIG.god.positions).fill(false); const attempts:boolean[][]=[];
-  for (let opportunity=0;opportunity<CONFIG.god.attempts;opportunity++) {
-    attempts.push(locked.map((already,index)=>{
-      const reveal=!already&&rng.chance(CONFIG.god.opportunityProbability);
-      if (reveal) locked[index]=true;
-      return reveal;
-    }));
-  }
-  view.vipAttempts=attempts;view.vipLocked=locked;view.grid=view.grid.map((column,reel)=>column.map((symbol,row)=>locked[reel]&&row===1?'vip':symbol));
-  settle(session,round,view,locked.every(Boolean)?round.capCents:0);
-  view.events.push(locked.every(Boolean)?'vip-complete':'vip-incomplete');
-  finishIfNeeded(session,round,view);session.presentation=view;session.phase='presenting-vip';
-}
-function processSpin(session:Session, round:ActiveRound, rng:RandomGenerator, base:boolean):void {
-  round.spinIndex++;const tierAtStart=round.tier;const view=presentation(round);
-  view.intro=!base&&round.choice.kind==='mode'&&round.spinIndex===2;
-  if (!base) round.spinsRemaining--;
-  if (base && round.choice.kind==='mode' && round.choice.mode==='standard' && rng.chance(CONFIG.standardVipProbability)) {
-    view.grid=view.grid.map(column=>column.map((symbol,row)=>row===1?'vip':symbol));
-    settle(session,round,view,round.capCents);finishIfNeeded(session,round,view);session.presentation=view;session.phase='presenting-complete';return;
-  }
-  const mode=round.choice.kind==='mode'?round.choice.mode:'standard';
-  const profile=base?CONFIG.modes[mode]:CONFIG.bonuses[round.tier!];
-  if (base) {
-    if (mode==='frames') round.frames=round.frames.map(column=>column.map(()=>true));
-    else if (rng.chance(CONFIG.baseFrameProbability)) addFrames(round.frames,rng,CONFIG.framesAddedPerSpin);
-    const needsWild=mode==='wild'||(mode!=='hunt'&&rng.chance(CONFIG.baseWildProbability));
-    if (needsWild) round.wilds=[{id:`${round.id}-wild-1`,reel:rng.integer(CONFIG.reels),multiplier:1,steps:0}];
-  } else {
-    ensureBonusMechanics(round,rng);
-    addFrames(round.frames,rng,CONFIG.framesAddedPerSpin);
-  }
-  round.wilds=moveWilds(round.wilds,rng);
-  view.grid=generateGrid(rng,profile.blend,profile.focusWeight,profile.scatterProbability,round.wilds,base&&mode==='hunt');
-  view.frames=copyFrames(round.frames);view.wilds=round.wilds.map(w=>({...w}));
-  view.scatters=countScatters(view.grid);
-  const result=evaluateWays(view.grid,view.frames,view.wilds,round.betCents,view.energyUsed);
-  view.wins=result.wins;settle(session,round,view,result.payoutCents);
-  if (tierAtStart && view.payoutCents>0) round.energy=Math.min(CONFIG.partyLimit,round.energy+1);
-  if (!view.maxWin) {
-    if (base && view.scatters>=3) {
-      round.tier=BONUS_ORDER[Math.min(2,view.scatters-3)];
-      const bonus=CONFIG.bonuses[round.tier];round.spinsRemaining=bonus.spins;round.energy=bonus.energy;
-      // A triggering base Wild is not an extra persistent Wild above the selected tier.
-      round.wilds=[];ensureBonusMechanics(round,rng);view.bonusAwarded=round.tier;view.events.push('bonus-trigger');
-    } else if (!base && view.scatters>=2) {
-      if (round.retriggers<CONFIG.retriggerLimit) {
-        round.retriggers++;round.spinsRemaining+=CONFIG.retriggerSpins;view.retrigger=true;view.events.push('retrigger');
-        const index=BONUS_ORDER.indexOf(round.tier!);
-        if (index<BONUS_ORDER.length-1) {round.tier=BONUS_ORDER[index+1];view.upgradedTo=round.tier;view.events.push('upgrade');ensureBonusMechanics(round,rng);}
-      } else view.events.push('retrigger-limit');
+function refillGrid(grid:Grid,removed:Set<string>,rng:RandomGenerator,options:CascadeOptions):Grid {
+  return grid.map((column,reel)=>{
+    const remaining=column.filter((_symbol,row)=>!removed.has(`${reel}:${row}`));
+    const missing=CONFIG.rows-remaining.length;
+    const incoming=Array.from({length:missing},()=>newSymbol(rng,options));
+    // Bonus invitations can also arrive during a collapse, but at most one on each reel.
+    if(!options.tier&&!options.noBonus&&missing>0&&!remaining.includes('scatter')){
+      const mode=options.mode??'standard';
+      if(rng.chance(CONFIG.modes[mode].scatterProbability*missing/CONFIG.rows))incoming[rng.integer(missing)]='scatter';
     }
+    return[...incoming,...remaining];
+  });
+}
+function modifierSnapshot(kind:ModifierEvent['kind'],source:CellPosition,targets:CellPosition[],factor:number,grid:Grid,multipliers:NumberGrid,extra:Partial<ModifierEvent>={}):ModifierEvent {
+  return{kind,source,targets,factor,...extra,gridAfter:copyGrid(grid),positionMultipliersAfter:copyNumbers(multipliers)};
+}
+export interface CascadeResult { steps:CascadeStep[]; finalGrid:Grid; positionMultipliers:NumberGrid; payoutCents:number; shotsAdded:number; scatters:number; maxWin:boolean }
+/** Pure complete cascade math. Position coordinates stay fixed while symbols fall. */
+export function resolveCascades(initialGrid:Grid,initialMultipliers:NumberGrid,betCents:number,rng:RandomGenerator,options:CascadeOptions={}):CascadeResult {
+  let grid=copyGrid(initialGrid);let multipliers=copyNumbers(initialMultipliers);
+  const steps:CascadeStep[]=[];let payoutCents=0;let shotsAdded=0;
+  const cap=options.remainingCapCents??betCents*CONFIG.capMultiplier;
+  for(let index=0;;index++){
+    const step:CascadeStep={index,grid:copyGrid(grid),symbolSizes:positionGrid(),positionMultipliers:copyNumbers(multipliers),resolvedGrid:copyGrid(grid),resolvedSymbolSizes:positionGrid(),resolvedPositionMultipliers:copyNumbers(multipliers),modifiers:[],wins:[],removed:[],positionMultipliersAfter:copyNumbers(multipliers),symbolSizesAfter:positionGrid(),payoutCents:0,shotsAdded:0};
+    const removed=new Set<string>();
+    // All xWays on a drop reveal the same randomly selected paying symbol.
+    const ways:CellPosition[]=[];
+    for(let reel=0;reel<CONFIG.reels;reel++)for(let row=0;row<CONFIG.rows;row++)if(grid[reel][row]==='xways'||grid[reel][row]==='infectious')ways.push({reel,row});
+    if(ways.length){
+      const symbol=randomPaying(rng) as import('./types').PayingSymbol;
+      const infectious=ways.map(position=>grid[position.reel][position.row]==='infectious');
+      for(let i=0;i<ways.length;i++){
+        const source=ways[i];grid[source.reel][source.row]=symbol;const factor=[2,4,8][rng.integer(3)];
+        const targets=infectious[i]?grid.flatMap((column,reel)=>column.flatMap((current,row)=>current===symbol?[{reel,row}]:[])):[source];
+        for(const target of targets)multipliers[target.reel][target.row]=boosted(multipliers[target.reel][target.row],factor);
+        step.modifiers.push(modifierSnapshot(infectious[i]?'infectious':'xways',source,targets,factor,grid,multipliers,{symbol}));
+      }
+    }
+    // Extra Shot tokens are single-use awards: after award they are removed on this drop.
+    for(let reel=0;reel<CONFIG.reels;reel++)for(let row=0;row<CONFIG.rows;row++)if(grid[reel][row]==='shot'){
+      const source={reel,row};const added=options.tier?(options.upgrades?.includes('shots')?2:1):0;
+      step.shotsAdded+=added;shotsAdded+=added;removed.add(key(source));
+      step.modifiers.push(modifierSnapshot('shot',source,[source],added,grid,multipliers,{shotsAdded:added}));
+    }
+    step.resolvedGrid=copyGrid(grid);step.resolvedPositionMultipliers=copyNumbers(multipliers);
+    // Shots are not counted as paying symbols; only the distinct Wild substitutes.
+    const payingGrid=grid.map(column=>column.map(symbol=>symbol==='shot'?'scatter':symbol));
+    const result=evaluateScatterPays(payingGrid,multipliers,betCents);
+    step.wins=result.wins;step.payoutCents=settledPayout(result.payoutCents,payoutCents,cap);
+    payoutCents+=step.payoutCents;
+    if(step.payoutCents<result.payoutCents){let remaining=step.payoutCents;step.wins=step.wins.map(win=>{const paid=Math.min(win.payoutCents,remaining);remaining-=paid;return{...win,payoutCents:paid};});}
+    const winPositions=new Set(result.wins.flatMap(win=>win.cells.map(key)));
+    for(const positionKey of winPositions){
+      const[reel,row]=positionKey.split(':').map(Number);removed.add(positionKey);multipliers[reel][row]=boosted(multipliers[reel][row],2);
+    }
+    // Wins pay first. Every bomb then clears remaining regular neighbors before the drop.
+    const bombs:CellPosition[]=[];
+    for(let reel=0;reel<CONFIG.reels;reel++)for(let row=0;row<CONFIG.rows;row++)if(grid[reel][row]==='bomb')bombs.push({reel,row});
+    for(const source of bombs){
+      const radius=options.upgrades?.includes('bomb')?2:1;const targets:CellPosition[]=[];
+      removed.add(key(source));multipliers[source.reel][source.row]=boosted(multipliers[source.reel][source.row],2);
+      for(let reel=Math.max(0,source.reel-radius);reel<=Math.min(CONFIG.reels-1,source.reel+radius);reel++)for(let row=Math.max(0,source.row-radius);row<=Math.min(CONFIG.rows-1,source.row+radius);row++){
+        const target={reel,row};if(!isPaying(grid[reel][row])||removed.has(key(target)))continue;
+        targets.push(target);removed.add(key(target));multipliers[reel][row]=boosted(multipliers[reel][row],2);
+      }
+      step.modifiers.push(modifierSnapshot('bomb',source,targets,2,grid,multipliers,{radius}));
+    }
+    step.removed=[...removed].map(positionKey=>{const[reel,row]=positionKey.split(':').map(Number);return{reel,row};});
+    step.positionMultipliersAfter=copyNumbers(multipliers);
+    if(payoutCents>=cap){steps.push(step);return{steps,finalGrid:copyGrid(grid),positionMultipliers:multipliers,payoutCents,shotsAdded,scatters:countScatters(grid),maxWin:true};}
+    if(!removed.size){steps.push(step);return{steps,finalGrid:copyGrid(grid),positionMultipliers:multipliers,payoutCents,shotsAdded,scatters:countScatters(grid),maxWin:false};}
+    grid=refillGrid(grid,removed,rng,options);step.refilledGrid=copyGrid(grid);step.refilledSymbolSizes=positionGrid();steps.push(step);
   }
-  view.energyAfter=round.energy;
-  if (view.payoutCents>0) view.events.push('win');
-  finishIfNeeded(session,round,view);session.presentation=view;session.phase=view.roundComplete?'presenting-complete':base?'presenting-base':'presenting-bonus';
 }
 
-/** A full outcome, its debit and its settlement are produced together, before animation. */
-export function startRound(session:Session, choice:RoundChoice={kind:'mode',mode:session.selectedMode}, randomFactory:RandomFactory=defaultRandomFactory):Session {
+function presentation(round:ActiveRound,grid:Grid):SpinPresentation {
+  const multipliers=copyNumbers(round.positionMultipliers);
+  return{id:`${round.id}:${round.spinIndex}`,kind:'spin',grid:copyGrid(grid),frames:framesOf(multipliers),wilds:wildsOf(grid,multipliers,round.id),wins:[],initialGrid:copyGrid(grid),initialSymbolSizes:positionGrid(),initialPositionMultipliers:copyNumbers(multipliers),symbolSizes:positionGrid(),positionMultipliers:copyNumbers(multipliers),finalGrid:copyGrid(grid),finalSymbolSizes:positionGrid(),finalPositionMultipliers:copyNumbers(multipliers),cascadeSteps:[],upgrades:round.upgrades.slice(),shotsAdded:0,effectiveSymbols:CONFIG.reels*CONFIG.rows,payoutCents:0,roundTotalCents:round.payoutCents,chainTotalCents:round.capOffsetCents+round.payoutCents,capOffsetCents:round.capOffsetCents,scatters:0,energyUsed:largestMultiplier(multipliers),energyAfter:largestMultiplier(multipliers),tier:round.tier,bonusAwarded:null,upgradedTo:null,retrigger:false,maxWin:false,roundComplete:false,intro:false,events:[],roundCostCents:round.costCents,lockedBetCents:round.betCents,choice:round.choice};
+}
+function finishIfNeeded(session:Session,round:ActiveRound,view:SpinPresentation):void {
+  if(round.spinsRemaining>0&&!view.maxWin)return;
+  view.roundComplete=true;session.history=[{id:round.id,choice:round.choice,betCents:round.betCents,costCents:round.costCents,payoutCents:round.payoutCents,spins:round.spinIndex,maxWin:view.maxWin,capOffsetCents:round.capOffsetCents,sourceRoundId:round.sourceRoundId,bonusTier:round.tier,bonusUpgrades:round.upgrades.slice(),shotsAwarded:round.shotsAwarded,...(round.extraInitialMultipliers?{extraInitialMultipliers:copyNumbers(round.extraInitialMultipliers)}:{})},...session.history].slice(0,CONFIG.historyLimit);session.activeRound=null;
+  if(round.tier)view.events.push('bonus-end');
+  if(!round.tier&&!view.maxWin){const costCents=quoteExtraSpinCostCents(round.betCents,round.positionMultipliers);if(costCents<=view.payoutCents)session.extraSpinOffer={betCents:round.betCents,costCents,positionMultipliers:copyNumbers(round.positionMultipliers),sourceRoundId:round.sourceRoundId,alreadyPaidCents:round.capOffsetCents+round.payoutCents};}
+}
+function processSpin(session:Session,round:ActiveRound,rng:RandomGenerator,base:boolean):void {
+  round.spinIndex++;if(!base)round.spinsRemaining--;
+  const mode=round.choice.kind==='mode'?round.choice.mode:'standard';
+  const options:CascadeOptions={mode,tier:base?null:round.tier,upgrades:round.upgrades,remainingCapCents:round.capCents-round.capOffsetCents-round.payoutCents,noBonus:round.choice.kind==='extra'};
+  const grid=initialSpinGrid(rng,options);const view=presentation(round,grid);
+  view.intro=!base&&round.spinIndex===(round.choice.kind==='mode'?2:1);
+  const result=resolveCascades(grid,round.positionMultipliers,round.betCents,rng,options);
+  round.positionMultipliers=copyNumbers(result.positionMultipliers);round.frames=framesOf(round.positionMultipliers);round.energy=largestMultiplier(round.positionMultipliers);
+  round.wilds=[];round.shotsAwarded+=result.shotsAdded;round.spinsRemaining+=result.shotsAdded;
+  view.cascadeSteps=result.steps;view.wins=result.steps.flatMap(step=>step.wins);view.finalGrid=result.finalGrid;view.finalPositionMultipliers=copyNumbers(result.positionMultipliers);
+  view.shotsAdded=result.shotsAdded;view.retrigger=result.shotsAdded>0;view.scatters=result.scatters;view.energyAfter=round.energy;
+  view.payoutCents=result.payoutCents;round.payoutCents+=result.payoutCents;session.balanceCents+=result.payoutCents;assertMoney(session.balanceCents);view.roundTotalCents=round.payoutCents;view.chainTotalCents=round.capOffsetCents+round.payoutCents;
+  view.maxWin=result.maxWin;if(result.maxWin){round.spinsRemaining=0;view.events.push('maximum-win');}
+  if(result.shotsAdded)view.events.push('extra-shot');
+  if(result.steps.some(step=>step.modifiers.some(modifier=>modifier.kind==='xways'||modifier.kind==='infectious')))view.events.push('xways');
+  if(result.steps.some(step=>step.modifiers.some(modifier=>modifier.kind==='bomb')))view.events.push('bomb');
+  if(view.payoutCents>0)view.events.push('win');
+  if(base&&!view.maxWin&&result.scatters>=3){
+    round.tier=BONUS_ORDER[Math.min(2,result.scatters-3)];round.spinsRemaining=CONFIG.bonuses[round.tier].spins;round.upgrades=chooseBonusUpgrades(round.tier,rng);
+    view.bonusAwarded=round.tier;view.upgrades=round.upgrades.slice();view.events.push('bonus-trigger');
+  }
+  finishIfNeeded(session,round,view);session.presentation=view;session.phase=view.roundComplete?'presenting-complete':base?'presenting-base':'presenting-bonus';
+}
+/** One atomic paid outcome: debit and all cascades settle before presentation begins. */
+export function quoteExtraSpinCostCents(betCents:number,multipliers:NumberGrid):number {
+  assertMoney(betCents);const sum=multipliers.flat().reduce((total,value)=>total+(value>1?value:0),0);const cost=Math.ceil(betCents*Math.max(1,sum/CONFIG.extraQuoteDenominator));assertMoney(cost);return cost;
+}
+export function startRound(session:Session,choice:RoundChoice={kind:'mode',mode:session.selectedMode},randomFactory:RandomFactory=defaultRandomFactory):Session {
   assertIdle(session);requireChoice(choice);requireBet(session.betCents);
-  const cost=roundPriceCents(session.betCents,choice);
-  if (session.balanceCents<cost) throw new Error('INSUFFICIENT_BALANCE');
-  const next=clone(session);const rng=randomFactory(session.rngState);next.roundSequence++;
-  const tier=choice.kind==='buy'?choice.bonus:null;
-  const round:ActiveRound={id:`round-${next.roundSequence}`,choice:{...choice},betCents:session.betCents,costCents:cost,payoutCents:0,capCents:session.betCents*CONFIG.capMultiplier,tier,spinsRemaining:tier?CONFIG.bonuses[tier].spins:0,energy:tier?CONFIG.bonuses[tier].energy:1,frames:emptyFrames(),wilds:[],retriggers:0,spinIndex:0,configVersion:CONFIG.version};
-  next.balanceCents-=cost;next.activeRound=round;
-  if (choice.kind==='mode'&&choice.mode==='god') processVip(next,round,rng);
-  else {if(tier)ensureBonusMechanics(round,rng);processSpin(next,round,rng,!tier);if(tier&&next.presentation)next.presentation.intro=true;}
-  next.rngState=rng.state;return next;
+  const offer=choice.kind==='extra'?session.extraSpinOffer:null;if(choice.kind==='extra'&&!offer)throw new Error('NO_EXTRA_SPIN_OFFER');
+  const betCents=offer?.betCents??session.betCents;const cost=roundPriceCents(betCents,choice,offer?.costCents);
+  if(session.balanceCents<cost)throw new Error('INSUFFICIENT_BALANCE');
+  const next=clone(session);next.extraSpinOffer=null;const rng=randomFactory(session.rngState);next.roundSequence++;
+  let tier:BonusTier|null=choice.kind==='buy'?choice.bonus:null;
+  if(choice.kind==='lucky'){const draw=rng.next();tier=draw<.5?'dorm':draw<.75?'friday':'december';}
+  const initialMultiplier=choice.kind==='mode'?CONFIG.initialPositionMultipliers[choice.mode]:1;
+  const round:ActiveRound={capOffsetCents:offer?.alreadyPaidCents??0,sourceRoundId:offer?.sourceRoundId??`round-${next.roundSequence}`,id:`round-${next.roundSequence}`,choice:{...choice},betCents,costCents:cost,payoutCents:0,capCents:betCents*CONFIG.capMultiplier,tier,spinsRemaining:tier?CONFIG.bonuses[tier].spins:0,energy:initialMultiplier,frames:emptyFrames(),wilds:[],retriggers:0,spinIndex:0,configVersion:CONFIG.version,positionMultipliers:offer?copyNumbers(offer.positionMultipliers):positionGrid(initialMultiplier),...(offer?{extraInitialMultipliers:copyNumbers(offer.positionMultipliers)}:{}),upgrades:tier?chooseBonusUpgrades(tier,rng):[],shotsAwarded:0};
+  round.frames=framesOf(round.positionMultipliers);next.balanceCents-=cost;next.activeRound=round;
+  processSpin(next,round,rng,!tier);next.rngState=rng.state;return next;
 }
-/** Presentation acknowledgement never changes money or consumes randomness. */
+/** Acknowledging animation never changes money and never consumes randomness. */
+export function declineExtraSpin(session:Session):Session {assertIdle(session);return{...session,extraSpinOffer:null};}
 export function dismissPresentation(session:Session):Session {return session.presentation?{...session,presentation:null,phase:session.activeRound?'bonus-pending':'idle'}:session;}
-/** Generate exactly one pending free spin. No additional paid-round debit. */
-export function advanceRound(session:Session, randomFactory:RandomFactory=defaultRandomFactory):Session {
-  if (session.presentation) throw new Error('PRESENTATION_PENDING');
-  if (!session.activeRound) throw new Error('NO_ACTIVE_ROUND');
-  if (session.activeRound.configVersion!==CONFIG.version) throw new Error('CONFIG_VERSION_MISMATCH');
-  const next=clone(session);const rng=randomFactory(next.rngState);
-  processSpin(next,next.activeRound!,rng,false);next.rngState=rng.state;return next;
+/** Each free spin, all modifiers and all cascades are settled atomically with no debit. */
+export function advanceRound(session:Session,randomFactory:RandomFactory=defaultRandomFactory):Session {
+  if(session.presentation)throw new Error('PRESENTATION_PENDING');if(!session.activeRound)throw new Error('NO_ACTIVE_ROUND');if(session.activeRound.configVersion!==CONFIG.version)throw new Error('CONFIG_VERSION_MISMATCH');
+  const next=clone(session);const rng=randomFactory(next.rngState);processSpin(next,next.activeRound!,rng,false);next.rngState=rng.state;return next;
 }
-/** Convenience for simulations: same production transitions, no visual timing. */
 export function playCompleteRound(session:Session,choice:RoundChoice):Session {
   let current=startRound(session,choice);
-  for (;;) {current=dismissPresentation(current);if(!current.activeRound)return current;current=advanceRound(current);}
+  for(;;){current=dismissPresentation(current);if(!current.activeRound)return current;current=advanceRound(current);}
 }

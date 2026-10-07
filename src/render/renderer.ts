@@ -1,382 +1,386 @@
-import { CONFIG } from '../engine/config';
-import type { BonusTier, Grid, SpinPresentation, SymbolId, WildState, Win } from '../engine/types';
-import { SymbolArtwork, SYMBOL_LABELS, SYMBOLS } from './artwork';
-export { drawSymbolPreview, SYMBOL_LABELS } from './artwork';
+import type { BonusTier, CellPosition, Grid, ModifierEvent, SpinPresentation, SymbolId, Win } from '../engine/types';
+import { SymbolArtwork, SYMBOL_LABELS, SYMBOLS } from './art-v2';
+export { drawSymbolPreview, SYMBOL_LABELS } from './art-v2';
 
+export type RendererEvent = 'reel-stop' | 'xways' | 'infectious' | 'bomb' | 'shot' | 'cascade' | 'win' | 'scatter' | 'upgrade';
 export interface RendererOptions {
   translate?: (key: string) => string;
-  onEvent?: (name: 'reel-stop' | 'split' | 'nudge' | 'vip-lock' | 'vip-miss' | 'win') => void;
+  formatMoney?: (euros: number, maximumFractionDigits?: number) => string;
+  onEvent?: (name: RendererEvent, value?: number) => void;
+  onStep?: (view: { grid: Grid; positionMultipliers: number[][]; payoutCents: number; cascade: number }) => void;
 }
-interface BoardView { grid: Grid; frames: boolean[][]; wilds: WildState[]; wins: Win[] }
-interface PartialBoardView { grid: Grid; frames?: boolean[][]; wilds?: WildState[]; wins?: Win[]; tier?: BonusTier|null }
-interface SpinAnimation { target: SpinPresentation; elapsed: number; stops: number[]; duration: number; stopped: Set<number> }
-interface VipView { locked: boolean[]; revealed: boolean[]; attempt: number; reveal: number; done: boolean }
-interface Particle { x:number; y:number; vx:number; vy:number; angle:number; spin:number; color:string; size:number; born:number }
-const WIDTH=1060, HEIGHT=650;
-const AREA={x:53,y:59,w:954,h:528};
-const FRAME_COLORS=['#ecd263','#ed94ba','#90c8c1','#f1aa72'];
-
-function rounded(ctx:CanvasRenderingContext2D,x:number,y:number,w:number,h:number,r:number) {
-  ctx.beginPath();ctx.roundRect(x,y,w,h,r);
+interface BoardView { grid: Grid; positionMultipliers: number[][]; wins: Win[] }
+interface PartialBoardView {
+  grid: Grid; positionMultipliers?: number[][]; finalGrid?: Grid; finalPositionMultipliers?: number[][];
+  frames?: boolean[][]; wins?: Win[]; tier?: BonusTier | null;
 }
-function lerp(a:number,b:number,t:number){return a+(b-a)*t;}
-function easeOut(t:number){return 1-(1-t)**3;}
-function smooth(t:number){return t*t*(3-2*t);}
-function seedValue(i:number){const n=Math.sin(i*127.1+311.7)*43758.5453123;return n-Math.floor(n);}
+interface SpinView { target: BoardView; elapsed: number; stops: number[]; stopped: Set<number> }
+interface TumbleView { from: Grid; to: Grid; removed: Set<string>; progress: number }
+interface EffectView { event: ModifierEvent; progress: number; before: BoardView }
+interface Particle { x: number; y: number; vx: number; vy: number; spin: number; size: number; color: string; born: number; lifetime: number }
 
-/** Canvas presentation consumes settled engine results; it never draws gameplay randomness. */
+const REELS = 6, ROWS = 5, WIDTH = 1040, HEIGHT = 780;
+const AREA = { x: 34, y: 48, w: 972, h: 650 };
+const CELL_W = AREA.w / REELS, CELL_H = AREA.h / ROWS, INK = '#161b21';
+const SCENES: Record<string, { wood: string; shade: string; tint: string; accent: string }> = {
+  base: { wood: '#685b45', shade: '#493e34', tint: '#ce9d54', accent: '#efd282' },
+  dorm: { wood: '#52645c', shade: '#35463f', tint: '#91b68d', accent: '#d6e3a0' },
+  friday: { wood: '#714a40', shade: '#4e302e', tint: '#d38558', accent: '#ffce7c' },
+  december: { wood: '#3e4864', shade: '#282d43', tint: '#9183b0', accent: '#94dee1' },
+};
+const key = (cell: CellPosition) => `${cell.reel}:${cell.row}`;
+const clamp = (n: number, min = 0, max = 1) => Math.max(min, Math.min(max, n));
+const ease = (p: number) => 1 - (1 - clamp(p)) ** 3;
+const seeded = (n: number) => { const value = Math.sin(n * 127.1 + 19.7) * 43758.5453123; return value - Math.floor(value); };
+const matrix = (value: number) => Array.from({ length: REELS }, () => Array(ROWS).fill(value) as number[]);
+const copyGrid = (grid: Grid): Grid => grid.map(column => [...column]);
+const copyMatrix = (values: number[][]): number[][] => values.map(column => [...column]);
+function centre(cell: CellPosition) { return { x: AREA.x + (cell.reel + .5) * CELL_W, y: AREA.y + (cell.row + .5) * CELL_H }; }
+function polygon(ctx: CanvasRenderingContext2D, points: number[], fill: string, stroke = INK, width = 3) {
+  ctx.beginPath(); ctx.moveTo(points[0], points[1]);
+  for (let i = 2; i < points.length; i += 2) ctx.lineTo(points[i], points[i + 1]);
+  ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+  if (width) { ctx.lineWidth = width; ctx.strokeStyle = stroke; ctx.stroke(); }
+}
+function outlinedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, stroke = INK, width = 5) {
+  ctx.font = `900 ${size}px "Grad Display", "Arial Black", sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = stroke; ctx.lineWidth = width; ctx.strokeText(text, x, y); ctx.fillStyle = color; ctx.fillText(text, x, y);
+}
+
+/** Replays settled engine snapshots. Rendering never rolls symbols or changes a payout. */
 export class SlotRenderer {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly artwork = new SymbolArtwork();
-  private readonly tallWildImage = new Image();
-  private tallWildBounds: { x:number; y:number; w:number; h:number }|null=null;
-  private readonly options: RendererOptions;
   private current: BoardView;
-  private spin: SpinAnimation|null=null;
-  private vip: VipView|null=null;
-  private wildProgress=1;
-  private splitProgress=1;
-  private tier:BonusTier|null=null;
-  private previousTier:BonusTier|null=null;
-  private sceneChangedAt=0;
-  private particles:Particle[]=[];
-  private celebrationAt=0;
-  private celebrationMax=false;
-  private lastDraw=0;
-  private frameId=0;
-  private destroyed=false;
-  private skipRequested=false;
-  private active=false;
-  private resizeObserver:ResizeObserver;
-  private hover:{reel:number;row:number}|null=null;
-  private readonly pointerMove:(event:PointerEvent)=>void;
-  private readonly pointerLeave:()=>void;
+  private spin: SpinView | null = null;
+  private tumble: TumbleView | null = null;
+  private effect: EffectView | null = null;
+  private removal: { cells: Set<string>; progress: number; fixed?: Set<string> } | null = null;
+  private highlightProgress = 0;
+  private tier: BonusTier | null = null;
+  private sceneChangedAt = 0;
+  private cascadeIndex = 0;
+  private lockedBetCents = 0;
+  private maxWin = false;
+  private scatterPulse = 0;
+  private particles: Particle[] = [];
+  private active = false;
+  private destroyed = false;
+  private skipRequested = false;
+  private frameId = 0;
+  private lastDraw = 0;
+  private celebration: { start: number; maxWin: boolean; ratio: number } | null = null;
+  private hover: CellPosition | null = null;
+  private readonly resizeObserver: ResizeObserver;
+  private readonly pointerMove: (event: PointerEvent) => void;
+  private readonly pointerLeave: () => void;
 
-  constructor(readonly canvas:HTMLCanvasElement, options:RendererOptions={}) {
-    const ctx=canvas.getContext('2d',{alpha:true});
-    if(!ctx)throw new Error('Canvas 2D is unavailable');
-    this.ctx=ctx;this.options=options;
-    this.tallWildImage.onload=()=>{
-      const image=this.tallWildImage,probe=document.createElement('canvas');probe.width=image.naturalWidth;probe.height=image.naturalHeight;
-      const probeCtx=probe.getContext('2d');if(!probeCtx)return;
-      probeCtx.drawImage(image,0,0);const data=probeCtx.getImageData(0,0,probe.width,probe.height).data;
-      let left=probe.width,right=0,top=probe.height,bottom=0;
-      for(let y=0;y<probe.height;y++)for(let x=0;x<probe.width;x++)if(data[(y*probe.width+x)*4+3]>32){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
-      if(right>left&&bottom>top)this.tallWildBounds={x:left,y:top,w:right-left+1,h:bottom-top+1};
+  constructor(readonly canvas: HTMLCanvasElement, private readonly options: RendererOptions = {}) {
+    const ctx = canvas.getContext('2d'); if (!ctx) throw new Error('Canvas 2D is unavailable'); this.ctx = ctx;
+    const paying = SYMBOLS.filter(id => !['wild', 'scatter', 'vip', 'xways', 'infectious', 'bomb', 'shot'].includes(id));
+    this.current = {
+      grid: Array.from({ length: REELS }, (_, reel) => Array.from({ length: ROWS }, (_, row) => paying[(reel * 3 + row * 5) % paying.length])),
+      positionMultipliers: matrix(1), wins: [],
     };
-    this.tallWildImage.src='/art/wild-tall.png';
-    this.current={grid:Array.from({length:CONFIG.reels},(_,c)=>Array.from({length:CONFIG.rows},(_,r)=>SYMBOLS[(c*3+r*5)%8])),frames:Array.from({length:CONFIG.reels},()=>Array(CONFIG.rows).fill(false)),wilds:[],wins:[]};
-    canvas.setAttribute('role','img');canvas.setAttribute('aria-label','Студентски град — игрални барабани');
-    canvas.style.display='block';canvas.style.width='100%';canvas.style.height='auto';canvas.style.aspectRatio=`${WIDTH}/${HEIGHT}`;
-    this.pointerMove=(event)=>{
-      const rect=canvas.getBoundingClientRect(),x=(event.clientX-rect.left)*WIDTH/rect.width,y=(event.clientY-rect.top)*HEIGHT/rect.height;
-      const reel=Math.floor((x-AREA.x)/(AREA.w/CONFIG.reels)),row=Math.floor((y-AREA.y)/(AREA.h/CONFIG.rows));
-      this.hover=reel>=0&&reel<CONFIG.reels&&row>=0&&row<CONFIG.rows?{reel,row}:null;
-      canvas.title=this.hover?this.label(this.current.grid[reel]?.[row]??'book'):'';
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', 'Студентски град — 6 × 5, печалби от осем еднакви символа навсякъде');
+    canvas.style.display = 'block'; canvas.style.width = '100%'; canvas.style.height = 'auto'; canvas.style.aspectRatio = `${WIDTH}/${HEIGHT}`;
+    this.pointerMove = event => {
+      const rect = canvas.getBoundingClientRect();
+      const x = (event.clientX - rect.left) * WIDTH / rect.width, y = (event.clientY - rect.top) * HEIGHT / rect.height;
+      const reel = Math.floor((x - AREA.x) / CELL_W), row = Math.floor((y - AREA.y) / CELL_H);
+      this.hover = reel >= 0 && reel < REELS && row >= 0 && row < ROWS ? { reel, row } : null;
+      if (this.hover) { const symbol = this.current.grid[reel]?.[row], mult = this.current.positionMultipliers[reel]?.[row] ?? 1; canvas.title = `${this.label(symbol)}${mult > 1 ? ` · ×${mult}` : ''}`; }
+      else canvas.title = '';
     };
-    this.pointerLeave=()=>{this.hover=null;};
-    canvas.addEventListener('pointermove',this.pointerMove);canvas.addEventListener('pointerleave',this.pointerLeave);
-    this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);
-    this.resize();this.frameId=requestAnimationFrame(this.tick);
+    this.pointerLeave = () => { this.hover = null; };
+    canvas.addEventListener('pointermove', this.pointerMove); canvas.addEventListener('pointerleave', this.pointerLeave);
+    this.resizeObserver = new ResizeObserver(() => this.resize()); this.resizeObserver.observe(canvas);
+    this.resize(); this.frameId = requestAnimationFrame(this.tick);
   }
-
-  get busy(){return this.active;}
-  private label(id:SymbolId){const k=`symbol.${id}`,value=this.options.translate?.(k);return value&&value!==k?value:SYMBOL_LABELS[id];}
-  private translate(key:string,fallback:string){const value=this.options.translate?.(key);return value&&value!==key?value:fallback;}
-
+  get busy() { return this.active; }
+  /** Read-only view of the snapshots currently being painted, for UI diagnostics. */
+  snapshot() { return { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), cascade: this.cascadeIndex }; }
+  private publishStep(payoutCents = 0) { this.options.onStep?.({ ...this.snapshot(), payoutCents }); }
+  private label(symbol: SymbolId) { const name = `symbol.${symbol}`, value = this.options.translate?.(name); return value && value !== name ? value : SYMBOL_LABELS[symbol] ?? symbol; }
+  private translate(name: string, fallback: string) { const value = this.options.translate?.(name); return value && value !== name ? value : fallback; }
   resize() {
-    const cssWidth=this.canvas.getBoundingClientRect().width||WIDTH;
-    const dpr=Math.min(window.devicePixelRatio||1,2);
-    const width=Math.max(1,Math.round(cssWidth*dpr)),height=Math.round(width*HEIGHT/WIDTH);
-    if(this.canvas.width!==width||this.canvas.height!==height){this.canvas.width=width;this.canvas.height=height;}
-    this.ctx.setTransform(width/WIDTH,0,0,height/HEIGHT,0,0);
-    this.draw(performance.now());
+    const cssWidth = this.canvas.getBoundingClientRect().width || WIDTH, scale = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.round(cssWidth * scale)), height = Math.max(1, Math.round(width * HEIGHT / WIDTH));
+    if (this.canvas.width !== width || this.canvas.height !== height) { this.canvas.width = width; this.canvas.height = height; }
+    this.ctx.setTransform(width / WIDTH, 0, 0, height / HEIGHT, 0, 0); this.draw(performance.now());
   }
-
-  setScene(tier:BonusTier|null){
-    if(this.tier===tier)return;
-    this.previousTier=this.tier;this.tier=tier;this.sceneChangedAt=performance.now();
-    this.canvas.dataset.scene=tier??'base';
+  setScene(tier: BonusTier | null) {
+    if (tier === this.tier) return; this.tier = tier; this.sceneChangedAt = performance.now(); this.canvas.dataset.scene = tier ?? 'base';
   }
-
-  render(presentation:SpinPresentation|Grid|PartialBoardView,frames?:boolean[][],wilds?:WildState[],wins?:Win[]) {
-    this.vip=null;this.spin=null;
-    if(Array.isArray(presentation))this.current={grid:presentation,frames:frames??this.blankFrames(),wilds:wilds??[],wins:wins??[]};
-    else {this.current={grid:presentation.grid,frames:presentation.frames??this.blankFrames(),wilds:presentation.wilds??[],wins:presentation.wins??[]};if(presentation.tier!==undefined)this.setScene(presentation.tier);}
-    this.wildProgress=1;this.splitProgress=1;this.draw(performance.now());
+  render(presentation: SpinPresentation | Grid | PartialBoardView, frames?: boolean[][], _wilds?: unknown[], wins?: Win[]) {
+    this.spin = null; this.tumble = null; this.effect = null; this.removal = null;
+    const view: PartialBoardView = Array.isArray(presentation) ? { grid: presentation, frames, wins } : presentation;
+    this.current = {
+      grid: copyGrid(view.finalGrid ?? view.grid),
+      positionMultipliers: copyMatrix(view.finalPositionMultipliers ?? view.positionMultipliers ?? view.frames?.map(column => column.map(frame => frame ? 2 : 1)) ?? matrix(1)), wins: [],
+    };
+    this.cascadeIndex = 0; this.highlightProgress = 0; if (view.tier !== undefined) this.setScene(view.tier);
+    this.canvas.dataset.animation = 'idle'; this.draw(performance.now());
   }
-
-  private blankFrames(){return Array.from({length:CONFIG.reels},()=>Array(CONFIG.rows).fill(false));}
-
-  async animateSpin(presentation:SpinPresentation,turbo=false):Promise<void> {
-    if(presentation.kind==='vip'){await this.animateVip(presentation,turbo);return;}
-    this.active=true;this.skipRequested=false;this.vip=null;
-    this.current={...this.current,wins:[]};
-    this.setScene(presentation.tier);
-    const stops=Array.from({length:CONFIG.reels},(_,reel)=>(turbo?420:1120)+reel*(turbo?58:165));
-    this.spin={target:presentation,elapsed:0,stops,duration:stops[stops.length-1]+150,stopped:new Set()};
-    await this.animate(this.spin.duration,(progress)=>{
-      if(!this.spin)return;this.spin.elapsed=progress*this.spin.duration;
-      stops.forEach((stop,reel)=>{if(this.spin!.elapsed>=stop&&!this.spin!.stopped.has(reel)){this.spin!.stopped.add(reel);this.options.onEvent?.('reel-stop');}});
+  async play(presentation: SpinPresentation, turbo = false) { return this.animateSpin(presentation, turbo); }
+  async animateSpin(presentation: SpinPresentation, turbo = false): Promise<void> {
+    const view = presentation;
+    this.lockedBetCents = view.lockedBetCents; this.maxWin = view.maxWin;
+    this.active = true; this.skipRequested = false; this.cascadeIndex = 0; this.highlightProgress = 0;
+    this.effect = null; this.tumble = null; this.removal = null; this.celebration = null; this.current.wins = [];
+    this.setScene(view.tier ?? null);
+    const initial: BoardView = {
+      grid: copyGrid(view.initialGrid ?? view.grid),
+      positionMultipliers: copyMatrix(view.initialPositionMultipliers ?? view.positionMultipliers ?? matrix(1)), wins: [],
+    };
+    this.current.positionMultipliers = copyMatrix(initial.positionMultipliers);
+    const stops = Array.from({ length: REELS }, (_, reel) => (turbo ? 200 : 590) + reel * (turbo ? 36 : 95));
+    const duration = stops[REELS - 1] + (turbo ? 50 : 115);
+    this.spin = { target: initial, elapsed: 0, stops, stopped: new Set() }; this.canvas.dataset.animation = 'spin';
+    await this.animate(duration, p => {
+      if (!this.spin) return; this.spin.elapsed = p * duration;
+      stops.forEach((stop, reel) => { if (this.spin!.elapsed >= stop && !this.spin!.stopped.has(reel)) { this.spin!.stopped.add(reel); this.options.onEvent?.('reel-stop'); } });
     });
-    this.spin=null;this.current={...presentation,wins:[]};
-    const needsNudge=presentation.wilds.some(wild=>wild.steps>0);
-    this.wildProgress=needsNudge?0:1;
-    const hasFrames=presentation.frames.some(column=>column.some(Boolean));
-    if(hasFrames){this.splitProgress=0;this.options.onEvent?.('split');await this.animate(turbo?150:420,(p)=>{this.splitProgress=smooth(p);});}
-    this.splitProgress=1;
-    if(needsNudge){
-      this.wildProgress=0;
-      const maxSteps=Math.max(...presentation.wilds.map(wild=>wild.steps));
-      let sounded=-1;
-      await this.animate(turbo?220:Math.min(1500,620+maxSteps*180),(p)=>{
-        this.wildProgress=p;
-        const step=Math.floor(p*maxSteps);if(step!==sounded){sounded=step;this.options.onEvent?.('nudge');}
-      });
-    }
-    this.wildProgress=1;this.current=presentation;
-    if(presentation.wins.length||presentation.maxWin){this.options.onEvent?.('win');await this.animate(turbo?140:300,()=>{});}
-    this.active=false;this.draw(performance.now());
-  }
-
-  async animateVip(presentation:SpinPresentation|boolean[][],turbo=false):Promise<void> {
-    this.active=true;this.skipRequested=false;this.spin=null;
-    const attempts=Array.isArray(presentation)?presentation:presentation.vipAttempts??Array.from({length:3},()=>Array(5).fill(false));
-    this.vip={locked:Array(5).fill(false),revealed:Array(5).fill(false),attempt:0,reveal:-1,done:false};
-    for(let attempt=0;attempt<3;attempt++){
-      this.vip.attempt=attempt+1;this.vip.revealed=Array(5).fill(false);
-      for(let reel=0;reel<5;reel++){
-        this.vip.reveal=reel;
-        if(this.vip.locked[reel])continue;
-        await this.animate(turbo?80:250,()=>{});
-        this.vip.revealed[reel]=true;
-        if(attempts[attempt]?.[reel]){this.vip.locked[reel]=true;this.options.onEvent?.('vip-lock');this.emitParticles(AREA.x+(reel+.5)*AREA.w/5,AREA.y+AREA.h*.5,12,false);}
-        else this.options.onEvent?.('vip-miss');
+    this.spin = null; this.current = initial; this.publishStep();
+    for (const step of view.cascadeSteps) {
+      this.cascadeIndex = step.index;
+      this.current = { grid: copyGrid(step.grid), positionMultipliers: copyMatrix(step.positionMultipliers), wins: [] };
+      this.publishStep();
+      for (const event of step.modifiers.filter(event => event.kind !== 'bomb')) await this.animateModifier(event, turbo);
+      this.current = { grid: copyGrid(step.resolvedGrid), positionMultipliers: copyMatrix(step.resolvedPositionMultipliers), wins: [] };
+      this.publishStep();
+      if (step.wins.length) {
+        for (const win of step.wins) {
+          this.current.wins = [win]; this.canvas.dataset.animation = 'win'; this.options.onEvent?.('win', win.payoutCents);
+          await this.animate(turbo ? 95 : 470, p => { this.highlightProgress = ease(p); });
+        }
+        this.current.wins = step.wins;
+        const winning = [...new Map(step.wins.flatMap(win => win.cells).map(cell => [key(cell), cell])).values()];
+        this.removal = { cells: new Set(winning.map(key)), progress: 0 };
+        for (const cell of winning) { const pos = centre(cell); this.emit(pos.x, pos.y, 8, '#f7e8ad', 560); }
+        await this.animate(turbo ? 65 : 200, p => { if (this.removal) this.removal.progress = p; });
+        for (const cell of winning) this.current.positionMultipliers[cell.reel][cell.row] = Math.min(8192, this.current.positionMultipliers[cell.reel][cell.row] * 2);
+        this.current.wins = []; this.highlightProgress = 0;
       }
-      await this.animate(turbo?130:420,()=>{});
+      for (const event of step.modifiers.filter(event => event.kind === 'bomb')) await this.animateModifier(event, turbo);
+      if (step.removed.length) {
+        this.canvas.dataset.animation = 'clear'; this.options.onEvent?.('cascade');
+        const alreadyCleared = new Set([
+          ...step.wins.flatMap(win => win.cells.map(key)),
+          ...step.modifiers.filter(event => event.kind === 'bomb').flatMap(event => [key(event.source), ...event.targets.map(key)]),
+        ]);
+        this.removal = { cells: new Set(step.removed.map(key)), progress: 0, fixed: alreadyCleared };
+        for (const cell of step.removed.filter(cell => !step.wins.some(win => win.cells.some(winner => key(winner) === key(cell))))) { const pos = centre(cell); this.emit(pos.x, pos.y, 8, '#f7e8ad', 560); }
+        await this.animate(turbo ? 75 : 215, p => { if (this.removal) this.removal.progress = p; });
+        this.current.positionMultipliers = copyMatrix(step.positionMultipliersAfter); this.current.wins = []; this.highlightProgress = 0;
+        this.publishStep(step.payoutCents);
+        await this.animate(turbo ? 35 : 125, () => {});
+        if (step.refilledGrid) {
+          this.tumble = { from: copyGrid(step.resolvedGrid), to: copyGrid(step.refilledGrid), removed: new Set(step.removed.map(key)), progress: 0 };
+          this.removal = null; this.canvas.dataset.animation = 'cascade';
+          await this.animate(turbo ? 130 : 420, p => { if (this.tumble) this.tumble.progress = p; });
+          this.current.grid = copyGrid(step.refilledGrid); this.tumble = null; this.publishStep(step.payoutCents);
+        }
+        this.removal = null;
+      }
     }
-    this.vip.reveal=-1;this.vip.done=true;
-    if(!Array.isArray(presentation))this.current=presentation;
-    this.active=false;this.draw(performance.now());
+    this.current = { grid: copyGrid(view.finalGrid), positionMultipliers: copyMatrix(view.finalPositionMultipliers), wins: [] };
+    this.publishStep(view.payoutCents);
+    this.effect = null; this.tumble = null; this.removal = null; this.highlightProgress = 0;
+    if (view.scatters >= 3 && view.bonusAwarded) { this.options.onEvent?.('scatter', view.scatters); await this.animate(turbo ? 100 : 500, p => { this.scatterPulse = Math.sin(p * Math.PI); }); this.scatterPulse = 0; }
+    this.active = false; this.canvas.dataset.animation = 'idle'; this.draw(performance.now());
   }
-
-  async celebrate(ratio:number,maxWin=false,turbo=false):Promise<void> {
-    this.skipRequested=false;this.celebrationAt=performance.now();this.celebrationMax=maxWin;
-    this.emitParticles(WIDTH/2,HEIGHT*.25,maxWin?180:ratio>=50?100:55,true);
-    await this.animate(turbo?500:maxWin?3200:ratio>=50?1800:1100,()=>{});
-    this.celebrationAt=0;
+  private async animateModifier(event: ModifierEvent, turbo: boolean) {
+    this.effect = { event, progress: 0, before: { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), wins: [] } };
+    this.canvas.dataset.animation = event.kind; this.options.onEvent?.(event.kind, event.shotsAdded ?? event.factor);
+    const source = centre(event.source);
+    if (event.kind === 'bomb') for (const target of event.targets) { const pos = centre(target); this.emit(pos.x, pos.y, 14, '#eaa756', 750); }
+    if (event.kind === 'shot') this.emit(source.x, source.y, 12, '#f8e9ac', 600);
+    const duration = event.kind === 'infectious' ? 650 : event.kind === 'bomb' ? 560 : event.kind === 'shot' ? 470 : 380;
+    await this.animate(turbo ? Math.round(duration * .3) : duration, p => { if (this.effect) this.effect.progress = p; });
+    if (event.gridAfter) this.current.grid = copyGrid(event.gridAfter);
+    if (event.positionMultipliersAfter) this.current.positionMultipliers = copyMatrix(event.positionMultipliersAfter);
+    this.effect = null; this.publishStep();
   }
-
-  skip(){this.skipRequested=true;}
-
-  private animate(duration:number,update:(progress:number)=>void):Promise<void> {
-    if(this.skipRequested||this.destroyed){update(1);return Promise.resolve();}
-    return new Promise(resolve=>{
-      const start=performance.now();
-      const step=(time:number)=>{
-        const progress=this.skipRequested||this.destroyed?1:Math.min(1,(time-start)/duration);
-        update(progress);
-        if(progress>=1){resolve();return;}requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
-    });
+  /** Compatibility entry point for saved first-version presentation. */
+  async animateVip(presentation: SpinPresentation, turbo = false) { return this.animateSpin(presentation, turbo); }
+  async celebrate(ratio: number, maxWin = false, turbo = false): Promise<void> {
+    this.skipRequested = false; this.celebration = { start: performance.now(), maxWin, ratio };
+    for (let i = 0; i < (maxWin ? 75 : 42); i++) this.emit(seeded(i + 31) * WIDTH, -seeded(i + 53) * 120, 1, i % 3 ? '#f6dc8d' : '#d39858', 2500, true);
+    await this.animate(turbo ? 300 : maxWin ? 2200 : ratio >= 50 ? 1600 : 1000, () => {}); this.celebration = null;
   }
-
-  private tick=(time:number)=>{
-    if(this.destroyed)return;
-    if(this.active||this.celebrationAt||time-this.lastDraw>32){this.draw(time);this.lastDraw=time;}
-    this.frameId=requestAnimationFrame(this.tick);
+  skip() { this.skipRequested = true; }
+  private animate(duration: number, update: (p: number) => void): Promise<void> {
+    if (this.skipRequested || this.destroyed) { update(1); return Promise.resolve(); }
+    return new Promise(resolve => { const start = performance.now(); const step = (time: number) => { const p = this.skipRequested || this.destroyed ? 1 : clamp((time - start) / duration); update(p); if (p >= 1) { resolve(); return; } requestAnimationFrame(step); }; requestAnimationFrame(step); });
+  }
+  private tick = (time: number) => {
+    if (this.destroyed) return;
+    if (this.active || this.celebration || this.particles.length || time - this.lastDraw > 80) { this.draw(time); this.lastDraw = time; }
+    this.frameId = requestAnimationFrame(this.tick);
   };
-
-  private draw(time:number) {
-    const ctx=this.ctx;ctx.clearRect(0,0,WIDTH,HEIGHT);
-    ctx.save();
-    this.drawCabinet(time);
-    ctx.save();rounded(ctx,AREA.x,AREA.y,AREA.w,AREA.h,7);ctx.clip();
-    if(this.vip)this.drawVip(time);else this.drawBoard(time);
-    this.drawAtmosphere(time);
+  private draw(time: number) {
+    const ctx = this.ctx; ctx.clearRect(0, 0, WIDTH, HEIGHT); ctx.save();
+    if (this.effect?.event.kind === 'bomb') { const s = Math.sin(this.effect.progress * Math.PI) * 4; ctx.translate(Math.sin(this.effect.progress * 52) * s, Math.cos(this.effect.progress * 40) * s); }
+    this.drawMaterial(time); ctx.save(); ctx.beginPath(); ctx.rect(AREA.x, AREA.y, AREA.w, AREA.h); ctx.clip();
+    if (this.tumble) this.drawTumble(time); else this.drawSymbols(time);
+    if (this.effect) this.drawEffect(time);
+    if (this.current.wins.length && this.highlightProgress > .05) this.drawWin(this.current.wins[0], this.lockedBetCents);
+    ctx.restore(); this.drawBorder(time); this.drawParticles(time);
+    if (this.celebration) {
+      ctx.fillStyle = '#111921b8'; ctx.fillRect(AREA.x, AREA.y, AREA.w, AREA.h);
+      const p = ease((time - this.celebration.start) / 200);
+      ctx.save(); ctx.translate(WIDTH / 2, HEIGHT * .43); ctx.scale(.72 + p * .28, .72 + p * .28); ctx.rotate(-.03);
+      const label = this.celebration.maxWin ? this.translate('render.maxwin', 'ГРАДЪТ Е ТВОЙ!') : this.celebration.ratio >= 50 ? this.translate('render.bigwin', 'ГОЛЯМА ВЕЧЕР!') : this.translate('render.win', 'НАЗДРАВЕ!');
+      outlinedText(ctx, label, 0, 0, 76, '#f4d788', INK, 10); ctx.restore();
+    }
     ctx.restore();
-    this.drawCabinetFront(time);
-    this.drawParticles(time);
-    if(this.celebrationAt){const p=Math.min(1,(time-this.celebrationAt)/300);ctx.globalAlpha=(1-p)*.27;ctx.fillStyle=this.celebrationMax?'#ffedb3':'#f9e6a1';ctx.fillRect(0,0,WIDTH,HEIGHT);}
-    ctx.restore();
   }
-
-  private drawCabinet(time:number){
-    const ctx=this.ctx;
-    ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=32;ctx.shadowOffsetY=14;
-    const concrete=ctx.createLinearGradient(0,20,0,630);concrete.addColorStop(0,'#6b605a');concrete.addColorStop(.14,'#37343a');concrete.addColorStop(.9,'#373039');concrete.addColorStop(1,'#201f28');
-    rounded(ctx,31,32,998,585,15);ctx.fillStyle=concrete;ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-    ctx.strokeStyle='#97877a';ctx.lineWidth=2;ctx.stroke();
-    for(let i=0;i<100;i++){ctx.fillStyle=i%3?'#ba9d7910':'#0d0d1935';ctx.fillRect(36+seedValue(i)*988,38+seedValue(i+120)*576,seedValue(i+77)*7+1,seedValue(i+180)*2+1);}
-    const interior=ctx.createLinearGradient(0,AREA.y,0,AREA.y+AREA.h);interior.addColorStop(0,'#231c29');interior.addColorStop(.5,'#2c2431');interior.addColorStop(1,'#181b26');
-    rounded(ctx,AREA.x-7,AREA.y-7,AREA.w+14,AREA.h+14,11);ctx.fillStyle='#15131d';ctx.fill();
-    rounded(ctx,AREA.x,AREA.y,AREA.w,AREA.h,7);ctx.fillStyle=interior;ctx.fill();
-    const accent=this.tier==='december'?'#efc564':this.tier==='friday'?'#ef7caa':this.tier==='dorm'?'#65cbc7':'#cf8678';
-    ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.shadowColor=accent;ctx.shadowBlur=9;ctx.stroke();ctx.shadowBlur=0;
-    ctx.fillStyle='#ceba96';ctx.font='700 12px "Grad Text",Arial,sans-serif';ctx.textAlign='left';ctx.fillText(this.translate('render.block','БЛОК 42 / СТУДЕНТСКИ'),56,42);
-    ctx.textAlign='right';ctx.font='700 11px "Grad Text",Arial,sans-serif';ctx.fillStyle='#d4cab6';ctx.fillText(this.translate('render.lecture','ЛЕКЦИЯ: 08:00'),1005,42);
-    // An ivory timetable and a torn party flyer overlap the concrete border.
-    ctx.save();ctx.translate(36,199);ctx.rotate(-.07);ctx.fillStyle='#d3c9aa';ctx.fillRect(-20,-46,24,110);ctx.strokeStyle='#66615d';ctx.lineWidth=1;
-    for(let i=0;i<7;i++){ctx.beginPath();ctx.moveTo(-18,-26+i*10);ctx.lineTo(2,-26+i*10);ctx.stroke();}ctx.fillStyle='#bb5c66';ctx.fillRect(-20,18,24,10);ctx.restore();
-    ctx.save();ctx.translate(1031,469);ctx.rotate(.09);ctx.fillStyle='#b75c7d';ctx.fillRect(-2,-48,22,100);ctx.fillStyle='#2c2030';ctx.fillRect(1,-30,13,38);ctx.restore();
-    // Small screw heads keep the stage grounded in a street-side poster case.
-    for(const x of [43,1017])for(const y of [46,603]){ctx.fillStyle='#aa9886';ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#3c363a';ctx.beginPath();ctx.moveTo(x-2,y+1);ctx.lineTo(x+2,y-1);ctx.stroke();}
-    if(this.sceneChangedAt&&time-this.sceneChangedAt<650){ctx.save();ctx.globalAlpha=(1-(time-this.sceneChangedAt)/650)*.13;ctx.fillStyle=accent;rounded(ctx,AREA.x,AREA.y,AREA.w,AREA.h,7);ctx.fill();ctx.restore();}
+  private drawMaterial(time: number) {
+    const ctx = this.ctx, scene = SCENES[this.tier ?? 'base'];
+    polygon(ctx, [AREA.x - 12, AREA.y - 14, AREA.x + AREA.w + 10, AREA.y - 9, AREA.x + AREA.w + 13, AREA.y + AREA.h + 18, AREA.x - 15, AREA.y + AREA.h + 12], '#202528', INK, 6);
+    for (let reel = 0; reel < REELS; reel++) {
+      const x = AREA.x + reel * CELL_W;
+      ctx.fillStyle = reel % 2 ? scene.wood : scene.shade; ctx.fillRect(x, AREA.y, CELL_W, AREA.h);
+      polygon(ctx, [x + 3, AREA.y + 2, x + CELL_W - 3, AREA.y + 3, x + CELL_W - 4, AREA.y + AREA.h - 2, x + 4, AREA.y + AREA.h], scene.wood, '#211f23', 3);
+      ctx.fillStyle = '#121a2120'; ctx.fillRect(x + CELL_W * .16, AREA.y + 3, 4, AREA.h - 6); ctx.fillRect(x + CELL_W * .81, AREA.y + 3, 2, AREA.h - 6);
+      ctx.strokeStyle = '#e0c17a12'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x + CELL_W * .42, AREA.y + 14); ctx.lineTo(x + CELL_W * .38, AREA.y + AREA.h - 12); ctx.stroke();
+      for (let row = 0; row < ROWS; row++) {
+        const value = this.current.positionMultipliers[reel]?.[row] ?? 1;
+        if (value > 1) { const y = AREA.y + row * CELL_H, color = value >= 64 ? '#456960' : value >= 8 ? '#824f44' : '#815c42'; polygon(ctx, [x + 4, y + 5, x + CELL_W - 6, y + 2, x + CELL_W - 3, y + CELL_H - 5, x + 5, y + CELL_H - 2], color, '#322921', 1); }
+      }
+    }
+    if (time - this.sceneChangedAt < 500) { ctx.fillStyle = scene.tint; ctx.globalAlpha = (1 - (time - this.sceneChangedAt) / 500) * .13; ctx.fillRect(AREA.x, AREA.y, AREA.w, AREA.h); ctx.globalAlpha = 1; }
   }
-
-  private drawCabinetFront(time:number){
-    const ctx=this.ctx;
-    ctx.strokeStyle='#a8936d70';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(54,598);ctx.lineTo(1006,598);ctx.stroke();
-    ctx.textAlign='center';ctx.fillStyle='#c5b493';ctx.font='700 12px "Grad Text",Arial,sans-serif';ctx.fillText(this.translate('render.tagline','УТРЕ СЪМ НА ЛЕКЦИИ.'),WIDTH/2,611);
-    ctx.font='600 10px "Grad Text",Arial,sans-serif';ctx.fillStyle='#a5a1aa';ctx.fillText(this.translate('render.demo','ВИРТУАЛНИ ДЕМО ЕВРО · БЕЗ РЕАЛНИ ПАРИ'),WIDTH/2,638);
-    // Reflections from the nearby club drift along the metal rim.
-    ctx.globalAlpha=.2+.09*Math.sin(time*.001);const light=ctx.createLinearGradient(130,0,WIDTH,0);light.addColorStop(0,'#eecc80');light.addColorStop(.4,'#e37cad');light.addColorStop(1,'#5fbcb8');ctx.strokeStyle=light;ctx.lineWidth=2;rounded(ctx,34,34,992,581,13);ctx.stroke();ctx.globalAlpha=1;
+  private drawBorder(time: number) {
+    const ctx = this.ctx, scene = SCENES[this.tier ?? 'base'];
+    ctx.strokeStyle = '#b59668'; ctx.lineWidth = 3; ctx.strokeRect(AREA.x - 3, AREA.y - 3, AREA.w + 6, AREA.h + 6);
+    ctx.strokeStyle = INK; ctx.lineWidth = 5; ctx.strokeRect(AREA.x - 9, AREA.y - 10, AREA.w + 18, AREA.h + 22);
+    for (const x of [AREA.x - 5, AREA.x + AREA.w + 5]) for (const y of [AREA.y - 5, AREA.y + AREA.h + 8]) { ctx.fillStyle = '#d2b283'; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#292723'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x - 2, y + 2); ctx.lineTo(x + 2, y - 2); ctx.stroke(); }
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.font = '800 17px "Grad Display", Arial, sans-serif'; ctx.fillStyle = '#e4d3ad'; ctx.fillText(this.translate('render.block', 'БЛОК 42 / СТУДЕНТСКИ'), AREA.x + 4, 21);
+    ctx.textAlign = 'right'; ctx.fillStyle = scene.accent; ctx.fillText(this.translate('render.scatterpay', '8+ ЕДНАКВИ НАВСЯКЪДЕ'), AREA.x + AREA.w - 4, 21);
+    const topMult = Math.max(1, ...this.current.positionMultipliers.flat());
+    ctx.textAlign = 'left'; ctx.font = '800 18px "Grad Display", Arial, sans-serif'; ctx.fillStyle = '#ece0bc'; ctx.fillText(this.translate('render.position', 'ПОЗИЦИИ'), AREA.x, 738);
+    outlinedText(ctx, `×${topMult}`, AREA.x + 169, 738, 28, topMult >= 64 ? '#9edee0' : '#f4d78c');
+    ctx.textAlign = 'right'; ctx.font = '800 18px "Grad Display", Arial, sans-serif'; ctx.fillStyle = '#e5d5b0'; ctx.fillText(this.cascadeIndex ? `${this.translate('render.cascade', 'КАСКАДА')} ${this.cascadeIndex + 1}` : this.translate('render.tagline', 'УТРЕ СЪМ НА ЛЕКЦИИ.'), AREA.x + AREA.w, 738);
+    if (this.tier) { ctx.save(); ctx.globalAlpha = .5 + Math.sin(time * .0015) * .08; ctx.strokeStyle = scene.accent; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(AREA.x, 764); ctx.lineTo(AREA.x + AREA.w, 764); ctx.stroke(); ctx.restore(); }
   }
-
-  private drawBoard(time:number){
-    const ctx=this.ctx,cw=AREA.w/CONFIG.reels,ch=AREA.h/CONFIG.rows;
-    const winners=new Set(this.current.wins.flatMap(win=>win.cells.map(cell=>`${cell.reel}:${cell.row}`)));
-    for(let reel=0;reel<CONFIG.reels;reel++){
-      const x=AREA.x+reel*cw;
-      ctx.save();ctx.beginPath();ctx.rect(x+1,AREA.y,cw-2,AREA.h);ctx.clip();
-      const spin=this.spin,stop=spin?.stops[reel]??0;
-      if(spin&&spin.elapsed<stop){
-        const delay=reel*(spin.duration<1000?25:55),p=Math.max(0,Math.min(1,(spin.elapsed-delay)/(stop-delay)));
-        const remaining=(1-easeOut(p))*(CONFIG.rows*3+reel*2);
-        const offset=remaining%1*ch,advance=Math.floor(remaining);
-        for(let row=-1;row<=CONFIG.rows;row++){
-          const targetRow=((row+advance)%CONFIG.rows+CONFIG.rows)%CONFIG.rows;
-          const symbol=spin.target.grid[reel][targetRow];
-          this.drawCell(symbol,x,AREA.y+row*ch+offset,cw,ch,false,false,time,Math.min(.18,remaining*.02));
+  private drawSymbols(time: number) {
+    const ctx = this.ctx, winners = new Set(this.current.wins.flatMap(win => win.cells.map(key)));
+    for (let reel = 0; reel < REELS; reel++) {
+      const x = AREA.x + reel * CELL_W, spin = this.spin, stop = spin?.stops[reel] ?? 0;
+      ctx.save(); ctx.beginPath(); ctx.rect(x, AREA.y, CELL_W, AREA.h); ctx.clip();
+      if (spin && spin.elapsed < stop) {
+        const p = clamp((spin.elapsed - reel * 24) / Math.max(1, stop - reel * 24));
+        const remaining = (1 - ease(p)) * (ROWS * 3 + reel * 1.3), advance = Math.floor(remaining), offset = (remaining % 1) * CELL_H;
+        for (let row = -1; row <= ROWS; row++) { const target = ((row + advance) % ROWS + ROWS) % ROWS; this.drawSymbol(spin.target.grid[reel][target], x + CELL_W / 2, AREA.y + (row + .5) * CELL_H + offset, time, 1, .88, .03 * (reel % 2 ? 1 : -1)); }
+      } else {
+        const board = spin?.target ?? this.current, elapsed = spin ? spin.elapsed - stop : 200;
+        const bounce = elapsed < 115 ? Math.sin(clamp(elapsed / 115) * Math.PI) * 8 : 0;
+        for (let row = 0; row < ROWS; row++) {
+          const cell = { reel, row }, cellKey = key(cell), pos = centre(cell), symbol = board.grid[reel]?.[row]; if (!symbol) continue;
+          const mult = board.positionMultipliers[reel]?.[row] ?? 1, winning = winners.has(cellKey);
+          let scale = 1, alpha = winners.size && !winning ? .29 : 1;
+          if (this.removal?.cells.has(cellKey)) {
+            const progress = this.removal.fixed?.has(cellKey) ? 1 : this.removal.progress;
+            scale = 1 - ease(progress); alpha *= 1 - progress;
+          }
+          const event = this.effect?.event, affected = event && (key(event.source) === cellKey || event.targets.some(target => key(target) === cellKey));
+          if (affected && this.effect) {
+            const p = this.effect.progress;
+            if (event!.kind === 'bomb' && p > .45) { scale *= 1 - ease((p - .45) / .55); alpha *= 1 - clamp((p - .45) / .55); }
+            else if ((event!.kind === 'xways' || event!.kind === 'infectious') && p > .48 && event!.gridAfter?.[reel]?.[row]) {
+              this.drawSymbol(event!.gridAfter[reel][row], pos.x, pos.y + bounce, time, .9 + Math.sin(p * Math.PI) * .16, alpha, .025 * Math.sin(p * 24));
+              this.drawMultiplier(event!.positionMultipliersAfter?.[reel]?.[row] ?? mult, pos.x, pos.y, false); continue;
+            }
+          }
+          if (scale > .025) this.drawSymbol(symbol, pos.x, pos.y + bounce, time, scale, alpha, winning ? Math.sin(time * .009) * .015 : 0);
+          this.drawMultiplier(mult, pos.x, pos.y, scale < .1);
+          if (winning) this.drawCrosshair(pos.x, pos.y, CELL_H * .43, this.highlightProgress, '#eee5c8');
+          if (symbol === 'scatter' && this.scatterPulse > 0) this.drawCrosshair(pos.x, pos.y, CELL_H * .43, this.scatterPulse, '#f1cd5f');
+          if (this.hover?.reel === reel && this.hover.row === row && !this.active) { ctx.strokeStyle = '#e9d9af55'; ctx.lineWidth = 2; ctx.strokeRect(x + 5, AREA.y + row * CELL_H + 4, CELL_W - 10, CELL_H - 8); }
         }
-        const blur=ctx.createLinearGradient(0,AREA.y,0,AREA.y+AREA.h);blur.addColorStop(0,'#17132298');blur.addColorStop(.12,'#17132200');blur.addColorStop(.88,'#17132200');blur.addColorStop(1,'#17132298');ctx.fillStyle=blur;ctx.fillRect(x,AREA.y,cw,AREA.h);
-      }else{
-        const board=spin?.target??this.current;
-        const bounce=spin?Math.sin(Math.max(0,spin.elapsed-stop)/150*Math.PI)*Math.max(0,1-(spin.elapsed-stop)/150)*9:0;
-        const wild=board.wilds.find(item=>item.reel===reel);
-        for(let row=0;row<CONFIG.rows;row++){
-          this.drawCell(board.grid[reel][row],x,AREA.y+row*ch+bounce,cw,ch,spin?false:board.frames[reel]?.[row]??false,winners.has(`${reel}:${row}`),time,0,!!wild);
-        }
-        if(wild)this.drawTallWild(wild,x,cw,time,spin?0:this.wildProgress,spin?[]:board.frames[reel]);
       }
       ctx.restore();
-      if(reel){ctx.strokeStyle='#100e1b';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x,AREA.y);ctx.lineTo(x,AREA.y+AREA.h);ctx.stroke();ctx.strokeStyle='#94847527';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+2,AREA.y);ctx.lineTo(x+2,AREA.y+AREA.h);ctx.stroke();}
     }
   }
-
-  private drawCell(symbol:SymbolId,x:number,y:number,w:number,h:number,framed:boolean,winning:boolean,time:number,motion=0,hideSymbol=false){
-    const ctx=this.ctx,split=framed&&symbol!=='scatter'&&symbol!=='vip';
-    const cellLight=ctx.createRadialGradient(x+w*.5,y+h*.48,4,x+w*.5,y+h*.48,h*.7);cellLight.addColorStop(0,symbol==='scatter'?'#d457931f':symbol==='vip'?'#c6a23d28':'#ae8d7320');cellLight.addColorStop(1,'#2a223400');ctx.fillStyle=cellLight;ctx.fillRect(x+2,y+1,w-4,h-2);
-    ctx.strokeStyle='#b9a7820d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+9,y+h);ctx.lineTo(x+w-9,y+h);ctx.stroke();
-    if(framed){
-      const color=FRAME_COLORS[(Math.floor((x-AREA.x)/w)+Math.floor((y-AREA.y)/h)*3)%FRAME_COLORS.length]??FRAME_COLORS[0];
-      ctx.save();ctx.shadowColor=color;ctx.shadowBlur=winning?14:4;ctx.strokeStyle=color;ctx.lineWidth=split?3.2:2;rounded(ctx,x+8,y+7,w-16,h-14,4);ctx.stroke();ctx.shadowBlur=0;
-      ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x+w-33,y+6);ctx.lineTo(x+w-7,y+6);ctx.lineTo(x+w-7,y+32);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#263139';ctx.font='800 12px "Grad Text",Arial,sans-serif';ctx.textAlign='center';ctx.fillText(split?'×2':'',x+w-17,y+21);ctx.restore();
-    }
-    if(!hideSymbol){
-      const bob=winning?Math.sin(time*.008)*2:Math.sin(time*.0008+(x+y)*.009)*.55;
-      const icon=Math.min(h*.92,w*.84)*(winning?1+.024*Math.sin(time*.007):1),cx=x+w/2,cy=y+h/2+bob;
-      ctx.save();ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=8;ctx.shadowOffsetY=4;
-      if(split&&this.splitProgress>0){
-        const p=this.splitProgress;
-        const size=lerp(icon,Math.min(h*.72,w*.49),p),distance=w*.222*p;
-        ctx.save();ctx.translate(cx-distance,cy);ctx.rotate(-.025*p);this.artwork.draw(ctx,symbol,0,0,size,size,time);ctx.restore();
-        ctx.save();ctx.translate(cx+distance,cy);ctx.rotate(.025*p);this.artwork.draw(ctx,symbol,0,0,size,size,time);ctx.restore();
-        ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-        ctx.strokeStyle='#ecd87c55';ctx.setLineDash([2,5]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,y+18);ctx.lineTo(cx,y+h-18);ctx.stroke();ctx.setLineDash([]);
-      }else this.artwork.draw(ctx,symbol,cx,cy,icon,icon,time);
-      ctx.restore();
-      if(motion>0){ctx.save();ctx.globalAlpha=motion;this.artwork.draw(ctx,symbol,cx,cy+14,icon,icon,time);ctx.restore();}
-    }
-    if(winning){
-      ctx.save();ctx.shadowColor='#ffd986';ctx.shadowBlur=15;ctx.strokeStyle='#ffe0a3';ctx.lineWidth=2.5+Math.sin(time*.005)*.6;rounded(ctx,x+4,y+4,w-8,h-8,7);ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=`rgba(255,213,115,${.025+.025*Math.sin(time*.005)})`;ctx.fill();ctx.restore();
-    }
-    if(this.hover?.reel===Math.floor((x-AREA.x)/w)&&this.hover.row===Math.round((y-AREA.y)/h)&&!this.active){ctx.strokeStyle='#eee2ce45';ctx.lineWidth=1;rounded(ctx,x+7,y+7,w-14,h-14,6);ctx.stroke();}
+  private drawSymbol(symbol: SymbolId, x: number, y: number, time: number, scale = 1, alpha = 1, rotation = 0) {
+    const ctx = this.ctx; ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y); ctx.rotate(rotation); ctx.scale(scale, scale);
+    this.artwork.draw(ctx, symbol, 0, 0, CELL_W * .86, CELL_H * .94, time); ctx.restore();
   }
-
-  private drawTallWild(wild:WildState,x:number,w:number,time:number,progress:number,frames:boolean[]=[]){
-    const ctx=this.ctx;
-    const steps=wild.steps,step=Math.min(steps,Math.floor(progress*steps)),local=(progress*steps)%1;
-    const nudge=progress<1&&steps>0?(steps-step)*(AREA.h/CONFIG.rows)*.22+Math.sin(local*Math.PI)*15:0;
-    const multiplier=progress>=1||steps===0?wild.multiplier:Math.max(1,wild.multiplier-steps+step);
-    const glow=ctx.createLinearGradient(x,0,x+w,0);glow.addColorStop(0,'#dd9d451e');glow.addColorStop(.5,'#dab45933');glow.addColorStop(1,'#dd9d451e');ctx.fillStyle=glow;ctx.fillRect(x+5,AREA.y,w-10,AREA.h);
-    if(this.tallWildBounds){
-      const bounds=this.tallWildBounds,scale=Math.min((w-16)/bounds.w,(AREA.h-70)/bounds.h),dw=bounds.w*scale,dh=bounds.h*scale;
-      ctx.save();ctx.translate(x+w/2,AREA.y+AREA.h/2-23+nudge);ctx.rotate(progress<1?Math.sin(local*Math.PI)*.024:Math.sin(time*.0013)*.006);
-      ctx.shadowColor='#08090e';ctx.shadowBlur=10;ctx.shadowOffsetY=5;ctx.drawImage(this.tallWildImage,bounds.x,bounds.y,bounds.w,bounds.h,-dw/2,-dh/2,dw,dh);ctx.restore();
-    }else{
-    ctx.save();ctx.translate(x+w/2,AREA.y+AREA.h*.31+nudge);ctx.rotate(progress<1?Math.sin(local*Math.PI)*.025:Math.sin(time*.0013)*.007);
-    // The full-reel friend has a body as well as a readable painted portrait.
-    const scale=w/180;ctx.scale(scale,scale);
-    const bodyY=-8,bodyH=AREA.h/scale*.52;
-    const jacket=ctx.createLinearGradient(-60,0,60,bodyH);jacket.addColorStop(0,'#ea625a');jacket.addColorStop(.5,'#b83e48');jacket.addColorStop(1,'#702d38');
-    ctx.fillStyle=jacket;ctx.strokeStyle='#262b2b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-60,bodyY);ctx.bezierCurveTo(-83,bodyY+20,-70,bodyH*.65,-62,bodyH*.8);ctx.lineTo(-39,bodyH*.8);ctx.lineTo(-30,bodyH*.98);ctx.lineTo(32,bodyH*.98);ctx.lineTo(42,bodyH*.8);ctx.lineTo(68,bodyH*.77);ctx.bezierCurveTo(78,bodyH*.5,80,bodyY+18,59,bodyY);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.fillStyle='#ead2a5';ctx.beginPath();ctx.moveTo(-23,34);ctx.lineTo(26,34);ctx.lineTo(31,bodyH*.77);ctx.lineTo(-31,bodyH*.77);ctx.closePath();ctx.fill();
-    ctx.strokeStyle='#cfb79d';ctx.lineWidth=3;for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(-25,55+i*30);ctx.lineTo(28,53+i*30);ctx.stroke();}
-    ctx.strokeStyle='#edd7b5';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-57,19);ctx.lineTo(-48,bodyH*.75);ctx.moveTo(61,19);ctx.lineTo(52,bodyH*.75);ctx.stroke();
-    ctx.fillStyle='#8a3542';ctx.fillRect(-34,bodyH*.78,31,bodyH*.29);ctx.fillRect(5,bodyH*.78,31,bodyH*.29);
-    ctx.strokeStyle='#dfc9a6';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-27,bodyH*.81);ctx.lineTo(-27,bodyH*1.05);ctx.moveTo(29,bodyH*.81);ctx.lineTo(29,bodyH*1.05);ctx.stroke();
-    this.artwork.drawWildPortrait(ctx,0,-66,169,time);
+  private drawMultiplier(value: number, x: number, y: number, empty: boolean) {
+    if (value <= 1) return;
+    const ctx = this.ctx, color = value >= 256 ? '#a0e6eb' : value >= 16 ? '#e3dc88' : '#f0c287'; ctx.save();
+    if (empty) outlinedText(ctx, `×${value}`, x, y, value >= 1000 ? 44 : 56, color, '#263235', 7);
+    else { polygon(ctx, [x - 43, y + 29, x + 41, y + 25, x + 44, y + 55, x - 42, y + 59], '#493328', INK, 3); outlinedText(ctx, `×${value}`, x, y + 43, value >= 1000 ? 24 : 31, color, '#272425', 4); }
     ctx.restore();
-    }
-    const bannerY=AREA.y+AREA.h-74;
-    ctx.save();ctx.shadowColor='#ffd57d';ctx.shadowBlur=10;ctx.fillStyle='#342832';rounded(ctx,x+8,bannerY,w-16,62,5);ctx.fill();ctx.strokeStyle='#e8c26f';ctx.lineWidth=2;ctx.stroke();ctx.shadowBlur=0;
-    ctx.textAlign='center';ctx.fillStyle='#f8e3a2';ctx.font='800 12px "Grad Text",Arial,sans-serif';ctx.fillText(this.label('wild'),x+w/2,bannerY+20,w-26);ctx.font='700 36px "Grad Display",Arial,sans-serif';ctx.fillStyle='#ffdc79';ctx.fillText(`×${multiplier}`,x+w/2,bannerY+53);ctx.restore();
-    ctx.strokeStyle='#ecc773';ctx.lineWidth=3;rounded(ctx,x+4,AREA.y+5,w-8,AREA.h-10,5);ctx.stroke();
-    frames.forEach((framed,row)=>{
-      if(!framed)return;
-      const y=AREA.y+row*(AREA.h/CONFIG.rows)+11;
-      ctx.save();ctx.shadowBlur=5;ctx.shadowColor='#ead176';ctx.fillStyle='#e8cf79';rounded(ctx,x+w-43,y,32,20,3);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#443334';ctx.font='800 13px "Grad Text",Arial,sans-serif';ctx.textAlign='center';ctx.fillText('×2',x+w-27,y+15);ctx.restore();
-    });
   }
-
-  private drawVip(time:number){
-    const ctx=this.ctx,vip=this.vip!,w=AREA.w/5;
-    const bg=ctx.createLinearGradient(0,AREA.y,0,AREA.y+AREA.h);bg.addColorStop(0,'#27242b');bg.addColorStop(.5,'#323128');bg.addColorStop(1,'#141824');ctx.fillStyle=bg;ctx.fillRect(AREA.x,AREA.y,AREA.w,AREA.h);
-    ctx.textAlign='center';ctx.font='700 40px "Grad Display",Arial,sans-serif';ctx.fillStyle='#f7ddb0';ctx.fillText(this.translate('render.god','БОГЪТ НА СТУДЕНТСКИ'),WIDTH/2,AREA.y+62);
-    ctx.font='700 27px "Grad Text",Arial,sans-serif';ctx.fillStyle='#b7a88e';ctx.fillText(`${this.translate('render.attempt','ОПИТ')} ${vip.attempt||1} / 3`,WIDTH/2,AREA.y+95);
-    for(let reel=0;reel<5;reel++){
-      const x=AREA.x+reel*w+14,y=AREA.y+140,cx=x+(w-28)/2;
-      const active=vip.reveal===reel&&!vip.done,locked=vip.locked[reel];
-      ctx.save();ctx.shadowColor=locked?'#ffe08f':active?'#c8a35c':'transparent';ctx.shadowBlur=locked?15:8;ctx.fillStyle=locked?'#9f804024':'#161a2480';rounded(ctx,x,y,w-28,208,8);ctx.fill();ctx.strokeStyle=locked?'#f4d28b':active?'#c7a65d':'#81725a65';ctx.lineWidth=locked?2.5:1.3;ctx.stroke();ctx.shadowBlur=0;
-      if(locked)this.artwork.draw(ctx,'vip',cx,y+94,w*.82,w*.82,time);
-      else{
-        ctx.strokeStyle='#9e875e';ctx.lineWidth=2;ctx.setLineDash([5,5]);rounded(ctx,cx-52,y+56,104,80,5);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=vip.revealed[reel]?'#ae9582':'#cab18a';ctx.font='700 39px "Grad Display",Arial,sans-serif';ctx.fillText(vip.revealed[reel]?'—':'?',cx,y+110);
+  private drawCrosshair(x: number, y: number, radius: number, progress: number, color: string) {
+    const ctx = this.ctx; ctx.save(); ctx.globalAlpha = clamp(progress * 3); ctx.translate(x, y); const r = radius * (1.2 - ease(progress) * .2);
+    ctx.strokeStyle = INK; ctx.lineWidth = 9; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke(); ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.stroke();
+    for (let i = 0; i < 4; i++) { ctx.save(); ctx.rotate(i * Math.PI / 2); ctx.strokeStyle = INK; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(0, -r - 8); ctx.lineTo(0, -r + 18); ctx.stroke(); ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.stroke(); ctx.restore(); }
+    ctx.restore();
+  }
+  private drawWin(win: Win, lockedBetCents: number) {
+    const baseEuros = lockedBetCents * win.payMultiplier / 100, mult = win.positionMultiplier;
+    const format = this.options.formatMoney ?? ((euros: number, maximumFractionDigits = 2) => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits }).format(euros));
+    // Preserve sub-cent base awards until multiplication; the right side is the
+    // recorded, rounded (and possibly capped) amount actually paid by the engine.
+    const capped = this.maxWin && baseEuros * mult * 100 - win.payoutCents > 1;
+    const equation = `${format(baseEuros, 4)} × ${mult} ${capped ? '→' : '='} ${format(win.payoutCents / 100)}`;
+    const ctx = this.ctx; ctx.save(); ctx.translate(WIDTH / 2, AREA.y + AREA.h * .5); ctx.rotate(-.025);
+    ctx.font = '900 64px "Grad Display", "Arial Black", sans-serif';
+    const size = Math.min(64, 64 * (AREA.w - 60) / Math.max(1, ctx.measureText(equation).width));
+    outlinedText(ctx, equation, 0, 0, size, '#fff1c8', INK, 10);
+    ctx.font = '800 18px "Grad Display", Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff4da'; ctx.strokeStyle = INK; ctx.lineWidth = 4;
+    const subtitle = `${win.count} ${this.translate('render.matching', 'ЕДНАКВИ СИМВОЛА')}${capped ? ' · 30 000× MAX' : ''}`; ctx.strokeText(subtitle, 0, 48); ctx.fillText(subtitle, 0, 48); ctx.restore();
+  }
+  private drawTumble(time: number) {
+    const tumble = this.tumble!, p = ease(tumble.progress), ctx = this.ctx;
+    for (let reel = 0; reel < REELS; reel++) for (let row = 0; row < ROWS; row++) {
+      const pos = centre({ reel, row });
+      this.drawMultiplier(this.current.positionMultipliers[reel]?.[row] ?? 1, pos.x, pos.y, true);
+    }
+    for (let reel = 0; reel < REELS; reel++) {
+      const x = AREA.x + (reel + .5) * CELL_W;
+      const survivors = Array.from({ length: ROWS }, (_, row) => row).filter(row => !tumble.removed.has(key({ reel, row }))), added = ROWS - survivors.length;
+      ctx.save(); ctx.beginPath(); ctx.rect(AREA.x + reel * CELL_W, AREA.y, CELL_W, AREA.h); ctx.clip();
+      for (let targetRow = 0; targetRow < ROWS; targetRow++) {
+        const fromRow = targetRow < added ? targetRow - added - .75 : survivors[targetRow - added], row = fromRow + (targetRow - fromRow) * p;
+        const bounce = tumble.progress > .8 ? Math.sin((tumble.progress - .8) / .2 * Math.PI) * 5 : 0;
+        this.drawSymbol(tumble.to[reel][targetRow], x, AREA.y + (row + .5) * CELL_H + bounce, time);
+        if (p > .96) this.drawMultiplier(this.current.positionMultipliers[reel]?.[targetRow] ?? 1, x, AREA.y + (targetRow + .5) * CELL_H, false);
       }
-      ctx.fillStyle=locked?'#f5d48b':'#988d7d';ctx.font='700 22px "Grad Display",Arial,sans-serif';ctx.fillText(locked?this.translate('render.locked','ЗАКЛЮЧЕН'):String(reel+1).padStart(2,'0'),cx,y+181);
       ctx.restore();
     }
-    const collected=vip.locked.filter(Boolean).length;
-    ctx.fillStyle=collected===5?'#ffdc89':'#d3c1a4';ctx.font='700 33px "Grad Display",Arial,sans-serif';
-    ctx.fillText(vip.done&&collected===5?this.translate('render.maxwin','СТУДЕНТСКИ Е ТВОЙ!'):`${collected} / 5 ${this.translate('render.passes','VIP ПРОПУСКА')}`,WIDTH/2,AREA.y+404);
-    ctx.font='600 24px "Grad Text",Arial,sans-serif';ctx.fillStyle='#aca092';ctx.fillText(vip.done&&collected<5?this.translate('render.vipzero','НЕПЪЛНА КОЛЕКЦИЯ · €0.00'):this.translate('render.viprule','ПРОПУСКИТЕ ОСТАВАТ ЗАКЛЮЧЕНИ'),WIDTH/2,AREA.y+442);
   }
-
-  private drawAtmosphere(time:number){
-    const ctx=this.ctx;
-    // Slow dust catches the streetlights; upgraded scenes gain hanging fairy lights.
-    ctx.save();
-    for(let i=0;i<12;i++){const x=AREA.x+((seedValue(i+20)*AREA.w+time*(.003+i*.0001))%AREA.w),y=AREA.y+((seedValue(i+42)*AREA.h-time*.004+AREA.h*10)%AREA.h);ctx.globalAlpha=.06+.08*Math.sin(time*.0007+i)**2;ctx.fillStyle='#ffdead';ctx.beginPath();ctx.arc(x,y,1+i%2*.5,0,Math.PI*2);ctx.fill();}
-    ctx.globalAlpha=1;
-    if(this.tier){
-      ctx.strokeStyle='#281e27';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(AREA.x,AREA.y);ctx.quadraticCurveTo(WIDTH/2,AREA.y+28,AREA.x+AREA.w,AREA.y);ctx.stroke();
-      for(let i=0;i<15;i++){const x=AREA.x+25+i*(AREA.w-50)/14,t=(x-AREA.x)/AREA.w,y=AREA.y+4+4*t*(1-t)*22,color=['#f1c673','#dc789b','#76c1b7'][i%3];ctx.globalAlpha=.65+.35*Math.sin(time*.002+i*.7)**2;ctx.shadowColor=color;ctx.shadowBlur=7;ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y+3,2.5,4,0,0,Math.PI*2);ctx.fill();}
+  private drawEffect(time: number) {
+    const ctx = this.ctx, { event, progress: p } = this.effect!, source = centre(event.source);
+    const color = event.kind === 'infectious' ? '#b6d75b' : event.kind === 'bomb' ? '#f6b25c' : event.kind === 'shot' ? '#f0d093' : '#e4bf6c';
+    if (event.kind === 'infectious' || event.kind === 'shot') for (const target of event.targets) {
+      const pos = centre(target), t = ease(clamp(p * 1.6));
+      ctx.save(); ctx.strokeStyle = INK; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(source.x, source.y); ctx.lineTo(source.x + (pos.x - source.x) * t, source.y + (pos.y - source.y) * t); ctx.stroke(); ctx.strokeStyle = color; ctx.lineWidth = event.kind === 'shot' ? 2 : 3; ctx.stroke(); ctx.restore();
+      if (p > .42) this.drawCrosshair(pos.x, pos.y, CELL_H * .36, clamp((p - .42) * 3), color);
     }
-    ctx.restore();
+    if (event.kind === 'bomb') {
+      const radius = ease(p) * CELL_H * 1.7; ctx.save(); ctx.globalAlpha = (1 - p) * .8;
+      const points: number[] = []; for (let i = 0; i < 12; i++) { const angle = i * Math.PI / 6, r = radius * (i % 2 ? .61 : 1); points.push(source.x + Math.cos(angle) * r, source.y + Math.sin(angle) * r); }
+      polygon(ctx, points, '#f3c471', '#8c463b', 5); ctx.restore();
+    } else { const radius = CELL_H * (.35 + Math.sin(p * Math.PI) * .25); ctx.save(); ctx.globalAlpha = Math.sin(p * Math.PI); ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(source.x, source.y, radius, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+    if ((event.kind === 'xways' || event.kind === 'infectious') && p > .22) { ctx.save(); ctx.translate(source.x, source.y - 12); ctx.rotate(Math.sin(p * 15) * .035); outlinedText(ctx, `×${event.factor ?? 2}`, 0, -Math.sin(p * Math.PI) * 17, 65, color, INK, 8); ctx.restore(); }
+    if (event.kind === 'shot' && p > .45) outlinedText(ctx, `+${event.shotsAdded ?? 1} ${this.translate('render.extrashot', 'ЗАВЪРТАНЕ')}`, source.x, source.y - 44 - p * 30, 28, '#f8e2a0', INK, 5);
+    if (event.kind === 'infectious') for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5 + time * .001; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(source.x + Math.cos(a) * 43, source.y + Math.sin(a) * 43, 4, 0, Math.PI * 2); ctx.fill(); }
   }
-
-  private emitParticles(x:number,y:number,count:number,wide:boolean){
-    const now=performance.now(),start=this.particles.length;
-    for(let i=0;i<count;i++){const n=i+start;this.particles.push({x:wide?seedValue(n+24)*WIDTH:x,y:wide?-10-seedValue(n+12)*220:y,vx:(seedValue(n+30)-.5)*(wide?100:190),vy:wide?90+seedValue(n+91)*160:-100-seedValue(n+29)*120,angle:seedValue(n+20)*Math.PI,spin:(seedValue(n+18)-.5)*5,color:['#f8d070','#ed80a8','#85d7c7','#f7e6be'][i%4],size:3+seedValue(n+17)*5,born:now});}
+  private emit(x: number, y: number, count: number, color: string, lifetime: number, rain = false) {
+    const start = this.particles.length, now = performance.now();
+    for (let i = 0; i < count; i++) { const n = i + start; this.particles.push({ x, y, vx: (seeded(n + 12) - .5) * (rain ? 70 : 200), vy: rain ? 90 + seeded(n + 17) * 110 : -65 - seeded(n + 17) * 125, spin: (seeded(n + 9) - .5) * 9, size: 3 + seeded(n + 88) * 5, color, born: now, lifetime }); }
   }
-  private drawParticles(time:number){
-    const ctx=this.ctx;this.particles=this.particles.filter(p=>time-p.born<4600);
-    for(const p of this.particles){const t=(time-p.born)/1000;ctx.save();ctx.globalAlpha=Math.min(1,(4.6-t)*.8);ctx.translate(p.x+p.vx*t,p.y+p.vy*t+40*t*t);ctx.rotate(p.angle+p.spin*t);ctx.fillStyle=p.color;ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*.55);ctx.restore();}
+  private drawParticles(time: number) {
+    this.particles = this.particles.filter(p => time - p.born < p.lifetime); const ctx = this.ctx;
+    for (const particle of this.particles) { const t = (time - particle.born) / 1000, p = (time - particle.born) / particle.lifetime; ctx.save(); ctx.globalAlpha = 1 - p; ctx.translate(particle.x + particle.vx * t, particle.y + particle.vy * t + 160 * t * t); ctx.rotate(particle.spin * t); ctx.fillStyle = particle.color; ctx.strokeStyle = INK; ctx.lineWidth = 1; ctx.fillRect(-particle.size, -particle.size / 2, particle.size * 2, particle.size); ctx.strokeRect(-particle.size, -particle.size / 2, particle.size * 2, particle.size); ctx.restore(); }
   }
-
-  destroy(){this.destroyed=true;this.skipRequested=true;cancelAnimationFrame(this.frameId);this.resizeObserver.disconnect();this.canvas.removeEventListener('pointermove',this.pointerMove);this.canvas.removeEventListener('pointerleave',this.pointerLeave);}
+  destroy() { this.destroyed = true; this.skipRequested = true; cancelAnimationFrame(this.frameId); this.resizeObserver.disconnect(); this.canvas.removeEventListener('pointermove', this.pointerMove); this.canvas.removeEventListener('pointerleave', this.pointerLeave); }
 }
-
 export { SlotRenderer as Renderer };

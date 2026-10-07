@@ -1,127 +1,155 @@
-# Studentski Grad: implemented mathematics
+# Studentski Grad mathematics, version 2
 
-This is an original game using virtual euros. The initial release uses **five reels, four original rows, and 1,024 initial ways**. A larger grid remains a future experiment. The production renderer and the simulator call the same pure TypeScript engine in `src/engine`.
+This implementation uses a **6×5 board, scatter pays and persistent position multipliers**. It replaces version one's ways and VIP lottery. The browser and simulator use the same pure TypeScript engine. Credits and debits are virtual euro cents.
 
-All probabilities, prices, paytables, limits, and symbol profiles are in `src/engine/config.ts`. Outcomes do not depend on balance, previous losses, animation speed, audio, or interface language. Injectable xorshift32 state gives repeatable test and simulation runs. This is demo-game randomness, with no real-money integration.
+Duck Hunters' primary rules and official footage establish the observable mechanics described in [the research record](DUCK-HUNTERS-REDESIGN.md). The nine-symbol numerical paytable and current feature prices were verified from the official public guest initialization on 7 October 2026. [Paytable evidence](duck-hunters-public-paytable.json) preserves the filtered response, normalization, source hashes and original-symbol mapping. Sampler probabilities and Extra Spin pricing are original; they are not the publisher's private reel strips or certified theoretical return.
 
-## Payment and ways
+## Matching and payment
 
-Euro amounts are integer cents. Base bets are €0.10, €0.20, €0.40, €0.60, €1, €2, €5, €10, and €20. Each paid round locks its original base bet; bonus payouts keep that bet even after upgrades or reloads. Spin price is a separate number.
+There are 30 physical cells and nine regular paying symbols. Each symbol pays for **8–9, 10–11 or 12+** matching positions anywhere. Matches need not touch, occupy adjacent reels or start on the left. A Wild substitutes for each regular symbol. Bonus invitations and extra-shot tokens do not substitute. Wilds can participate in multiple qualifying symbol awards; their position is removed and doubled only once in that cascade.
 
-| Paying symbols | 3 reels | 4 reels | 5 reels |
+The verified public table, mapped to original Studentski Grad symbols, stores awards in millionths of the original base bet:
+
+| Symbol | 8–9 | 10–11 | 12+ |
 | --- | ---: | ---: | ---: |
-| Book, coffee, noodles, doner | 0.003× | 0.03× | 1.6× |
-| Female student, male student, DJ, couple | 0.006× | 0.06× | 3.2× |
+| Textbook · L5 | 0.1× | 0.15× | 1× |
+| Coffee · L4 | 0.1× | 0.2× | 1.25× |
+| Instant noodles · L3 | 0.1× | 0.25× | 1.5× |
+| Doner · L2 | 0.1× | 0.3× | 1.75× |
+| Beer · L1 | 0.1× | 0.4× | 2× |
+| Stylish classmate · M4 | 0.15× | 0.6× | 2.5× |
+| Exhausted student · M3 | 0.15× | 0.7× | 3× |
+| Student DJ · M2 | 0.2× | 0.8× | 3.5× |
+| Bouncer · M1 | 0.3× | 1× | 5× |
 
-These are **per weighted way** values. Matching starts on the leftmost reel and pays the longest consecutive run of at least three reels once for each matching paying type. Three- and four-reel prefixes are not added to a five-reel payment. Wild-only runs substitute for every applicable paying type and can therefore pay several types.
+For qualifying symbol `s`, let `C(s)` be its matching physical cells, including Wilds, and `m(c)` the multiplier stored at position `c`. Define:
 
-For a paying type `s` on reel `r`:
-
-`C(s,r) = natural matching copies + sum(Wild copies × that Wild's multiplier)`.
-
-The win is:
-
-`locked bet × per-way paytable value × product(C(s,r), matching reels) × current party energy`.
-
-A framed original cell contributes two identical copies. Wilds can split; scatters and VIP passes cannot. A tall Wild fills all four original positions of its reel, and its multiplier applies to each covered position. Copies add on one reel; combinations and Wild multipliers multiply across different reels. Example: two framed books and one unframed 3× Wild contribute `2+2+3=7`; a framed 2× Wild on the next reel contributes 4; two books on the third contribute 2. The result is `7×4×2=56` weighted book ways.
-
-Paytable entries are stored in millionths of a base bet. The engine sums exact integer/BigInt payout numerators across the spin, applies party energy, and rounds **once per spin** to the nearest cent. Exact half-cent values round up. Thus a very small winning combination can round to €0.00 at a small base bet. Symbol-level visual breakdowns are rounded independently; the authoritative spin award is the once-rounded aggregate.
-
-All twenty original cells framed gives `8^5 = 32,768` possible ways before Wild multipliers. Scatters count once per original symbol, regardless of frames. At most one scatter can occur on each reel.
-
-## Modes and prices
-
-| Paid selection | Total debit | Guaranteed behavior |
-| --- | ---: | --- |
-| Standard | 1× base bet | Standard profile |
-| Party search | 2× | First-reel scatter; hunt profile on remaining reels |
-| Exams can wait | 6× | All original positions framed; scatter/VIP cannot split |
-| One more, then I'm off | 25× | One tall nudging Wild |
-| God of Studentski | 1,000× | Standalone five-position VIP collection |
-| Buy Dorm party | 100× | Enter eight-spin tier 1 |
-| Buy Friday in Studentski | 300× | Enter ten-spin tier 2 |
-| Buy 8 December | 1,000× | Enter twelve-spin tier 3 |
-
-Selections are mutually exclusive. Bonus purchases do not stack with a previously selected booster charge. Insufficient-balance purchases fail before any debit, RNG change, or outcome generation.
-
-Wilds start at 1×. The first stumble has one or two nudge steps; every successful step raises its multiplier by one, to a configured maximum of 3×. Persistent Wilds retain progress, choose distinct new reels on subsequent spins, and nudge only while below 3×. At the limit they can move horizontally without another multiplier increase.
-
-Standard play has a 12% chance of two new frames and a 0.8% chance of a tall Wild. Hunt suppresses random Wilds to preserve its guaranteed first-reel scatter. All other random outcomes use the explicit profiles below.
-
-## Transparent reel profiles
-
-The game shares one paytable across every mode and bonus. Each profile explicitly blends a uniform eight-symbol distribution with a distinct home symbol on each reel: **book, coffee, noodles, doner, male student**. A focus weight, when nonzero, first selects the couple; otherwise the blend chooses a uniform paying symbol or the reel's home symbol. There is no hidden payout scaling or post-draw rejection.
-
-| Profile | Uniform blend | Couple focus | Scatter probability per available reel |
-| --- | ---: | ---: | ---: |
-| Standard | 1 | 0 | 0.065 |
-| Hunt | 1 | 0 | 0.0484; reel 1 guaranteed |
-| All-frame booster | 0.554 | 0 | 0.065 |
-| Wild booster | 1 | 0.101 | 0.065 |
-| Dorm bonus | 0.964 | 0 | 0.035 |
-| Friday bonus | 0.244 | 0 | 0.035 |
-| December bonus | 0.034 | 0 | 0.035 |
-
-For blend `b` and zero focus, the home symbol has probability `1−b+b/8`; each other symbol has `b/8`. With couple focus `f`, couple probability is `f+(1−f)b/8`; home probability is `(1−f)(1−b+b/8)`; remaining types have `(1−f)b/8`.
-
-Wild reels are selected first and cannot also contain scatters. On a remaining reel, a successful scatter draw replaces one uniformly selected original row. The above probabilities are therefore conditional on an available reel, not a claim of unconditional independent scatter counts across Wild-covered reels. Different profiles balance the large multiplicity of full-reel Wilds and split positions against the shared paytable; they are fixed configuration, never adjusted during a session.
-
-## Bonuses, upgrades, and cap
-
-Three scatters trigger Dorm party (8 spins, persistent frames, energy 1×). Four trigger Friday (10 spins, frames, one persistent Wild, energy 3×). Five trigger 8 December (12 spins, all frames, two persistent Wilds, energy 5×). The paid triggering spin pays at base-game energy 1× and belongs to the same paid round.
-
-Two new original positions gain persistent frames on each bonus spin until every position is framed. Apply the party multiplier at the start of the spin, then add one after a **positive settled win**, up to 25×. A rounded zero win does not increase it.
-
-At least two scatters during a bonus add two spins and upgrade remaining play by one tier. Preserve accumulated frames, achieved Wild multipliers, and the current party multiplier **unchanged**; do not reset energy to the new tier's starting value. Add missing Wilds and, when reaching tier 3, frame every position. At most three retriggers are accepted in the complete paid round. Further scatters neither extend nor upgrade it. The maximum direct-buy length is therefore 14/16/18 spins by initial tier.
-
-The whole paid round, including triggering spin and all free spins/retriggers, is capped at `20,000×` its locked base bet. The engine settles only the unfilled remainder of the cap, then stops the feature. No additional unplayed spin or retrigger can add money after the cap.
-
-## God and the rare Standard event
-
-God is separate from the ways board: five VIP positions receive up to three independent reveal opportunities each. Collected passes remain locked and consume no further draws. All five passes pay `20,000×` the locked bet; an incomplete collection pays zero. There are no other payouts or free spins.
-
-`p = 1 − (1 − 0.048^(1/5))^(1/3) = 0.23075803249924676`.
-
-`[1 − (1 − p)^3]^5 = 0.04800000000000001`.
-
-Exact theoretical success is **4.8%**, zero return is **95.2%**, and theoretical RTP is `0.048×20,000/1,000 = 96%`. At €0.20 bet, God debits €200 and pays either €4,000 or €0. The real sampled result and all three opportunity rounds are committed before their VIP-lock animation.
-
-Standard has an exclusive configured golden-pass event at probability `0.000001` per paid round (1 in 1,000,000), drawn before its ordinary board. It pays the round cap and no other award. God collection success is 48,000 times as likely as this configured event. Standard bonuses can also reach the universal cap, so observed total maximum-win frequency is reported separately from the golden-pass probability. God remains substantially more likely to reach maximum than Standard; Standard's maximum event plus even the upper bound of all naturally triggered bonuses is under 0.25%, versus God's 4.8%.
-
-## Durable state and validation
-
-Explicit phases are `idle`, `presenting-base`, `presenting-bonus`, `bonus-pending`, `presenting-vip`, and `presenting-complete`. A pure engine transition produces a complete outcome, exact debit if applicable, payout credit, RNG state, and new active-round state together. The UI saves the whole candidate session to `studentski-grad-session-v1` before assigning it or animating it. Failed saves retain the earlier live and persisted session.
-
-Presentation acknowledgements change no money and consume no randomness. Reload replays or skips the saved presentation and then generates only the next unscheduled free spin. It never redraws or credits the saved outcome. Active features lock bet/mode and block further paid actions. Session history contains one settled entry per paid round and retains the latest 100.
-
-`npm test` exercises original scatter counting, 56-way split/Wild examples, Wild substitutions, God equation/locking, each price, no stacking, overlap rejection, upgrades and preservation, three-retrigger exhaustion, cap remainder settlement, reload recovery, failed persistence, malformed saves, explicit phase transitions, natural trigger tiers, a genuine deterministic rare VIP sample, and balance-independent deterministic outcomes.
-
-## Measured simulation
-
-The calibration target for non-God modes is approximately **96%**. A target is not a measured result or a guaranteed theoretical value. The final report is `docs/simulation-results.json`, generated through the production engine with €0.20 base bet and actual mode/buy debits. The report includes seed, sample size, stakes, payouts, positive-round hit rate, profitable-round rate, bonus frequency, total maximum-win frequency, and approximate 95% Monte Carlo confidence intervals. Different small base bets can differ slightly because cent rounding is part of the rules.
-
-Reproduce a full 500,000-round validation of the current configuration, then the longer independent Hunt check:
-
-```bash
-SIM_ROUNDS=500000 SIM_SEED=400091 SIM_OUTPUT=docs/simulation-results.json npm run simulate
-SIM_ROUNDS=2000000 SIM_MODE=hunt SIM_SEED=591823 SIM_MERGE=1 SIM_OUTPUT=docs/simulation-results.json npm run simulate
+```text
+M(s) = max(1, sum(m(c) for c in C(s) where m(c) > 1))
+award(s) = locked base bet × bracket value(s, |C(s)|) × M(s)
 ```
 
-Seeds used for tuning differ from that final validation seed. Rare Standard maximum events make short-sample RTP intervals wide. A zero observed maximum count does not imply a zero configured probability. God's exact 96% formula is reported separately from its sampled return.
+Neutral positions do not add 1 to the sum. Eight textbook cells without marked positions pay 0.1× the base bet. At €0.20 that is €0.02. If three of those cells are marked ×4 and the others are neutral, the sum is 12 and the award is €0.24. Eight marked ×2 positions produce a sum of 16; they remain **eight physical symbols**, not sixteen copies.
 
-The saved report combines the seven unchanged 500,000-round mode results with the two-million-round Hunt validation: **5,500,000 paid rounds**. The row's stored seed includes the mode index offset, so use that row's seed directly when calling the exported `simulate(choice, count, seed)` function.
+The evaluator sums exact BigInt numerators and rounds half up **once per cascade's aggregate award**. Successive differences of the rounded running sum allocate that amount to displayed symbol wins, so their cent values sum exactly to the settled cascade. Cascade awards are then added to the spin and whole-round totals. A cap can reduce the last award to the available remainder. This is not independent rounding of every visual win, and not a global party multiplier.
 
-| Mode | Paid rounds | Measured RTP | Approx. 95% RTP interval | Positive-round hit rate | Bonus frequency | Max-win frequency |
+## Position progress and cascade order
+
+Positions begin at ×1 unless a Day booster initializes them differently. Removing a winning symbol leaves ×2, then doubles that position on later removals up to ×8192. Values stay at their coordinates when symbols fall. Free spins retain the position grid from the triggering spin; direct buys start at ×1. An ordinary subsequent paid round starts with its selected mode's initial grid.
+
+Each cascade follows this sequence:
+
+1. All xWays badges choose one common random regular symbol for that landing. Badges resolve in column/row order, each choosing ×2, ×4 or ×8 with equal probability. Its source becomes that symbol and its position multiplier is multiplied by the selected factor, capped at ×8192.
+2. An Infectious badge also applies that factor to all currently revealed matching regular symbols. An unresolved later badge stays a badge until its own turn. Later infections can therefore compound earlier sources.
+3. Extra-shot tokens award +1 spin, or +2 with the shot upgrade, and are consumed once. They never count as Wilds.
+4. Evaluate all scatter awards using the resolved symbols and pre-removal position multipliers. Remove the union of winning positions and double each once.
+5. Resolve every Bomb before refilling. A Bomb doubles its own position, clears remaining regular symbols within its clipped 3×3 area, and doubles those cleared positions. Its upgrade changes the area to 5×5. Wild, Bonus and other special symbols are protected from neighboring Bomb removals. Already removed winning positions are not cleared or doubled again by that explosion.
+6. Surviving symbols fall within their columns. New symbols fill the vacancies, while the position grid stays fixed. Resolve the resulting board again until no removals remain or the round cap is reached.
+
+The physical grid always has six columns of five cells. Position numbers, matching counts, cascades and modifier combinations vary; reel heights do not. The renderer replays recorded snapshots and consumes no gameplay randomness. Turbo, skipping, sound, language and frame rate do not change the outcome.
+
+## Prices and guarantees
+
+Base bets are €0.10, €0.20, €0.40, €0.60, €1, €2, €5, €10 and €20. A paid round locks its base bet. All payouts use it, rather than the boosted charge or purchase price.
+
+| Choice | Actual debit / base bet | Initial position multiplier / guarantee |
+| --- | ---: | --- |
+| Normal | 1× | ×1 |
+| Find the party · xBet | 2× | ×1; one Bonus on column two on the initial landing |
+| Day 2 | 2.8× | Every position ×2 |
+| Day 64 | 90× | Every position ×64 |
+| Day 1024 | 3000× | Every position ×1024 |
+| Buy Dorm party | 70× | 7 spins; 1 random upgrade |
+| Buy Friday in Studentski | 200× | 8 spins; 2 distinct random upgrades |
+| Buy 8 December | 600× | 10 spins; all 3 upgrades |
+| Lucky Draw | 235× | Dorm 50%, Friday 25%, December 25% |
+
+Mode selection changes no money. Spin debits its mode once. A bonus buy or Lucky Draw is a complete alternative paid choice and does not stack with a selected mode's charge. Insufficient balance rejects the action before debit, RNG change or generation.
+
+Three, four or five-plus Bonus invitations trigger Dorm, Friday or December respectively, with the same starting spins and upgrade counts as the direct buys. Invitations can arrive on the initial paid landing and during refills, with at most one per column. They remain protected while other symbols clear. A natural trigger's paid spin and all following free spins share one round.
+
+Upgrades are chosen uniformly without replacement from Infectious xWays, larger Bombs and +2 extra shots. A newly awarded upgrade applies to the upcoming free spins, not retroactively to the triggering base spin. Bonus spins generate shot tokens instead of Bonus invitations. Each token extends the feature once; additional landings can extend it again. Wild arrivals are random and have no fixed purchased count or ceiling. The guaranteed entitlement is the granted upgrades and initial spins.
+
+Day 1024 is a high-state booster on the ordinary board. Duck Hunters' public rules do not describe the first version's separate God/VIP collection, and it is no longer a playable outcome.
+
+## Explicit original distributions
+
+Every regular draw uses weights `[1, 1, 1, 1, 1, 1, 1, 1, 1]` in the paytable's order. Conditional on a regular draw, each of the nine regular symbols has probability 1/9. This same distribution chooses the common xWays reveal. Draws are independent, with no concealed win normalization or balance-dependent adjustment.
+
+One uniform draw selects the mutually exclusive special outcomes below; its remaining probability selects a regular symbol using those weights. These rates apply to initial positions and new non-Bonus refill symbols.
+
+| Profile | Wild | xWays / Infectious | Bomb | Extra-shot |
+| --- | ---: | ---: | ---: | ---: |
+| Normal | 0.008 | 0.0507 | 0.006 | 0 |
+| xBet | 0.004 | 0.0195 | 0.0015 | 0 |
+| Day 2 | 0.008 | 0.059 | 0.006 | 0 |
+| Day 64 | 0.008 | 0.0662 | 0.006 | 0 |
+| Day 1024 | 0.008 | 0.1117 | 0.006 | 0 |
+| Dorm | 0.008 | 0.02135 | 0.004 | 0.003 |
+| Friday | 0.008 | 0.0194 | 0.004 | 0.003 |
+| December | 0.008 | 0.0171 | 0.004 | 0.003 |
+
+A bonus's xWays draws become Infectious when that upgrade is active. Upgrades change the modifier's operation, not the profile's probability of drawing it.
+
+After generating an ordinary paid landing, each column independently has a 0.06 chance of replacing one uniformly chosen cell with Bonus. xBet instead guarantees column two and uses 0.0485 on its other columns. During a refill, a column lacking a surviving Bonus can replace one of its `k` incoming cells with Bonus at probability `profile scatter rate × k / 5`. Bonuses and Extra Spins suppress this Bonus draw. This refill process means natural trigger frequency cannot be inferred from the initial landing's binomial probability alone.
+
+The profiles are fixed and public. Their differences balance the initial multiplier grid and guaranteed Bonus, rather than changing outcomes according to player history. xBet's actual relative bonus frequency is measured in the simulation; this implementation does not simply copy the publisher's advertised five-times claim.
+
+## Extra Spin quotations and the shared cap
+
+The transparent **original** quotation formula is:
+
+```text
+S = sum(all retained position multipliers above 1)
+priceCents = ceil(lockedBetCents × max(1, S / 28))
+```
+
+An offer appears after a completed non-bonus, non-maximum base or Extra Spin when this price is no greater than that spin's settled award. It retains the base bet, all position multipliers, the original chain identifier and the amount already paid. Accepting debits precisely the shown quote once. Dismissing consumes neither money nor RNG. Changing bet or mode clears the offer. Extra Spins use the Normal symbol profile and contain no Bonus invitations. They can offer another continuation if eligible.
+
+The **30,000× locked base bet cap** applies to the original paid round and every accepted continuation together. If an original round paid 29,900×, its extra chain can pay at most another 100×. Extra receipts record their local payout and earlier chain offset; their sum is what determines maximum-win status. The publisher's exact pricing formula is unavailable, so this quote and its measured conditional return are not described as identical to Duck Hunters.
+
+## Durable accounting
+
+A pure transition produces a paid debit, complete spin/cascade award, RNG state and active feature together. The UI validates and saves the candidate session before replacing its live state or animating it. Failed persistence retains the earlier live and saved state. Presentation acknowledgments consume no money or randomness. Reload replays or skips an already settled presentation; it does not redraw or credit it again.
+
+Storage uses `studentski-grad-session-v2` with schema 2. The old v1 key is left untouched and is never replayed as v2. Saved data is validated against grids, sequential modifier causes, target multipliers, Wild substitution, win allocation, removals, surviving/refilled positions, bonus entitlements, extra-shot counts, chain offsets and receipts. Active rounds lock further paid actions. History retains the last 100 completed paid receipts, including individual continuation purchases.
+
+The injectable xorshift32 state is deterministic demo randomness, not a real-money random-number certification. Outcomes do not inspect balance or earlier wins/losses; balance only governs affordability. Original Web Audio synthesis has independent presentation randomness.
+
+## Measured validation
+
+The target for the five modes and three direct buys is approximately 96%. A tuning target is not a theoretical result or a guarantee of session profit. Lucky Draw’s expected return follows its weighted tier entitlements: its verified 235× charge equals the 235× weighted direct-buy cost. If all three direct-buy expectations were exactly 96%, Lucky would also return 96%, without modifying payouts.
+
+The final report in [simulation-results.json](simulation-results.json) records actual paid-round debits, full bonus payouts, cap settlement, independent seeds and exact engine/configuration/simulator SHA-256 provenance. It also records positive awards, profitable awards, medians, quantiles, modifier counts, physical matches, upgrade combinations, shot additions and accounting checks. Approximate 95% Monte Carlo intervals can be optimistic for very rare extreme awards; these are not certified theoretical RTPs. Different small stakes can differ slightly because cent rounding is part of the rules.
+
+A separate qualified Extra Spin experiment accepts one offered continuation after each source round and declines subsequent offers. It reports a ratio-of-means confidence interval because quotes vary. Its return describes that conditional cohort and acceptance policy, not the unconditional RTP of an ordinary paid mode or an arbitrary repeat-until-finished strategy.
+
+## Recorded ordinary-mode results
+
+The independent sample contains **5,000,000 paid rounds** at €0.20 base bet. Return uses each choice’s actual debit; all bonus spins remain in their originating round. The following are measured results for the original sampler, not the publisher’s advertised RTPs.
+
+| Choice | Paid rounds | Measured return | Approx. 95% interval | Any payout | Profit over debit | Median award |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standard | 500,000 | 97.16% | 90.96–103.37% | 22.34% | 0.2466% | 0 observed |
-| Hunt | 2,000,000 | 92.43% | 88.71–96.15% | 18.95% | 1.3188% | 0 observed |
-| All-frame booster | 500,000 | 96.74% | 93.09–100.39% | 21.13% | 0.2310% | 0 observed |
-| Wild booster | 500,000 | 95.81% | 95.04–96.58% | 66.02% | 0.1100% | 0 observed |
-| God | 500,000 | 95.49% | 94.31–96.67% | 4.77% | — | 4.7744% |
-| Buy Dorm | 500,000 | 96.12% | 95.00–97.24% | 93.58% | Direct purchase | 0.0060% |
-| Buy Friday | 500,000 | 95.43% | 94.00–96.86% | 88.25% | Direct purchase | 0.1590% |
-| Buy December | 500,000 | 96.07% | 95.47–96.67% | 99.05% | Direct purchase | 1.0372% |
+| Normal | 1,000,000 | 92.69% | 80.71–104.67% | 21.86% | 9.44% | €0.00 |
+| xBet | 500,000 | 93.85% | 79.41–108.29% | 14.00% | 2.14% | €0.00 |
+| Day 2 | 500,000 | 95.76% | 90.11–101.40% | 23.29% | 15.91% | €0.00 |
+| Day 64 | 500,000 | 95.79% | 94.35–97.23% | 24.96% | 17.96% | €0.00 |
+| Day 1024 | 500,000 | 95.36% | 94.78–95.94% | 38.60% | 24.04% | €0.00 |
+| Dorm buy | 500,000 | 95.66% | 93.10–98.22% | 80.97% | 7.08% | €0.52 |
+| Friday buy | 500,000 | 98.20% | 96.56–99.83% | 85.76% | 9.99% | €1.40 |
+| December buy | 500,000 | 96.86% | 95.86–97.87% | 91.86% | 14.72% | €6.24 |
+| Lucky Draw | 500,000 | 96.54% | 94.96–98.12% | 84.92% | 9.64% | €1.12 |
 
-Hit rate means a positive **total settled paid-round award**, even if it is below the actual debit. The JSON also reports the stricter profitable-round rate. Natural bonuses count their triggering paid round once; all their free spins remain in that round's return. God is standalone and has no free-spin bonus frequency.
+Normal’s measured return is 92.69% and xBet’s is 93.85%; neither is relabelled 96%. Their wide intervals reflect occasional large bonus awards. The sample observed two genuine 30,000× Normal rounds, generated by the ordinary cascade/bonus engine rather than a separate lottery. Natural bonus frequency is 0.5156% for Normal and 2.3308% for xBet: approximately 4.52 times as frequent in this implementation. The publisher’s advertised five-times multiplier is not substituted for that measured ratio.
 
-Hunt's observed return is 3.57 percentage points below the 96% target. It is reported as **92.43% measured**, not relabelled 96%; its approximate confidence interval includes 96%. Heavy-tailed bonus awards keep its interval wider despite the longer run. Standard's configured one-in-a-million VIP event happened zero times in its 500,000-round sample; its analytic probability remains nonzero, and a short run cannot measure that rare frequency reliably. These are Monte Carlo measurements, not certified theoretical RTP values for the non-God modes.
+All three physical count brackets, variable Wild counts, all upgrade combinations and continuing multiplier growth were observed. There were zero cent-accounting, cap, physical-grid, unfinished-round or safety-limit errors. The sampled board remains exactly 30 physical cells.
+
+The separate **1,000,000 source-round Extra Spin experiment** produced **65,693 eligible offers**. Accepting one offer per source round returned **93.35%** of quoted costs, with an approximate 95% interval of **89.26–97.45%**. Offers averaged €0.4448, with a €0.38 median; 22.85% paid anything and 16.55% paid more than their quote. The median Extra award was €0.00. Combining each source round with at most one accepted offer returned 93.94% (82.43–105.45%). The experiment recorded zero accounting, cap or unfinished-round errors. These conditional results use the disclosed denominator-28 quote and do not describe arbitrary repeated continuation purchases.
+
+To reproduce the ordinary paid choices and separate extra cohort in Bash:
+
+```bash
+SIM_ROUNDS=500000 SIM_STANDARD_ROUNDS=1000000 SIM_SEED=3751045193 SIM_EXTRA_ROUNDS=1000000 SIM_OUTPUT=docs/simulation-results.json npm run simulate
+```
+
+PowerShell users set the equivalent `$env:SIM_*` variables before `npm run simulate`. `SIM_MODE` accepts `standard`, `hunt`, `frames`, `wild`, `god`, `buy-dorm`, `buy-friday`, `buy-december`, `lucky` or `extra`. The identifiers `frames`, `wild` and `god` refer to Day 2, Day 64 and Day 1024, respectively. Each result stores its actual mode-offset seed. Merge requires identical configuration, engine algorithm and simulator hashes; stale v1 or earlier v2 diagnostics cannot be combined with this release.

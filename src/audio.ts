@@ -1,4 +1,4 @@
-/** Original, procedurally composed soundtrack. No samples, network assets or autoplay. */
+/** Original synth soundtrack and physical comic cues. No samples or downloaded soundtrack. */
 export type AudioTier = 'base' | 'dorm' | 'friday' | 'december' | 'vip';
 
 type AudioContextWindow = Window & { webkitAudioContext?: typeof AudioContext };
@@ -201,6 +201,29 @@ export class AudioDirector {
     } else if (cue === 'spin' || cue === 'reelstart') {
       this.hiss(t, 0.22, 0.13, 1100, 'bandpass');
       this.tone(140, t, 0.18, 0.10, 'sine', undefined, 330);
+    } else if (cue === 'xways') {
+      this.hiss(t, .04, .22, 3100, 'bandpass');
+      [220, 440, 660].forEach((f, i) => this.tone(f, t + i * .05, .11, .08, 'square'));
+    } else if (cue === 'infectious') {
+      [0, 1, 2, 3].forEach(i => {
+        this.hiss(t + i * .035, .035, .12, 1800 + i * 1000, 'bandpass');
+        this.tone(300 + i * 140, t + i * .035, .08, .035, 'triangle');
+      });
+    } else if (cue === 'bomb') {
+      this.tone(135, t, .34, .28, 'sine', undefined, 28);
+      this.hiss(t, .3, .30, 850, 'lowpass');
+      this.hiss(t + .015, .08, .18, 1900, 'bandpass');
+    } else if (cue === 'shot') {
+      this.hiss(t, .11, .32, 2700, 'bandpass');
+      this.tone(180, t, .11, .19, 'triangle', undefined, 45);
+      this.tone(850, t + .14, .06, .07, 'square');
+    } else if (cue === 'cascade') {
+      [0, 1, 2].forEach(i => {
+        this.hiss(t + i * .04, .026, .10, 1600 - i * 220, 'bandpass');
+        this.tone(125 - i * 15, t + i * .04, .06, .08, 'triangle');
+      });
+    } else if (cue === 'scatter') {
+      [0, 7, 12].forEach((n, i) => this.tone(220 * 2 ** (n / 12), t + i * .1, .23, .09, 'triangle'));
     } else if (cue === 'split' || cue === 'notes') {
       this.hiss(t, 0.07, 0.24, 2200, 'bandpass');
       this.hiss(t + 0.08, 0.09, 0.22, 4200, 'highpass');
@@ -211,7 +234,7 @@ export class AudioDirector {
       this.tone(pitch * 2, t + 0.15, 0.12, 0.06, 'sine');
       this.hiss(t + 0.08, 0.04, 0.10, 1400, 'bandpass');
     } else if (cue === 'win' || cue === 'chord') {
-      [261.626, 329.628, 391.995, 523.251].forEach((f, i) => this.tone(f, t + i * 0.04, 0.55, 0.075, 'sine'));
+      [261.626, 329.628, 391.995, 523.251].forEach((f, i) => this.tone(f, t + i * 0.035, 0.25, 0.055, 'triangle'));
     } else if (cue === 'bigwin' || cue === 'largewin') {
       [0, 4, 7, 12, 16, 19, 24].forEach((n, i) => this.tone(261.626 * Math.pow(2, n / 12), t + i * 0.11, 0.65, 0.075, 'triangle'));
       this.hiss(t, 0.9, 0.09, 4000, 'highpass');
