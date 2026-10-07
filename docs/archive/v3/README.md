@@ -2,10 +2,9 @@
 
 **„Утре съм на лекции.“** A rebuilt browser slot set in Sofia's student nightlife, with original ink illustrations, Bulgarian/English controls and virtual euro balances.
 
-Version 4 keeps the **6 × 5 scatter-pay board**, verified public awards and Studentski Grad setting, with integrated controls, original party illustrations and an upgrade wheel. Eight matching physical symbols anywhere win. Normal xWays boosts **its source position only**. Infectious xWays affects **all currently matching regular symbols**. All badges on the same drop reveal one common chosen symbol, resolving sequentially as in the verified Duck Hunters reference. Initial landings and refills use smooth top drops.
+Version 3 keeps the **6 × 5 scatter-pay board**, verified public awards and Studentski Grad setting, with a larger integrated game interface, organic ink illustrations, slower normal/turbo presentation and an upgrade wheel. Eight matching physical symbols anywhere win. The requested normal-badge behavior boosts its own position and **one other matching symbol**; the upgraded infection affects **all matching symbols**. That extra normal target is a deliberate variation from Duck Hunters’ verified source-only normal xWays.
 
-
-![Studentski Grad version 4, original Sofia party illustrations and the 6×5 board](docs/screenshots/studentski-grad-desktop.png)
+![Studentski Grad version 3, original Sofia party illustrations and the 6×5 board](docs/screenshots/studentski-grad-desktop.png)
 
 [Phone view](docs/screenshots/studentski-grad-mobile.png) · [8 December feature](docs/screenshots/studentski-grad-december.png) · [Party wheel](docs/screenshots/studentski-grad-wheel.png) · [Extra Spin decision](docs/screenshots/studentski-grad-extra.png)
 
@@ -34,13 +33,13 @@ For a production build, run `npm run build`, then `npm run preview` and open its
 - **8–9 / 10–11 / 12+** matching physical positions pay anywhere, without starting on reel one. A Wild substitutes; extra-shot tokens do not.
 - Winning symbols disappear, replacements drop, and the new board is evaluated again. Symbol counts change as the board cascades; there is no fictional ways counter or changing reel height.
 - Winning positions become ×2, then double on subsequent winning removals up to ×8192. Participating marked multipliers add; neutral positions do not inflate that sum. Progress belongs to a cell and stays behind when symbols fall.
-- All badges on one drop reveal the same chosen regular symbol and individually choose ×2/×4/×8. A normal badge boosts its source position only; upgraded infection boosts every already visible matching regular symbol. Badges resolve in sequence; future unrevealed badges stay untouched until their turn, and later infections can compound earlier revealed sources. In this sampler, badges are normal outside the infection perk; that perk guarantees every badge draw in the feature is upgraded. Bombs clear regular symbols, protect Wild/Bonus, double affected cells and resolve before replacements fall.
+- Normal badges reveal a common symbol and boost their own position plus one uniformly chosen already visible matching regular symbol by ×2/×4/×8. Upgraded infection boosts every already visible match. Badges resolve in sequence; future unrevealed badges stay untouched until their turn. Bombs clear regular symbols, protect Wild/Bonus, double affected cells and resolve before replacements fall.
 - Dorm, Friday and 8 December bonuses have **7/8/10 starting spins** and **1/2/3 distinct random upgrades**: Infectious xWays, 5×5 Bombs and +2 shots. Bought bonuses first show 3/4/5 invitations landing, then reveal the already committed upgrades on a party wheel. Dorm has one pointer, Friday two pointers to different upgrades, and December a stationary wheel with all three active. Wild arrivals vary; buys do not impose a fixed maximum number of Wilds.
 - Normal / xBet / Day 2 / Day 64 / Day 1024 cost **1× / 2× / 2.8× / 90× / 3000×** the base bet. Day modes initialize every cell at the advertised multiplier. Direct buys cost **70× / 200× / 600×**; Lucky Draw costs **235×** and selects tiers with **50% / 25% / 25%** probabilities.
 - Eligible Extra Spin offers open a **centered decision dialog over a blurred game**. Choose Buy or No thanks before continuing; autoplay stops when an offer appears. The dialog shows the exact euro price, retains the position grid and locked stake, and the purchased spin contains no Bonus symbols. The whole continuation chain shares the **30,000×** cap. The disclosed extra-spin quotation formula is an original implementation; the publisher's private formula is unavailable.
-- Integer-cent accounting and atomic saved outcomes prevent repeated charges or payouts on reload. Version 4 uses a new save key and leaves v1, v2 and v3 saves untouched; language and audio preferences are preserved. Invalid data has download, retry and explicit reset controls.
+- Integer-cent accounting and atomic saved outcomes prevent repeated charges or payouts on reload. Version 3 uses a new save key and leaves both v1 and v2 saves untouched; language and audio preferences are preserved. Invalid data has download, retry and explicit reset controls.
 
-Ordinary landings and refills drop the actual settled symbols smoothly from above, with staggered columns and no cycling reel strip. Block 59 / Блок 59 names the dorm in both interface languages. Space spins while idle and skips presentation while busy. Tapping the reels also skips. Neither action bypasses an Extra Spin decision. The upgrade wheel reveals persisted awards rather than rolling another result, and Continue starts the feature presentation. Normal/turbo, mute/volume, BG/EN, history, paytable and bounded autoplay are available. Refill adds €10,000 virtual euros.
+Space spins while idle and skips presentation while busy. Tapping the reels also skips. Neither action bypasses an Extra Spin decision. The upgrade wheel reveals persisted awards rather than rolling another result, and Continue starts the feature presentation. Normal/turbo, mute/volume, BG/EN, history, paytable and bounded autoplay are available. Refill adds €10,000 virtual euros.
 
 ## Research and mathematics
 
@@ -48,15 +47,13 @@ Ordinary landings and refills drop the actual settled symbols smoothly from abov
 
 [Mathematics](docs/MATHEMATICS.md) specifies the implemented payout formula, distributions, continuation pricing and accounting. [Simulation results](docs/simulation-results.json) must match the current engine/configuration hashes. The commercial game's private reel strips and theoretical mathematics are unavailable; this demo uses independent distributions and measured results. Do not treat a target or sample mean as a certified return, or as a guarantee that a playing session makes a profit.
 
-The nine-symbol numeric paytable and current feature prices are verified against the official public guest demo. The filtered public initialization data and symbol mapping are recorded in [paytable evidence](docs/duck-hunters-public-paytable.json). Sampler distributions and Extra Spin pricing are also original because the publisher does not disclose its complete random model or continuation quote.
+The nine-symbol numeric paytable and current feature prices are verified against the official public guest demo. The filtered public initialization data and symbol mapping are recorded in [paytable evidence](docs/duck-hunters-public-paytable.json). The normal-badge extra target is the requested original rule change. Sampler distributions and Extra Spin pricing are also original because the publisher does not disclose its complete random model or continuation quote.
 
 ## Validate
 
-Version 4 passed **61 engine tests and 35 browser checks** against the current source, with **45 browser source/artwork hashes** independently verified. Coverage includes source-only normal badges, common per-drop reveals, sequential infections, perk guarantees, forged-save rejection, preserved earlier-version saves, actual symbol identities during top drops, wheel grants, Extra Spin decisions and desktop/touch layouts. There were no runtime errors, broken artwork requests or external image fetches. Production play/reload checks also passed against pure-engine outcomes: awards, debits and saved feature state remained exact, with development hooks absent from the production bundle. The current [simulation report](docs/simulation-results.json) applies only when its engine/configuration/simulator hashes match the version 4 source.
+Version3 passed **58 engine tests** and **32 browser checks** against the current source/artwork hashes, across desktop and touch layouts. The production build was played and reloaded against pure-engine outcomes; reload preserved the award, debit and remaining feature state, and development hooks were absent. The current [simulation report](docs/simulation-results.json) records exact source/configuration hashes, actual debits, measured returns and uncertainty.
 
-Independent version 4 validation completed **9,000,000 paid rounds** at a €0.20 base bet, plus a separate **1,000,000-source-round Extra Spin experiment**. Normal returned **95.82%** over five million rounds, with an approximate 95% interval of **90.75–100.88%**. Other choices and the conditional Extra Spin cohort are reported in [the measured mathematics](docs/MATHEMATICS.md#measured-validation), including their uncertainty. Every cohort had zero accounting errors, cap violations or truncated rounds. The sampler targets approximately 96%; measured means vary by choice and are not certified theoretical returns.
-
-The version 3 report is retained in [its archive](docs/archive/v3/ARCHIVE.md). Its nine-million-round statistics used the additional normal target and do not describe version 4’s restored source-only rule.
+The independently verified version3 report covers **9,000,000 paid rounds** plus **1,000,000 source rounds for a conditional Extra Spin cohort**. Normal returned **97.04%** in 5,000,000 rounds, with an approximate 95% interval of **92.18–101.91%**; these are sample measurements, not an exact or certified 96% return. Earlier version2 results are archived and do not describe the changed normal-badge rule.
 
 Engine tests and the production build:
 
@@ -80,7 +77,7 @@ A reproducible simulation (PowerShell):
 $env:SIM_ROUNDS = '500000'
 $env:SIM_STANDARD_ROUNDS = '5000000'
 $env:SIM_EXTRA_ROUNDS = '1000000'
-$env:SIM_SEED = '2817946327'
+$env:SIM_SEED = '83918213'
 $env:SIM_OUTPUT = 'docs/simulation-results.json'
 npm run simulate
 ```
@@ -91,4 +88,4 @@ For Bash, prefix the same variables on the `npm run simulate` command. `SIM_MODE
 
 All 24 production illustrations are directly authored SVG path geometry in `public/art-v2`, using curved silhouettes, irregular ink contours, facial and hand details, local gradients, selective hatching and vector grain. [Asset provenance](public/art-v2/README.md) records their source and use. A paper/ochre/rust/mint party palette ties the scenes together. The larger board, visible multiplier numbers and surrounding controls share the same illustrated setting. No commercial game artwork, web photographs, reference-video frames or generated raster backgrounds are shipped. Four scenes depict a Sofia dorm street with food and club storefronts, a lived-in pre-party kitchen, a Friday nightclub and a winter 8 December student stage. The original synthesized audio uses no recorded commercial soundtrack. Oswald and Manrope include Cyrillic support and their font licenses.
 
-Earlier research, designs and simulations are preserved in `docs/archive/v1`, `docs/archive/v2` and `docs/archive/v3` for historical reference. Their measured returns do not describe version 4.
+Earlier research, designs and simulations are preserved in `docs/archive/v1` and `docs/archive/v2` for historical reference. Their measured returns do not describe version3.

@@ -5,8 +5,9 @@ import { createSession, quoteExtraSpinCostCents } from './engine';
 import type { CascadeStep, CellPosition, Grid, ModifierEvent, NumberGrid, RoundChoice, Session, SpinPresentation, StorageLike } from './types';
 
 /** Different mathematics gets a different key; old balances and pending rounds stay untouched. */
-export const STORAGE_KEY='studentski-grad-session-v3';
-export const PREVIOUS_STORAGE_KEY='studentski-grad-session-v2';
+export const STORAGE_KEY='studentski-grad-session-v4';
+export const PREVIOUS_STORAGE_KEY='studentski-grad-session-v3';
+export const PREVIOUS_V2_STORAGE_KEY='studentski-grad-session-v2';
 export const LEGACY_STORAGE_KEY='studentski-grad-session-v1';
 const browserStorage=():StorageLike=>globalThis.localStorage;
 const symbols=new Set<string>([...PAYING_SYMBOLS,'wild','scatter','xways','infectious','bomb','shot']);
@@ -61,15 +62,9 @@ function validateCascadeStep(step:CascadeStep,view:SpinPresentation,paidBefore:n
     grid[source.reel][source.row]=actual.symbol!;
     // Future badges remain unrevealed. A later reveal may compound an earlier source.
     const matches=grid.flatMap((column,reel)=>column.flatMap((symbol,row)=>symbol===revealedSymbol?[{reel,row}]:[]));
-    const others=matches.filter(position=>position.reel!==source.reel||position.row!==source.row);
     let targets:CellPosition[];
     if(kind==='infectious')targets=matches;
-    else{
-      const expectedLength=others.length?2:1;
-      if(actual.targets.length!==expectedLength||!same(actual.targets[0],source))fail();
-      if(others.length&&!others.some(position=>same(position,actual.targets[1])))fail();
-      targets=actual.targets.map(position=>({...position}));
-    }
+    else targets=[source];
     for(const target of targets)multipliers[target.reel][target.row]=boost(multipliers[target.reel][target.row],actual.factor);
     modifier(kind,source,targets,actual.factor,{symbol:actual.symbol});
   }

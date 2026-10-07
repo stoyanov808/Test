@@ -86,9 +86,7 @@ export function resolveCascades(initialGrid:Grid,initialMultipliers:NumberGrid,b
   for(let index=0;;index++){
     const step:CascadeStep={index,grid:copyGrid(grid),symbolSizes:positionGrid(),positionMultipliers:copyNumbers(multipliers),resolvedGrid:copyGrid(grid),resolvedSymbolSizes:positionGrid(),resolvedPositionMultipliers:copyNumbers(multipliers),modifiers:[],wins:[],removed:[],positionMultipliersAfter:copyNumbers(multipliers),symbolSizesAfter:positionGrid(),payoutCents:0,shotsAdded:0};
     const removed=new Set<string>();
-    // A landed badge reveals the common paying symbol before it emits its boost.
-    // Normal badges affect their own position and one visible matching regular;
-    // upgraded badges infect every current match. Future badges remain concealed.
+    // All xWays on a drop reveal the same randomly selected paying symbol.
     const ways:CellPosition[]=[];
     for(let reel=0;reel<CONFIG.reels;reel++)for(let row=0;row<CONFIG.rows;row++)if(grid[reel][row]==='xways'||grid[reel][row]==='infectious')ways.push({reel,row});
     if(ways.length){
@@ -96,9 +94,7 @@ export function resolveCascades(initialGrid:Grid,initialMultipliers:NumberGrid,b
       const infectious=ways.map(position=>grid[position.reel][position.row]==='infectious');
       for(let i=0;i<ways.length;i++){
         const source=ways[i];grid[source.reel][source.row]=symbol;const factor=[2,4,8][rng.integer(3)];
-        const matches=grid.flatMap((column,reel)=>column.flatMap((current,row)=>current===symbol?[{reel,row}]:[]));
-        const others=matches.filter(position=>position.reel!==source.reel||position.row!==source.row);
-        const targets=infectious[i]?matches:others.length?[source,others[rng.integer(others.length)]]:[source];
+        const targets=infectious[i]?grid.flatMap((column,reel)=>column.flatMap((current,row)=>current===symbol?[{reel,row}]:[])):[source];
         for(const target of targets)multipliers[target.reel][target.row]=boosted(multipliers[target.reel][target.row],factor);
         step.modifiers.push(modifierSnapshot(infectious[i]?'infectious':'xways',source,targets,factor,grid,multipliers,{symbol}));
       }

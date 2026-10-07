@@ -14,8 +14,9 @@ interface PartialBoardView {
   grid: Grid; positionMultipliers?: number[][]; finalGrid?: Grid; finalPositionMultipliers?: number[][];
   frames?: boolean[][]; wins?: Win[]; tier?: BonusTier | null;
 }
-interface SpinView { target: BoardView; elapsed: number; stops: number[]; stopped: Set<number> }
-interface TumbleView { from: Grid; to: Grid; removed: Set<string>; progress: number }
+interface SpinView { target: BoardView; previous: Grid; elapsed: number; stops: number[]; starts: number[]; flight: number; rowDelay: number; clearDuration: number; duration: number; stopped: Set<number> }
+interface TumbleView { from: Grid; to: Grid; removed: Set<string>; progress: number; duration: number; flight: number; columnDelay: number; rowDelay: number }
+interface MovingCell { reel: number; row: number; symbol: SymbolId; startY: number; y: number; targetY: number; progress: number; sourceRow: number }
 interface EffectView { event: ModifierEvent; progress: number; before: BoardView }
 interface Particle { x: number; y: number; vx: number; vy: number; spin: number; size: number; color: string; born: number; lifetime: number }
 
@@ -31,6 +32,9 @@ const SCENES: Record<string, { wood: string; shade: string; tint: string; accent
 const key = (cell: CellPosition) => `${cell.reel}:${cell.row}`;
 const clamp = (n: number, min = 0, max = 1) => Math.max(min, Math.min(max, n));
 const ease = (p: number) => 1 - (1 - clamp(p)) ** 3;
+// A single fall accelerates from rest and decelerates gently into the cell.
+// Its position is monotonic: no reel loop, rebound or invented intermediate symbol.
+const fallEase = (p: number) => { const t = clamp(p); return t * t * t * (10 + t * (-15 + t * 6)); };
 const seeded = (n: number) => { const value = Math.sin(n * 127.1 + 19.7) * 43758.5453123; return value - Math.floor(value); };
 const matrix = (value: number) => Array.from({ length: REELS }, () => Array(ROWS).fill(value) as number[]);
 const copyGrid = (grid: Grid): Grid => grid.map(column => [...column]);
@@ -64,7 +68,6 @@ export class SlotRenderer {
   private lockedBetCents = 0;
   private maxWin = false;
   private scatterPulse = 0;
-  private upgradedInfection = false;
   private stagedBonus: { tier: BonusTier; scatters: number } | null = null;
   private particles: Particle[] = [];
   private active = false;
@@ -103,7 +106,16 @@ export class SlotRenderer {
   }
   get busy() { return this.active; }
   /** Read-only view of the snapshots currently being painted, for UI diagnostics. */
-  snapshot() { return { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), cascade: this.cascadeIndex }; }
+  snapshot() {
+    const motion = this.spin ? {
+      kind: 'landing' as const, elapsedMs: this.spin.elapsed, durationMs: this.spin.duration,
+      previousAlpha: clamp(1 - this.spin.elapsed / this.spin.clearDuration), cells: this.landingCells(),
+    } : this.tumble ? {
+      kind: 'cascade' as const, elapsedMs: this.tumble.progress * this.tumble.duration,
+      durationMs: this.tumble.duration, cells: this.tumbleCells(),
+    } : null;
+    return { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), cascade: this.cascadeIndex, motion };
+  }
   private publishStep(payoutCents = 0) { this.options.onStep?.({ ...this.snapshot(), payoutCents }); }
   private label(symbol: SymbolId) { const name = `symbol.${symbol}`, value = this.options.translate?.(name); return value && value !== name ? value : SYMBOL_LABELS[symbol] ?? symbol; }
   private translate(name: string, fallback: string) { const value = this.options.translate?.(name); return value && value !== name ? value : fallback; }
@@ -126,6 +138,39 @@ export class SlotRenderer {
     this.cascadeIndex = 0; this.highlightProgress = 0; if (view.tier !== undefined) this.setScene(view.tier);
     this.canvas.dataset.animation = 'idle'; this.draw(performance.now());
   }
+  private createLanding(target: BoardView, turbo: boolean): SpinView {
+    const clearDuration = turbo ? 160 : 230, columnDelay = turbo ? 60 : 130;
+    const flight = turbo ? 480 : 780, rowDelay = turbo ? 20 : 28;
+    const starts = Array.from({ length: REELS }, (_, reel) => clearDuration + reel * columnDelay);
+    const stops = starts.map(start => start + (ROWS - 1) * rowDelay + flight);
+    return { target, previous: copyGrid(this.current.grid), elapsed: 0, starts, stops, flight, rowDelay, clearDuration, duration: stops[REELS - 1] + (turbo ? 90 : 140), stopped: new Set() };
+  }
+  /** These same coordinates drive both the painting and the read-only motion view. */
+  private landingCells(): MovingCell[] {
+    const spin = this.spin;
+    if (!spin) return [];
+    return spin.target.grid.flatMap((column, reel) => column.map((symbol, row) => {
+      const targetY = centre({ reel, row }).y, sourceRow = row - ROWS - .85;
+      const startY = AREA.y + (sourceRow + .5) * CELL_H;
+      const progress = clamp((spin.elapsed - spin.starts[reel] - (ROWS - 1 - row) * spin.rowDelay) / spin.flight);
+      return { reel, row, symbol, sourceRow, startY, targetY, progress, y: startY + (targetY - startY) * fallEase(progress) };
+    }));
+  }
+  private tumbleCells(): MovingCell[] {
+    const tumble = this.tumble;
+    if (!tumble) return [];
+    return tumble.to.flatMap((column, reel) => {
+      const survivors = Array.from({ length: ROWS }, (_, row) => row).filter(row => !tumble.removed.has(key({ reel, row })));
+      const added = ROWS - survivors.length;
+      return column.map((symbol, row) => {
+        const sourceRow = row < added ? row - added - .85 : survivors[row - added];
+        const startY = AREA.y + (sourceRow + .5) * CELL_H, targetY = centre({ reel, row }).y;
+        const delay = reel * tumble.columnDelay + (ROWS - 1 - row) * tumble.rowDelay;
+        const progress = sourceRow === row ? 1 : clamp((tumble.progress * tumble.duration - delay) / tumble.flight);
+        return { reel, row, symbol, sourceRow, startY, targetY, progress, y: startY + (targetY - startY) * fallEase(progress) };
+      });
+    });
+  }
   async play(presentation: SpinPresentation, turbo = false) { return this.animateSpin(presentation, turbo); }
   /** Bought invitations are a receipt animation, never another paid spin or RNG draw. */
   async playBonusTrigger(tier: BonusTier, turbo = false): Promise<void> {
@@ -135,11 +180,9 @@ export class SlotRenderer {
     for (const cell of invitationPositions) grid[cell.reel][cell.row] = 'scatter';
     const target = { grid, positionMultipliers: matrix(1), wins: [] };
     this.active = true; this.skipRequested = false; this.stagedBonus = { tier, scatters: scatterCount };
-    this.upgradedInfection = false;
     this.current.wins = []; this.effect = null; this.tumble = null; this.removal = null;
-    const stops = Array.from({ length: REELS }, (_, reel) => (turbo ? 460 : 780) + reel * (turbo ? 105 : 180));
-    const duration = stops[REELS - 1] + (turbo ? 100 : 200);
-    this.spin = { target, elapsed: 0, stops, stopped: new Set() };
+    this.spin = this.createLanding(target, turbo);
+    const { duration, stops } = this.spin;
     this.canvas.dataset.animation = 'bonus-trigger'; this.canvas.dataset.bonusTrigger = tier; this.canvas.dataset.triggerScatters = String(scatterCount); this.canvas.dataset.triggerPhase = 'landing';
     await this.animate(duration, p => {
       if (!this.spin) return; this.spin.elapsed = p * duration;
@@ -155,7 +198,6 @@ export class SlotRenderer {
     const view = presentation;
     delete this.canvas.dataset.bonusTrigger; delete this.canvas.dataset.triggerScatters; delete this.canvas.dataset.triggerPhase;
     this.lockedBetCents = view.lockedBetCents; this.maxWin = view.maxWin;
-    this.upgradedInfection = view.upgrades.includes('infectious');
     this.active = true; this.skipRequested = false; this.cascadeIndex = 0; this.highlightProgress = 0;
     this.effect = null; this.tumble = null; this.removal = null; this.celebration = null; this.current.wins = [];
     this.setScene(view.tier ?? null);
@@ -164,9 +206,9 @@ export class SlotRenderer {
       positionMultipliers: copyMatrix(view.initialPositionMultipliers ?? view.positionMultipliers ?? matrix(1)), wins: [],
     };
     this.current.positionMultipliers = copyMatrix(initial.positionMultipliers);
-    const stops = Array.from({ length: REELS }, (_, reel) => (turbo ? 520 : 1020) + reel * (turbo ? 70 : 145));
-    const duration = stops[REELS - 1] + (turbo ? 100 : 180);
-    this.spin = { target: initial, elapsed: 0, stops, stopped: new Set() }; this.canvas.dataset.animation = 'spin';
+    this.spin = this.createLanding(initial, turbo);
+    const { duration, stops } = this.spin;
+    this.canvas.dataset.animation = 'spin';
     await this.animate(duration, p => {
       if (!this.spin) return; this.spin.elapsed = p * duration;
       stops.forEach((stop, reel) => { if (this.spin!.elapsed >= stop && !this.spin!.stopped.has(reel)) { this.spin!.stopped.add(reel); this.options.onEvent?.('reel-stop'); } });
@@ -206,9 +248,11 @@ export class SlotRenderer {
         this.publishStep(step.payoutCents);
         await this.animate(turbo ? 100 : 180, () => {});
         if (step.refilledGrid) {
-          this.tumble = { from: copyGrid(step.resolvedGrid), to: copyGrid(step.refilledGrid), removed: new Set(step.removed.map(key)), progress: 0 };
+          const columnDelay = turbo ? 10 : 20, rowDelay = turbo ? 10 : 18, flight = turbo ? 450 : 800;
+          const duration = flight + (REELS - 1) * columnDelay + (ROWS - 1) * rowDelay + (turbo ? 60 : 100);
+          this.tumble = { from: copyGrid(step.resolvedGrid), to: copyGrid(step.refilledGrid), removed: new Set(step.removed.map(key)), progress: 0, duration, flight, columnDelay, rowDelay };
           this.removal = null; this.canvas.dataset.animation = 'cascade';
-          await this.animate(turbo ? 380 : 780, p => { if (this.tumble) this.tumble.progress = p; });
+          await this.animate(duration, p => { if (this.tumble) this.tumble.progress = p; });
           this.current.grid = copyGrid(step.refilledGrid); this.tumble = null; this.publishStep(step.payoutCents);
         }
         this.removal = null;
@@ -287,21 +331,31 @@ export class SlotRenderer {
     ctx.strokeStyle = '#b59668'; ctx.lineWidth = 3; ctx.strokeRect(AREA.x - 3, AREA.y - 3, AREA.w + 6, AREA.h + 6);
     ctx.strokeStyle = INK; ctx.lineWidth = 5; ctx.strokeRect(AREA.x - 9, AREA.y - 10, AREA.w + 18, AREA.h + 22);
     for (const x of [AREA.x - 5, AREA.x + AREA.w + 5]) for (const y of [AREA.y - 5, AREA.y + AREA.h + 8]) { ctx.fillStyle = '#d2b283'; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#292723'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x - 2, y + 2); ctx.lineTo(x + 2, y - 2); ctx.stroke(); }
-    ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.font = '800 17px "Grad Display", Arial, sans-serif'; ctx.fillStyle = '#e4d3ad'; ctx.fillText(this.translate('render.block', 'БЛОК 42 / СТУДЕНТСКИ'), AREA.x + 4, 21);
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.font = '800 17px "Grad Display", Arial, sans-serif'; ctx.fillStyle = '#e4d3ad'; ctx.fillText(this.translate('render.block', 'БЛОК 59 / СТУДЕНТСКИ'), AREA.x + 4, 21);
     ctx.textAlign = 'right'; ctx.fillStyle = this.stagedBonus ? '#f5a9cf' : scene.accent; ctx.fillText(this.stagedBonus ? `${this.stagedBonus.scatters} ${this.translate('render.invitations', 'ПОКАНИ ЗА КУПОН')}` : this.translate('render.scatterpay', '8+ ЕДНАКВИ НАВСЯКЪДЕ'), AREA.x + AREA.w - 4, 21);
   }
   private drawSymbols(time: number) {
     const ctx = this.ctx, winners = new Set(this.current.wins.flatMap(win => win.cells.map(key)));
+    const landing = this.spin ? this.landingCells() : [];
     for (let reel = 0; reel < REELS; reel++) {
-      const x = AREA.x + reel * CELL_W, spin = this.spin, stop = spin?.stops[reel] ?? 0;
+      const x = AREA.x + reel * CELL_W, spin = this.spin;
       ctx.save(); ctx.beginPath(); ctx.rect(x, AREA.y, CELL_W, AREA.h); ctx.clip();
-      if (spin && spin.elapsed < stop) {
-        const p = clamp((spin.elapsed - reel * 24) / Math.max(1, stop - reel * 24));
-        const remaining = (1 - ease(p)) * (ROWS * 3 + reel * 1.3), advance = Math.floor(remaining), offset = (remaining % 1) * CELL_H;
-        for (let row = -1; row <= ROWS; row++) { const target = ((row + advance) % ROWS + ROWS) % ROWS; this.drawSymbol(spin.target.grid[reel][target], x + CELL_W / 2, AREA.y + (row + .5) * CELL_H + offset, time, 1, .88, .03 * (reel % 2 ? 1 : -1)); }
+      if (spin) {
+        const previousAlpha = clamp(1 - spin.elapsed / spin.clearDuration);
+        for (let row = 0; row < ROWS; row++) {
+          const pos = centre({ reel, row });
+          if (previousAlpha > 0) this.drawSymbol(spin.previous[reel][row], pos.x, pos.y, time, 1, previousAlpha);
+          this.drawMultiplier(spin.target.positionMultipliers[reel]?.[row] ?? 1, pos.x, pos.y, true);
+        }
+        // Every committed symbol has one downward path and one final cell.
+        // Entire columns enter from above; the first artwork is never below the grid.
+        for (const cell of landing.filter(cell => cell.reel === reel)) {
+          const pos = centre(cell);
+          this.drawSymbol(cell.symbol, pos.x, cell.y, time);
+          if (cell.progress >= 1) this.drawMultiplier(spin.target.positionMultipliers[reel]?.[cell.row] ?? 1, pos.x, pos.y, false);
+        }
       } else {
-        const board = spin?.target ?? this.current, elapsed = spin ? spin.elapsed - stop : 200;
-        const bounce = elapsed < 115 ? Math.sin(clamp(elapsed / 115) * Math.PI) * 8 : 0;
+        const board = this.current;
         for (let row = 0; row < ROWS; row++) {
           const cell = { reel, row }, cellKey = key(cell), pos = centre(cell), symbol = board.grid[reel]?.[row]; if (!symbol) continue;
           const mult = board.positionMultipliers[reel]?.[row] ?? 1, winning = winners.has(cellKey);
@@ -319,12 +373,12 @@ export class SlotRenderer {
               // The badge opens before it sends a multiplier. A receiving cell
               // changes only when that visible transmission reaches it.
               if (source && p > .3 || !source && p > .74) {
-                this.drawSymbol(event!.gridAfter[reel][row], pos.x, pos.y + bounce, time, .97 + Math.sin(p * Math.PI) * .08, alpha, source ? .018 * Math.sin(p * 24) : 0);
+                this.drawSymbol(event!.gridAfter[reel][row], pos.x, pos.y, time, .97 + Math.sin(p * Math.PI) * .08, alpha, source ? .018 * Math.sin(p * 24) : 0);
                 this.drawMultiplier(event!.positionMultipliersAfter?.[reel]?.[row] ?? mult, pos.x, pos.y, false); continue;
               }
             }
           }
-          if (scale > .025) this.drawSymbol(symbol, pos.x, pos.y + bounce, time, scale, alpha, winning ? Math.sin(time * .009) * .015 : 0);
+          if (scale > .025) this.drawSymbol(symbol, pos.x, pos.y, time, scale, alpha, winning ? Math.sin(time * .009) * .015 : 0);
           this.drawMultiplier(mult, pos.x, pos.y, scale < .1);
           if (winning) this.drawCrosshair(pos.x, pos.y, CELL_H * .43, this.highlightProgress, '#eee5c8');
           if (symbol === 'scatter' && this.scatterPulse > 0) this.drawCrosshair(pos.x, pos.y, CELL_H * .43, this.scatterPulse, '#f1cd5f');
@@ -348,7 +402,7 @@ export class SlotRenderer {
       }
       ctx.shadowColor = color; ctx.shadowBlur = 8;
     }
-    const visualSymbol = symbol === 'infectious' || symbol === 'xways' && this.upgradedInfection ? 'infectious-upgraded' : symbol;
+    const visualSymbol = symbol === 'infectious' ? 'infectious-upgraded' : symbol;
     this.artwork.draw(ctx, visualSymbol, 0, 0, CELL_W * .86, CELL_H * .94, time); ctx.restore();
   }
   private drawMultiplier(value: number, x: number, y: number, empty: boolean) {
@@ -379,20 +433,17 @@ export class SlotRenderer {
     const subtitle = `${win.count} ${this.translate('render.matching', 'ЕДНАКВИ СИМВОЛА')}${capped ? ' · 30 000× MAX' : ''}`; ctx.strokeText(subtitle, 0, 48); ctx.fillText(subtitle, 0, 48); ctx.restore();
   }
   private drawTumble(time: number) {
-    const tumble = this.tumble!, p = ease(tumble.progress), ctx = this.ctx;
+    const cells = this.tumbleCells(), ctx = this.ctx;
     for (let reel = 0; reel < REELS; reel++) for (let row = 0; row < ROWS; row++) {
       const pos = centre({ reel, row });
       this.drawMultiplier(this.current.positionMultipliers[reel]?.[row] ?? 1, pos.x, pos.y, true);
     }
     for (let reel = 0; reel < REELS; reel++) {
       const x = AREA.x + (reel + .5) * CELL_W;
-      const survivors = Array.from({ length: ROWS }, (_, row) => row).filter(row => !tumble.removed.has(key({ reel, row }))), added = ROWS - survivors.length;
       ctx.save(); ctx.beginPath(); ctx.rect(AREA.x + reel * CELL_W, AREA.y, CELL_W, AREA.h); ctx.clip();
-      for (let targetRow = 0; targetRow < ROWS; targetRow++) {
-        const fromRow = targetRow < added ? targetRow - added - .75 : survivors[targetRow - added], row = fromRow + (targetRow - fromRow) * p;
-        const bounce = tumble.progress > .8 ? Math.sin((tumble.progress - .8) / .2 * Math.PI) * 5 : 0;
-        this.drawSymbol(tumble.to[reel][targetRow], x, AREA.y + (row + .5) * CELL_H + bounce, time);
-        if (p > .96) this.drawMultiplier(this.current.positionMultipliers[reel]?.[targetRow] ?? 1, x, AREA.y + (targetRow + .5) * CELL_H, false);
+      for (const cell of cells.filter(cell => cell.reel === reel)) {
+        this.drawSymbol(cell.symbol, x, cell.y, time);
+        if (cell.progress >= 1) this.drawMultiplier(this.current.positionMultipliers[reel]?.[cell.row] ?? 1, x, cell.targetY, false);
       }
       ctx.restore();
     }

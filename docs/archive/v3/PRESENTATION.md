@@ -1,6 +1,6 @@
-# Studentski Grad presentation, version 4
+# Studentski Grad presentation, version 3
 
-Version 4 keeps Sofia student nightlife and the 6×5 board, with organic ink illustrations, a larger integrated game stage and longer normal/turbo presentation. Official Duck Hunters footage supplies the cause-before-result sequence. The party-wheel layout and Studentski Grad illustrations belong to this adaptation. The badge replay follows verified Duck Hunters behavior: normal source-only growth, upgraded infection to all current matches, and one common revealed type for badges on a drop. Initial landings and refills now use smooth one-way top drops, with no spinning or cycling strip.
+Version 3 keeps Sofia student nightlife and the 6×5 board, with organic ink illustrations, a larger integrated game stage and longer normal/turbo presentation. Official Duck Hunters footage supplies the cause-before-result sequence. The party-wheel layout, illustrations and requested normal-badge extra target belong to this adaptation.
 
 ## Reference and original visual direction
 
@@ -12,34 +12,32 @@ The 24 illustrations are directly authored SVG geometry in `public/art-v2`, with
 
 ## Recorded settlement replay
 
-1. Fade the previous symbols, then drop each actual recorded 6×5 symbol once from above. Stagger columns and rows, and ease smoothly into the destination cell. Symbols never wrap through the board, repeat on a cycling strip or change identity during flight. Position multiplier panels remain behind them.
-2. Reveal the common selected symbol on each badge in recorded sequence. A normal badge multiplies its source position only and sends no factor to a second cell. An upgraded badge sends its factor to every already visible matching regular symbol. The infection perk makes all arriving badges upgraded; this sampler otherwise draws normal badges. Unresolved future badges remain badges; a later infection can compound an earlier revealed source.
+1. Land the actual recorded 6×5 board with staggered column stops.
+2. Reveal each normal badge and send its factor from the source to one already visible matching regular symbol, when one exists. An upgraded infection sends its factor to every already visible match. Unresolved future badges remain badges; later causes can compound earlier revealed sources.
 3. Show each extra-shot award independently of Wild substitution.
 4. Mark participating physical scatter-win cells, display the base-stake award and sum of marked multipliers, then clear the paid cells and double their position values.
 5. Detonate recorded Bombs, protect Wild/Bonus symbols and show affected cell growth, including the Bomb source.
-6. Move surviving symbols down to their recorded destinations and drop each new symbol once from above, with the same smooth settling direction as the initial landing. No cycling strip is used. Replay the next recorded cascade; position progress stays at its coordinates.
+6. Drop replacements into vacancies and replay the next recorded cascade. Position progress stays at its coordinates.
 7. Finish the round or continue its bonus with retained multipliers and awarded upgrades visible.
 
-The current rule matches verified Duck Hunters normal source-only and common-reveal behavior. Version 3’s additional normal target is preserved only in its historical archive. Neither implementation counts multiplier values as additional physical symbols.
+The normal source-plus-one rule is the user's requested variation. Verified Duck Hunters normal xWays boosts only its own source; the research document keeps that distinction explicit. Neither implementation counts multiplier values as additional physical symbols.
 
 These are presentation timings chosen for this game, not claimed publisher millisecond specifications:
 
 | Stage | Normal | Turbo |
 | --- | ---: | ---: |
-| Ordinary staggered top drop | 1,912 ms | 1,110 ms |
+| Ordinary staggered landing | 1,925 ms | 970 ms |
 | Normal badge reveal and transfer | 1,300 ms | 715 ms |
 | Upgraded infection | 1,550 ms | 853 ms |
 | Winning-award hold | 950 ms | 330 ms |
 | Winning removal | 380 ms | 170 ms |
 | Additional clear / pause | 420 / 180 ms | 200 / 100 ms |
-| Replacement drop | 1,072 ms | 600 ms |
-| Bought-bonus invitation top drop | 1,912 ms | 1,110 ms |
+| Replacement drop | 780 ms | 380 ms |
+| Bought-bonus invitation landing | 1,880 ms | 1,085 ms |
 | Bonus-invitation emphasis | 1,250 ms | 750 ms |
 | Dorm/Friday wheel rotation | 4,100 ms | 2,900 ms |
 
-The old board fades for 230/160 ms, then columns start 130/60 ms apart. Within a column, bottom-first row starts are 28/20 ms apart, with 780/480 ms flights and a 140/90 ms settled hold (normal/turbo). Flights use the monotonic quintic easing `p³ × (10 − 15p + 6p²)`, reaching the cell smoothly without an overshoot or bounce. One column landing cue fires after all its rows settle. Initial paid spins, free spins, Extra Spins and purchased-invitation staging share this motion. Cascade survivors retain their actual source identity; new symbols enter from above.
-
-Turbo remains readable. Skip shortens only the replay; all grids, targets, multipliers and awards were settled by the engine before animation. Each normal badge reveals the common symbol and grows its source; the upgraded badge uses a distinct appearance and links to all recorded targets. There are no decorative extra targets that disagree with the actual award.
+Turbo remains readable. Skip shortens only the replay; all grids, targets, multipliers and awards were settled by the engine before animation. The normal badge reveals its symbol first, then sends the factor to its recorded target; the upgraded badge uses a distinct appearance and links to all recorded targets. There are no decorative extra targets that disagree with the actual award.
 
 ## Bonus entry and the party wheel
 
@@ -65,6 +63,4 @@ Autoplay stops as soon as an offer appears. It neither buys a continuation nor s
 
 The decoded Duck Hunters promotional clips carry digital silence despite AAC tracks, so no heard commercial soundtrack is claimed. Original Web Audio cues mark landings, reveals, factor transfers, Bombs, shots, refills and awards. Scene layers change with the bonus setting. Audio starts after interaction and provides mute and volume controls.
 
-BG/EN covers controls, rules, wheel labels, confirmations, modal decisions and euro amounts, including Block 59 / Блок 59. All **35 browser checks passed**, with **45 current source/artwork hashes** independently verified and zero runtime errors, broken artwork requests or external image fetches. Checks cover desktop and touch layouts, source-only normal growth, sequential upgraded infection, common per-drop reveal replay, actual drawn symbol identities and one-way motion, normal/turbo timing, wheel grants, bought trigger counts, reload/skip equivalence, modal decisions and autoplay suspension.
-
-Observed unskipped initial drops took **2,016 ms normal / 1,172 ms turbo** on the loaded test machine. Cascade drops took **1,113–1,185 ms normal / 631–637 ms turbo**. Normal wheel readiness took **4,361 ms**; turbo took **3,341–3,382 ms desktop / 3,202 ms mobile**. December rotation stayed at zero. These include frame scheduling and test-machine overhead; the nominal configured timings above remain 1,912/1,110 ms for initial drops and 1,072/600 ms for refills. Archived earlier-version measurements do not validate changed presentation.
+BG/EN covers controls, rules, wheel labels, confirmations, modal decisions and euro amounts. All **32 browser checks passed** against 45 current source/artwork hashes. They cover desktop and touch layouts, actual target replay, slower normal/turbo timing, wheel grants, bought trigger counts, reload/skip equivalence, modal decisions, autoplay suspension and artwork loading, with zero runtime errors or broken artwork requests. Recorded unskipped ordinary landings took approximately 1.94 seconds in normal speed and 0.99 seconds in turbo; Dorm/Friday wheel readiness took approximately 4.20/3.00 seconds, while December remained stationary. Version2 design descriptions and statistics remain in its archive.

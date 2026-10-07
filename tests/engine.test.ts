@@ -4,7 +4,7 @@ import {
   CONFIG, PAYING_SYMBOLS, roundPriceCents, countScatters, evaluateScatterPays,
   formatMoney, roundHalfUp, settledPayout, SeededRandom, resolveCascades,
   advanceRound, createSession, dismissPresentation, refillDemo, selectBet, setMode, startRound, quoteExtraSpinCostCents,
-  commitSession, loadSession, saveSession, STORAGE_KEY, LEGACY_STORAGE_KEY, PREVIOUS_STORAGE_KEY,
+  commitSession, loadSession, saveSession, STORAGE_KEY, LEGACY_STORAGE_KEY, PREVIOUS_STORAGE_KEY, PREVIOUS_V2_STORAGE_KEY,
 } from '../src/engine/index';
 import type {
   BonusTier, BonusUpgrade, CellPosition, Grid, Mode, NumberGrid, RoundChoice, Session,
@@ -251,7 +251,7 @@ test('Wild is one physical substitute and never awards an extra shot', () => {
   assert.ok(!first.modifiers.some(modifier => modifier.kind === 'shot'));
 });
 
-test('normal xWays reveal a common symbol and boost their own position plus one visible matching regular', () => {
+test('normal xWays share one revealed type on a landing and boost only their source positions', () => {
   const grid = board(); grid[0][0] = 'xways'; grid[5][4] = 'xways';
   const result = resolveCascades(grid, numbers(), 100, new SeededRandom(917));
   const first = result.steps[0], events = first.modifiers.filter(event => event.kind === 'xways');
@@ -261,15 +261,47 @@ test('normal xWays reveal a common symbol and boost their own position plus one 
     assert.ok([2, 4, 8].includes(event.factor));
     assert.equal(first.resolvedGrid[event.source.reel][event.source.row], event.symbol);
     assert.ok(event.positionMultipliersAfter![event.source.reel][event.source.row] >= event.factor);
-    assert.ok(event.targets.length >= 1 && event.targets.length <= 2);
-    assert.deepEqual(event.targets[0], event.source);
+    assert.deepEqual(event.targets, [event.source]);
     for (const target of event.targets) assert.equal(event.gridAfter![target.reel][target.row], event.symbol);
     assert.equal(first.resolvedSymbolSizes[event.source.reel][event.source.row], 1, 'the payable unit remains one physical position');
   }
   assert.equal(first.wins.length, 0, 'two large xWays icons do not turn two physical positions into an eight-cell win');
 });
 
-test('a normal badge emits to exactly one other matching symbol, protecting nonmatches, Wild and future badges', () => {
+test('the shared xWays reveal belongs to one drop and may change on the next cascade', () => {
+  class DropRandom extends SeededRandom {
+    draws=[0,0,0,...Array.from({length:8},(_value,index)=>index<2
+      ? [CONFIG.modes.standard.wildProbability+CONFIG.modes.standard.xwaysProbability/2]
+      : [.999,.5]).flat(),.5,0,0];
+    override next():number {const normal=super.next();return this.draws.shift()??normal;}
+  }
+  const grid=place(board(),'book',CELLS.slice(2,8));grid[0][0]=grid[0][1]='xways';
+  const result=resolveCascades(grid,numbers(),100,new DropRandom(53482),{noBonus:true});
+  assert.deepEqual(result.steps[0].modifiers.map(event=>event.symbol),['book','book']);
+  assert.deepEqual(result.steps[1].modifiers.map(event=>event.symbol),['beer','beer']);
+  assert.equal(result.steps[0].wins[0].count,8);assert.equal(result.steps[1].wins[0].count,8);
+});
+
+test('badge arrivals stay normal outside the Infectious perk and upgraded-only inside it, including refills and Extras', () => {
+  const observed=new Set<string>();
+  function inspect(view:SpinPresentation):void {
+    const perk=!!view.tier&&view.upgrades.includes('infectious');
+    const context=view.choice.kind==='extra'?'extra':view.tier?(perk?'perk-bonus':'nonperk-bonus'):'base';
+    for(const step of view.cascadeSteps){
+      const badges=step.grid.flat().filter(symbol=>symbol==='xways'||symbol==='infectious');
+      assert.ok(badges.every(symbol=>symbol===(perk?'infectious':'xways')));
+      if(badges.length)observed.add(`${context}:${step.index?'refill':'initial'}`);
+    }
+  }
+  for(let index=1;index<=100;index++)for(const choice of [{kind:'mode',mode:'standard'},{kind:'buy',bonus:'dorm'},{kind:'buy',bonus:'december'}] as RoundChoice[])
+    finishRound(startRound(createSession(Math.imul(index,0x9e3779b9)>>>0),choice),inspect);
+  const source=extraFixture();
+  for(let index=1;index<=60;index++)finishRound(startRound({...source,rngState:Math.imul(index,0x9e3779b9)>>>0},{kind:'extra'}),inspect);
+  for(const context of ['base','extra','perk-bonus','nonperk-bonus'])for(const phase of ['initial','refill'])
+    assert.ok(observed.has(`${context}:${phase}`),`the deterministic corpus must exercise ${context} ${phase} badges`);
+});
+
+test('a normal badge leaves matching regulars, nonmatches, Wild and future badges unboosted', () => {
   class FirstRandom extends SeededRandom {
     override next(): number { super.next(); return 0; }
     override integer(_max: number): number { this.next(); return 0; }
@@ -278,13 +310,12 @@ test('a normal badge emits to exactly one other matching symbol, protecting nonm
   grid[3][0] = 'beer'; grid[4][0] = 'wild'; grid[5][0] = 'xways';
   const original = structuredClone(grid), first = resolveCascades(grid, numbers(), 100, new FirstRandom(949)).steps[0];
   const firstBadge = first.modifiers[0];
-  assert.deepEqual(firstBadge.targets, [{ reel: 0, row: 0 }, { reel: 1, row: 0 }]);
+  assert.deepEqual(firstBadge.targets, [{ reel: 0, row: 0 }]);
   assert.equal(firstBadge.gridAfter![0][0], 'book');
   assert.equal(firstBadge.gridAfter![5][0], 'xways', 'a future source remains an explicit concealed badge');
   assert.equal(firstBadge.positionMultipliersAfter![0][0], 2);
-  assert.equal(firstBadge.positionMultipliersAfter![1][0], 2);
-  for (const reel of [2, 3, 4, 5]) assert.equal(firstBadge.positionMultipliersAfter![reel][0], 1);
-  assert.equal(first.modifiers[1].positionMultipliersAfter![0][0], 4, 'a later badge can emit to the earlier revealed source');
+  for (const reel of [1, 2, 3, 4, 5]) assert.equal(firstBadge.positionMultipliersAfter![reel][0], 1);
+  assert.equal(first.modifiers[1].positionMultipliersAfter![0][0], 2, 'a later normal badge boosts only its own source');
   assert.equal(firstBadge.positionMultipliersAfter![0][0], 2, 'later emissions do not mutate an earlier event snapshot');
   assert.deepEqual(grid, original, 'resolving does not mutate the caller’s grid');
 });
@@ -344,7 +375,7 @@ test('sequential Infectious ×2 sources boost prior revealed sources and regular
   assert.equal(first.wins.length, 0, 'three physical symbols never become twelve payable symbols');
 });
 
-test('a later normal badge remains concealed during infection, then emits to one already revealed match', () => {
+test('a later normal badge remains concealed during infection, then boosts its own source only', () => {
   class TwoRandom extends SeededRandom {
     override next(): number { super.next(); return 0; }
     override integer(_max: number): number { this.next(); return 0; }
@@ -353,9 +384,9 @@ test('a later normal badge remains concealed during infection, then emits to one
   const first = resolveCascades(grid, numbers(), 100, new TwoRandom(939)).steps[0];
   assert.deepEqual(first.modifiers.map(event => event.kind), ['infectious', 'xways']);
   assert.deepEqual(first.modifiers[0].targets, [{ reel: 0, row: 0 }, { reel: 5, row: 4 }]);
-  assert.deepEqual(first.modifiers[1].targets, [{ reel: 1, row: 0 }, { reel: 0, row: 0 }]);
+  assert.deepEqual(first.modifiers[1].targets, [{ reel: 1, row: 0 }]);
   assert.equal(first.resolvedGrid[0][0], first.resolvedGrid[1][0]);
-  assert.equal(first.resolvedPositionMultipliers[0][0], 4);
+  assert.equal(first.resolvedPositionMultipliers[0][0], 2);
   assert.equal(first.resolvedPositionMultipliers[1][0], 2);
   assert.equal(first.resolvedPositionMultipliers[5][4], 2);
 });
@@ -489,13 +520,13 @@ test('Lucky Draw uses exact 50/25/25 tier boundaries, one 235× debit and distin
 
 test('an Extra Spin offer quotes the disclosed original formula and never costs more than the previous win', () => {
   assert.equal(quoteExtraSpinCostCents(20, numbers()), 20);
-  assert.equal(quoteExtraSpinCostCents(20, numbers(2)), 37);
+  assert.equal(quoteExtraSpinCostCents(20, numbers(2)), 43);
   const boosted = numbers(); boosted[0][0] = 64; boosted[5][4] = 2;
-  assert.equal(quoteExtraSpinCostCents(20, boosted), 40);
+  assert.equal(quoteExtraSpinCostCents(20, boosted), 48);
   // The 30 marked ×2 positions total 60; neutral positions never enter the sum.
   // Every offered stake must quote a whole-cent debit, rounded upward, with a
   // one-base-bet floor. These amounts also exercise the non-integral quotes.
-  const expectedQuotedCents = [19, 37, 73, 110, 182, 364, 910, 1819, 3637];
+  const expectedQuotedCents = [22, 43, 86, 129, 215, 429, 1072, 2143, 4286];
   for (const [index, bet] of CONFIG.betsCents.entries()) {
     assert.equal(quoteExtraSpinCostCents(bet, numbers()), bet);
     assert.equal(quoteExtraSpinCostCents(bet, numbers(2)), expectedQuotedCents[index]);
@@ -871,28 +902,62 @@ test('saved modifier causes, snapshots, removed cells and collapse survivors mus
   }
 });
 
-test('a saved normal emission cannot omit its eligible target, redirect to a nonmatch or become an upgraded infection', () => {
+test('a saved normal badge cannot omit its source, redirect to another position or become an infection', () => {
   const storage = new MemoryStorage();
   let valid: Session | undefined, stepIndex = -1, eventIndex = -1;
   for (let seed = 1; seed <= 2_000 && !valid; seed++) {
     const candidate = startRound(createSession(seed));
     candidate.presentation!.cascadeSteps.forEach((step, si) => step.modifiers.forEach((event, ei) => {
-      if (!valid && event.kind === 'xways' && event.targets.length === 2) { valid = candidate; stepIndex = si; eventIndex = ei; }
+      if (!valid && event.kind === 'xways' && event.targets.length === 1 && CELLS.some(cell=>
+        (cell.reel!==event.source.reel||cell.row!==event.source.row)&&event.gridAfter![cell.reel][cell.row]===event.symbol)) { valid = candidate; stepIndex = si; eventIndex = ei; }
     }));
   }
-  assert.ok(valid, 'the deterministic corpus must contain a normal badge with an eligible matching target');
+  assert.ok(valid, 'the deterministic corpus must contain a normal badge');
   saveSession(valid, storage); assert.deepEqual(loadSession(storage), valid);
-  for (const corruption of ['omit', 'redirect', 'upgrade']) {
+  for (const corruption of ['omit', 'redirect', 'extra-target', 'upgrade']) {
     const candidate = structuredClone(valid);
     const event = candidate.presentation!.cascadeSteps[stepIndex].modifiers[eventIndex];
     if (corruption === 'omit') event.targets.pop();
     if (corruption === 'redirect') {
       const unrelated = CELLS.find(cell => event.gridAfter![cell.reel][cell.row] !== event.symbol)!;
-      assert.ok(unrelated); event.targets[1] = { ...unrelated };
+      assert.ok(unrelated); event.targets[0] = { ...unrelated };
     }
     if (corruption === 'upgrade') event.kind = 'infectious';
+    if (corruption === 'extra-target') event.targets.push({...CELLS.find(cell=>
+      (cell.reel!==event.source.reel||cell.row!==event.source.row)&&event.gridAfter![cell.reel][cell.row]===event.symbol)!});
     storage.setItem(STORAGE_KEY, JSON.stringify(candidate));
     assert.throws(() => loadSession(storage));
+  }
+});
+
+test('coherent saved badge payloads cannot break the shared reveal or introduce an unentitled infection', () => {
+  class TwoBadgeRandom extends SeededRandom {
+    draws=[...CELLS.flatMap((_cell,index)=>index<2
+      ? [CONFIG.modes.standard.wildProbability+CONFIG.modes.standard.xwaysProbability/2]
+      : [.999,(index%PAYING_SYMBOLS.length+.5)/PAYING_SYMBOLS.length]),
+      ...Array(CONFIG.reels).fill(.999),0,0,0];
+    override next():number {const normal=super.next();return this.draws.shift()??normal;}
+  }
+  const valid=startRound(createSession(71932),{kind:'mode',mode:'standard'},seed=>new TwoBadgeRandom(seed));
+  assert.equal(valid.presentation!.payoutCents,0);
+  assert.deepEqual(valid.presentation!.cascadeSteps[0].modifiers.map(event=>event.symbol),['book','book']);
+  const storage=new MemoryStorage();saveSession(valid,storage);assert.deepEqual(loadSession(storage),valid);
+  for(const corruption of ['different-reveal','unentitled-infection']) {
+    const candidate=structuredClone(valid),view=candidate.presentation!,step=view.cascadeSteps[0];
+    if(corruption==='different-reveal') {
+      step.modifiers[1].symbol='beer';step.modifiers[1].gridAfter![0][1]='beer';
+      step.resolvedGrid[0][1]=view.finalGrid[0][1]='beer';
+    } else {
+      view.initialGrid[0][0]=view.grid[0][0]=step.grid[0][0]='infectious';
+      const event=step.modifiers[0];event.kind='infectious';
+      event.targets=CELLS.filter(cell=>event.gridAfter![cell.reel][cell.row]==='book');
+      for(const cell of event.targets)for(const matrix of [event.positionMultipliersAfter!,
+        step.modifiers[1].positionMultipliersAfter!,step.resolvedPositionMultipliers,
+        step.positionMultipliersAfter,view.finalPositionMultipliers])matrix[cell.reel][cell.row]=2;
+    }
+    assert.equal(evaluateScatterPays(step.resolvedGrid,step.resolvedPositionMultipliers,view.lockedBetCents).payoutCents,0,'the forgery keeps money and counts coherent');
+    storage.setItem(STORAGE_KEY,JSON.stringify(candidate));
+    assert.throws(()=>loadSession(storage),`the saved ${corruption} must still fail its badge contract`);
   }
 });
 
@@ -968,22 +1033,26 @@ test('saved Extra Shot events cannot change their upgrade-dependent award or rem
   }
 });
 
-test('previous mathematical models stay untouched and never replay or charge old outcomes in v3', () => {
+test('previous mathematical models stay untouched and never replay or charge old outcomes in v4', () => {
   const storage = new MemoryStorage();
   const oldPayload = JSON.stringify({ version: 1, balanceCents: 71923, activeRound: { configVersion: 'studentski-1', payoutCents: 321 }, presentation: { payoutCents: 321 } });
   storage.setItem(LEGACY_STORAGE_KEY, oldPayload);
-  const previousPayload = JSON.stringify({ version: 2, balanceCents: 54124, activeRound: { configVersion: 'studentski-duck-2', payoutCents: 321 } });
+  const v2Payload = JSON.stringify({ version: 2, balanceCents: 54124, activeRound: { configVersion: 'studentski-duck-2', payoutCents: 321 } });
+  storage.setItem(PREVIOUS_V2_STORAGE_KEY,v2Payload);
+  const previousPayload = JSON.stringify({ version: 3, balanceCents: 51432, activeRound: { configVersion: 'studentski-duck-3', payoutCents: 321 } });
   storage.setItem(PREVIOUS_STORAGE_KEY, previousPayload);
   const current = loadSession(storage, 731);
-  assert.equal(current.version, 3);
+  assert.equal(current.version, 4);
   assert.equal(current.balanceCents, CONFIG.initialBalanceCents);
   assert.equal(current.activeRound, null);
   assert.equal(current.presentation, null);
   assert.equal(storage.getItem(LEGACY_STORAGE_KEY), oldPayload);
   assert.equal(storage.getItem(PREVIOUS_STORAGE_KEY), previousPayload);
+  assert.equal(storage.getItem(PREVIOUS_V2_STORAGE_KEY),v2Payload);
   saveSession(current, storage);
   assert.equal(storage.getItem(LEGACY_STORAGE_KEY), oldPayload);
   assert.equal(storage.getItem(PREVIOUS_STORAGE_KEY), previousPayload);
+  assert.equal(storage.getItem(PREVIOUS_V2_STORAGE_KEY),v2Payload);
   assert.deepEqual(loadSession(storage), current);
 });
 

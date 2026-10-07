@@ -53,11 +53,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <aside class='story-rail'>
           <div class='game-logo'><span class='logo-tag' data-i18n='location'>СОФИЯ · СЛЕД ПОЛУНОЩ</span><h1><span id="title-top">СТУДЕНТСКИ</span><strong id="title-bottom">ГРАД</strong></h1><p data-i18n='subtitle'>„Утре съм на лекции.“</p><i aria-hidden='true'>★</i></div>
           <div class='street-sign'><b id='scene-label'></b><span data-i18n='scatterThreshold'>8+ НАВСЯКЪДЕ</span></div>
-          <div class='notice-poster'><small>БЛОК 42 / СОФИЯ</small><b id='poster-headline'></b><p id='poster-body'></p><span>08:00 → ∞</span></div>
+          <div class='notice-poster'><small>БЛОК 59 / СОФИЯ</small><b id='poster-headline'></b><p id='poster-body'></p><span>08:00 → ∞</span></div>
           <div class='mode-note'><small data-i18n='selectedMode'></small><strong id='mode-label'></strong><p id='mode-description'></p><button class='text-link' id='mode-open' data-i18n='exploreFeatures'></button></div>
         </aside>
         <section class='reel-section'>
-          <div class='reel-heading'><span class='edition'>VOL. 03 / <b>6 × 5</b></span><span class='ways-badge' id='board-counter'><strong id='ways'>8+</strong> <span data-i18n='scatterThreshold'></span></span></div>
+          <div class='reel-heading'><span class='edition'>VOL. 04 / <b>6 × 5</b></span><span class='ways-badge' id='board-counter'><strong id='ways'>8+</strong> <span data-i18n='scatterThreshold'></span></span></div>
           <div class='reel-bezel'><canvas id='reels' role='img' aria-label='Six reels, five rows. Eight matching symbols anywhere.'></canvas></div>
           <div class='event-strip' aria-live='polite'><span class='event-star'>✦</span><span id='event-message'></span><span id='cascade-counter'></span></div>
         </section>

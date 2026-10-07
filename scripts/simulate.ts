@@ -22,6 +22,8 @@ export interface SimulationResult {
   payCountDistribution: Record<string, number>; countBracketDistribution: Record<string, number>; payBracketDistribution: Record<string, number>;
   symbolSizeDistribution: Record<string, number>; upgradeDistribution: Record<string, number>;
   physicalWildCountDistribution: Record<string, number>;
+  badgeVariantDistribution: Record<string,{normal:number;upgraded:number}>;
+  multiBadgeRevealDistribution: {multipleTypes:number;singleType:number};
   truncatedRounds: number; safetyEvents: Record<string, number>; accountingErrors: number;
   capAccountingErrors: number; physicalCountErrors: number;
 }
@@ -57,10 +59,11 @@ function quantile(sorted: Float64Array, p: number): number {
   return sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * p))];
 }
 
-function complete(session: Session): Session {
+function complete(session: Session, inspect?: (view:SpinPresentation)=>void): Session {
   let current = session, steps = 0;
   while (current.presentation || current.activeRound) {
     if (++steps > 10_000) throw new Error('UNFINISHED_EXTRA_EXPERIMENT_ROUND');
+    if(current.presentation)inspect?.(current.presentation);
     current = dismissPresentation(current);
     if (current.activeRound) current = advanceRound(current);
   }
@@ -88,6 +91,7 @@ export function simulateExtraOffers(sourceRounds: number, seed: number, sourceMo
   const quotes: number[] = [], returns: number[] = [], quoteDistribution: Record<string, number> = {};
   const extra: RatioMoments = { n: 0, cost: 0, payout: 0, costSquared: 0, payoutSquared: 0, product: 0 };
   const pairs: RatioMoments = { ...extra };
+  const badgeVariants={normal:0,upgraded:0},multiBadgeReveals={multipleTypes:0,singleType:0};
   for (let index = 0; index < sourceRounds; index++) {
     const beforeSource = session.balanceCents;
     session = complete(startRound(session, { kind: 'mode', mode: sourceMode }));
@@ -99,7 +103,13 @@ export function simulateExtraOffers(sourceRounds: number, seed: number, sourceMo
       const offer = session.extraSpinOffer;
       if (offer.costCents > source.payoutCents) throw new Error('INELIGIBLE_EXTRA_OFFER');
       const beforeExtra = session.balanceCents;
-      session = complete(startRound(session, { kind: 'extra' }));
+      session = complete(startRound(session, { kind: 'extra' }),view=>{
+        for(const step of view.cascadeSteps){
+          const badges=step.modifiers.filter(modifier=>modifier.kind==='xways'||modifier.kind==='infectious');
+          for(const badge of badges)badgeVariants[badge.kind==='infectious'?'upgraded':'normal']++;
+          if(badges.length>1)multiBadgeReveals[new Set(badges.map(badge=>badge.symbol)).size>1?'multipleTypes':'singleType']++;
+        }
+      });
       const round = session.history[0];
       if (round.costCents !== offer.costCents || session.balanceCents !== beforeExtra - offer.costCents + round.payoutCents) accountingErrors++;
       if (round.sourceRoundId !== offer.sourceRoundId || round.capOffsetCents !== offer.alreadyPaidCents || round.payoutCents + (round.capOffsetCents ?? 0) > round.betCents * CONFIG.capMultiplier) capAccountingErrors++;
@@ -128,7 +138,8 @@ export function simulateExtraOffers(sourceRounds: number, seed: number, sourceMo
     meanPayoutCents: offered ? extra.payout / offered : null,
     medianPayoutCents: offered ? quantile(sortedReturns, .5) : null,
     payoutQuantilesCents: offered ? Object.fromEntries([.5, .75, .9, .95, .99, .999].map(p => [String(p), quantile(sortedReturns, p)])) : null,
-    quoteDistribution, accountingErrors, capAccountingErrors, truncatedRounds: 0,
+    quoteDistribution, badgeVariantDistribution:badgeVariants, multiBadgeRevealDistribution:multiBadgeReveals,
+    accountingErrors, capAccountingErrors, truncatedRounds: 0,
     sourceAndOneExtraPolicy: { costCents: pairs.cost, payoutCents: pairs.payout, ...ratioSummary(pairs) },
   };
 }
@@ -152,6 +163,8 @@ export function simulate(choice: RoundChoice, rounds: number, seed: number): Sim
   const upgrades: Record<string, number> = {}, wildCounts: Record<string, number> = {};
   const tiers: Record<string, number> = {}, purchasedTiers: Record<string, number> = {}, safetyEvents: Record<string, number> = {};
   const multipliers: Record<string, number> = {};
+  const badgeVariants: Record<string,{normal:number;upgraded:number}> = {};
+  const multiBadgeReveals = {multipleTypes:0,singleType:0};
 
   function inspect(view: SpinPresentation): void {
     steps += view.cascadeSteps.length;
@@ -191,6 +204,11 @@ export function simulate(choice: RoundChoice, rounds: number, seed: number): Sim
         }
       }
       increment(wildCounts, wildCount);
+      const badges=step.modifiers.filter(modifier=>modifier.kind==='xways'||modifier.kind==='infectious');
+      if(badges.length>1)multiBadgeReveals[new Set(badges.map(badge=>badge.symbol)).size>1?'multipleTypes':'singleType']++;
+      const badgeContext=view.tier?(view.upgrades.includes('infectious')?'bonus-with-perk':'bonus-without-perk'):'base';
+      const badgeCounts=badgeVariants[badgeContext]??={normal:0,upgraded:0};
+      for(const badge of badges)badgeCounts[badge.kind==='infectious'?'upgraded':'normal']++;
       for (const modifier of step.modifiers) {
         increment(modifierCounts, modifier.kind);
         if (modifier.kind === 'shot') shotSymbols++;
@@ -263,7 +281,7 @@ export function simulate(choice: RoundChoice, rounds: number, seed: number): Sim
     maxSymbolSize: maxSize, meanEffectiveSymbols: effectiveSymbols / spins,
     expandingSpinRate: expandedSpins / spins, multiplierGrowthSpinRate: growingSpins / spins,
     meanBoostedPositions: boostedPositions / steps, positionMultiplierDistribution: multipliers,
-    shotsAdded, shotSymbols, modifierCounts,
+    shotsAdded, shotSymbols, modifierCounts, badgeVariantDistribution:badgeVariants, multiBadgeRevealDistribution:multiBadgeReveals,
     payCountDistribution: payCounts, countBracketDistribution: countBrackets, payBracketDistribution: payBrackets,
     symbolSizeDistribution: sizes, upgradeDistribution: upgrades, physicalWildCountDistribution: wildCounts,
     truncatedRounds: truncated, safetyEvents, accountingErrors, capAccountingErrors, physicalCountErrors,
@@ -296,8 +314,8 @@ function main(): void {
       publicParameterEvidenceSha256: provenance.publicParameterEvidenceHash,
       verifiedPublicParameters: 'Nine symbol pays at 8/10/12 physical matches and public mode/buy prices, including current 235× Lucky Draw, from the official public guest demo INIT.',
       originalParameters: ['Symbol weights', 'Modifier and Bonus occurrence probabilities', 'Extra Spin quote formula'],
-      requestedRuleVariation: 'Normal xWays boosts its revealed source and one other currently visible matching regular symbol, when eligible. Official normal xWays boosts its own position only; the source-plus-one behavior is the requested Studentski Grad variation. Upgraded Infectious xWays boosts every currently visible matching regular symbol, including its source.',
-      commercialMatch: 'These measured outcomes belong to this Studentski Grad implementation, including the requested normal xWays variation. Nolimit City private reel/RNG parameters were unavailable; matching the public numerical paytable and prices does not establish identical commercial outcomes or RTP.',
+      badgeRuleContract: 'Normal xWays boosts only its revealed source position. All xWays and Infectious badges on one landing share a common randomly drawn regular symbol. Upgraded Infectious xWays boosts every currently visible matching regular symbol, including its source. Following the requested rollback and the public perk definition, upgraded badge arrivals replace all normal badges in features with the Infectious perk; no added natural-upgrade lottery is used. Publisher private occurrence rates are unavailable.',
+      commercialMatch: 'These measured outcomes belong to this Studentski Grad implementation, using the verified public xWays behavior. Nolimit City private reel/RNG parameters were unavailable; matching the public numerical paytable and prices does not establish identical commercial outcomes or RTP.',
     },
     confidenceIntervalMethod: 'Approximate 95% normal interval of independent paid-round return ratios; very rare jackpots can make this interval optimistic. No commercial RTP claim is inferred from public rules.',
     definitions: {
@@ -312,6 +330,8 @@ function main(): void {
       payBracketDistribution: 'Symbol and unboosted paytable multiplier at each awarded win.',
       symbolSizeDistribution: 'Every physical cell after modifiers, over all recorded cascade steps.',
       physicalWildCountDistribution: 'Number of Wild cells after modifiers, over recorded cascade steps.',
+      badgeVariantDistribution: 'Resolved badge counts by base, bonus without the Infectious perk, and bonus with the perk. Per the restored perk-only model, base and non-perk contexts must show zero upgraded badges; perk contexts must show zero normal badges.',
+      multiBadgeRevealDistribution: 'Cascade drops resolving two or more badges, grouped by one shared regular type versus multiple types. Restored public xWays rules require multipleTypes to remain zero.',
       meanEffectiveSymbols: 'Physical reel positions per spin, always 30 for this 6×5 board; position multipliers change without inventing extra payable cells.',
       multiplierGrowthSpinRate: 'Fraction of spins that increase at least one position multiplier beyond its value at the start of that spin.',
       meanBoostedPositions: 'Mean number of physical cells with a multiplier above 1, over recorded cascade steps.',

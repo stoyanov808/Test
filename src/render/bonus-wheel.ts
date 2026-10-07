@@ -66,9 +66,13 @@ export function showBonusWheel(options: BonusWheelOptions): Promise<void> {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const land = () => {
       if (finished || landed && options.tier !== 'december') return;
+      // Commit the exact stopping angle before enabling the player's next action.
+      // The timer is a fallback; a delayed animation frame must not leave the
+      // wheel visually in motion while its awards are already marked ready.
+      dial.style.transition = 'none';
+      dial.style.transform = `rotate(${finalAngle}deg)`;
       landed = true; overlay.dataset.spinning = 'false'; overlay.dataset.phase = 'ready'; overlay.classList.add('sg-wheel-landed');
       overlay.querySelector('.sg-wheel-awards')!.setAttribute('aria-hidden', 'false');
-      dial.style.transform = `rotate(${finalAngle}deg)`;
       dial.querySelectorAll<SVGGElement>('.sg-wheel-sector-content').forEach(group => { group.style.transform = `rotate(${-finalAngle}deg)`; });
       button.disabled = false; button.focus(); options.onTick?.();
     };
@@ -89,8 +93,11 @@ export function showBonusWheel(options: BonusWheelOptions): Promise<void> {
     else {
       const duration = options.turbo ? 2900 : 4100;
       dial.style.transition = `transform ${duration}ms cubic-bezier(.12,.68,.12,1)`;
-      requestAnimationFrame(() => requestAnimationFrame(() => { if (!finished) dial.style.transform = `rotate(${finalAngle}deg)`; }));
-      timer = setTimeout(land, duration + 100);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (finished) return;
+        dial.style.transform = `rotate(${finalAngle}deg)`;
+        timer = setTimeout(land, duration + 100);
+      }));
     }
   });
 }

@@ -1,0 +1,15 @@
+{
+  "version": "studentski-duck-3",
+  "purpose": "Historical version3 before restoration of source-only normal xWays and smooth top-drop presentation. Its badges already share a common reveal per drop and upgrade only with the infection perk. Archived metrics do not describe version4.",
+  "commit": "7662295e0541856b04bcb8dd28967e92d8b08101",
+  "archivedAt": "2026-10-07T16:52:00.533998+00:00",
+  "sourceSha256": {
+    "README.md": "a508651fa515902e6655b06a6027490d92f8236ab74f47244c1d76b33f784d19",
+    "docs/RESEARCH.md": "88f6e64eb0ccee9859ba98528f8eacbc3504bc171ba34e22988abdfc821e13ee",
+    "docs/DUCK-HUNTERS-REDESIGN.md": "42dd0bd08c005f41e9b956068ea06dda3982cf7871c7aee0263fdd9c7a22e1a2",
+    "docs/PRESENTATION.md": "99636c9240a11798fb9320f70320638b69ab9e7c96f55942b0cd8fd6ed300d5d",
+    "docs/MATHEMATICS.md": "17d39f6bd3a5d22b67beb96e44b1b049f01472d4004f921d11611a52f3939376",
+    "docs/simulation-results.json": "34dc1b2de347a4b93bb25d019f287e81b0f1ddf455a219be154765dd7ff0a43a",
+    "docs/duck-hunters-public-paytable.json": "dce79d12d59a279142aec6305383f30872a807bc9a21167ce43934063dfafe41"
+  }
+}

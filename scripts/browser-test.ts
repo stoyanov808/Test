@@ -6,8 +6,12 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
-import { CONFIG, PAYING_SYMBOLS, STORAGE_KEY, createSession, startRound, playCompleteRound, selectBet, setMode, type BonusTier, type BonusUpgrade, type Grid, type Mode, type RoundChoice, type Session, type SpinPresentation } from '../src/engine';
+import { CONFIG, PAYING_SYMBOLS, STORAGE_KEY, createSession, startRound, playCompleteRound, advanceRound, dismissPresentation, selectBet, setMode, type BonusTier, type BonusUpgrade, type Grid, type Mode, type RoundChoice, type Session, type SpinPresentation } from '../src/engine';
 import { t } from '../src/i18n';
+
+interface MotionCell { reel: number; row: number; symbol: string; startY: number; y: number; targetY: number; progress: number; sourceRow?: number }
+interface MotionView { kind: 'landing' | 'cascade'; elapsedMs: number; durationMs: number; previousAlpha?: number; cells: MotionCell[] }
+interface MotionFrame extends MotionView { cascade: number; paints: {symbol: string; x: number; y: number}[] }
 
 declare global {
   interface Window {
@@ -18,7 +22,7 @@ declare global {
       skip(): void;
       setTurbo(turbo: boolean): void;
       presentation(): SpinPresentation | null;
-      board(): {grid: Grid; positionMultipliers: number[][]; cascade: number};
+      board(): {grid: Grid; positionMultipliers: number[][]; cascade: number; motion?: MotionView | null};
       bonusPresentation(): {phase: string; tier: BonusTier; triggerScatters: number; awardedUpgrades: BonusUpgrade[]; startedAt: number; wheelStartedAt?: number; finishedAt?: number} | null;
     };
     __animationPhases?: string[];
@@ -29,6 +33,9 @@ declare global {
     __stopPhaseObserver?: () => void;
     __bonusTrace?: {kind: 'trigger' | 'wheel'; phase: string; tier: string; time: number; spinning?: string}[];
     __stopBonusObserver?: () => void;
+    __motionTrace?: MotionFrame[];
+    __paintedArt?: string[];
+    __restoreImageSpy?: () => void;
   }
 }
 
@@ -199,6 +206,72 @@ async function observeVisualPhases(page: Page) {
 async function phaseDurations(page: Page) {
   const trace = await page.evaluate(() => window.__phaseTimings ?? []);
   return trace.slice(0, -1).map((event, index) => ({phase: event.phase, duration: trace[index + 1].time - event.time}));
+}
+async function observeArtworkAndDrops(page: Page) {
+  await page.evaluate(() => {
+    window.__restoreImageSpy?.(); window.__motionTrace = []; window.__paintedArt = [];
+    const original = CanvasRenderingContext2D.prototype.drawImage;
+    window.__restoreImageSpy = () => { CanvasRenderingContext2D.prototype.drawImage = original; delete window.__restoreImageSpy; };
+    CanvasRenderingContext2D.prototype.drawImage = function(image: CanvasImageSource, ...args: number[]) {
+      if (this.canvas.id === 'reels' && image instanceof HTMLImageElement && /\/art-v2\//.test(image.src)) {
+        const symbol = new URL(image.src).pathname.split('/').at(-1)!.replace(/\.svg$/, '');
+        const matrix = this.getTransform();
+        const paintedX = matrix.e / (this.canvas.width / 1040), paintedY = matrix.f / (this.canvas.height / 730);
+        if (paintedX >= 34 && paintedX <= 1006 && paintedY >= 48 && paintedY <= 698 && !window.__paintedArt!.includes(symbol)) window.__paintedArt!.push(symbol);
+        const board = window.__slot.board(), motion = board.motion;
+        if (motion) {
+          let frame = window.__motionTrace!.at(-1);
+          if (!frame || frame.kind !== motion.kind || frame.elapsedMs !== motion.elapsedMs || frame.cascade !== board.cascade) {
+            frame = {...motion, cells: motion.cells.map(cell => ({...cell})), cascade: board.cascade, paints: []};
+            window.__motionTrace!.push(frame);
+          }
+          // Every symbol SVG is centered at the renderer's translated origin.
+          // Read the actual canvas transform to independently verify the motion diagnostics.
+          frame.paints.push({symbol, x: paintedX, y: paintedY});
+        }
+      }
+      (original as (...parameters: unknown[]) => void).apply(this, [image, ...args]);
+    };
+  });
+}
+async function assertDrops(page: Page, view: SpinPresentation, label: string) {
+  const trace = await page.evaluate(() => window.__motionTrace ?? []);
+  const landing = trace.filter(frame => frame.kind === 'landing');
+  assert.ok(landing.length >= 15, `real ${label} landing frames are observed`);
+  const boardTop = 48, cellWidth = 162;
+  const visual = (symbol: string) => symbol === 'infectious' ? 'infectious-upgraded' : symbol;
+  for (const frame of trace) {
+    assert.equal(frame.cells.length, 30, 'each committed destination has exactly one moving symbol');
+    for (const cell of frame.cells) {
+      assert.ok(Number.isFinite(cell.y) && cell.progress >= 0 && cell.progress <= 1);
+      assert.ok(cell.startY <= cell.y + .001 && cell.y <= cell.targetY + .001, `the symbol only falls toward its destination: ${JSON.stringify(cell)}`);
+      const expected = frame.kind === 'landing' ? view.initialGrid : view.cascadeSteps[frame.cascade].refilledGrid;
+      assert.equal(cell.symbol, expected?.[cell.reel]?.[cell.row], 'the painted identity is the committed destination symbol throughout its fall');
+      assert.ok(frame.paints.some(paint => paint.symbol === visual(cell.symbol) && Math.abs(paint.x - (34 + (cell.reel + .5) * cellWidth)) < .01 && Math.abs(paint.y - cell.y) < .01), `the actual canvas paints this cell at the diagnosed position: ${JSON.stringify(cell)}`);
+      if (frame.kind === 'landing' || (cell.sourceRow ?? -1) < 0) assert.ok(cell.startY < boardTop, 'new symbols enter from above the board');
+      else {
+        const step = view.cascadeSteps[frame.cascade];
+        assert.ok(!step.removed.some(removed => removed.reel === cell.reel && removed.row === cell.sourceRow));
+        assert.equal(cell.symbol, step.resolvedGrid[cell.reel][cell.sourceRow!], 'a surviving symbol keeps its real pre-collapse identity');
+        assert.ok(cell.sourceRow! <= cell.row, 'surviving symbols only move downward');
+      }
+    }
+  }
+  const groups = new Map<string, MotionFrame[]>();
+  for (const frame of trace) {
+    const key = `${frame.kind}:${frame.cascade}`;
+    const frames = groups.get(key) ?? []; frames.push(frame); groups.set(key, frames);
+  }
+  for (const frames of groups.values()) for (let index = 1; index < frames.length; index++) {
+    for (let cell = 0; cell < 30; cell++) {
+      assert.equal(frames[index].cells[cell].symbol, frames[index - 1].cells[cell].symbol, 'no reel strip or symbol cycle appears during a drop');
+      assert.ok(frames[index].cells[cell].y + .001 >= frames[index - 1].cells[cell].y, 'motion never wraps, teleports or falls from below');
+    }
+  }
+  const cascading = trace.filter(frame => frame.kind === 'cascade');
+  assert.ok(cascading.length >= 8, 'the same top-down motion is observed during a real refill');
+  timingEvidence[`${label}-top-down-drops`] = {frames: trace.length, landingFrames: landing.length, cascadeFrames: cascading.length, durationMs: landing[0].durationMs, samples: [landing[0], landing[Math.floor(landing.length / 2)], landing.at(-1), cascading[0], cascading.at(-1)]};
+  await page.evaluate(() => window.__restoreImageSpy?.());
 }
 async function observeBonusPresentation(page: Page) {
   await page.evaluate(() => {
@@ -373,6 +446,7 @@ try {
   });
 
   await check('English/Bulgarian settings and euro formatting persist through a reload', desktop, async () => {
+    assert.match(await desktop.locator('.notice-poster small').textContent() ?? '', /59/);
     await desktop.locator('#settings').click();
     await desktop.locator('[data-action="language-en"]').click();
     assert.equal(await desktop.locator('html').getAttribute('lang'), 'en');
@@ -395,6 +469,8 @@ try {
       assert.notEqual(translated, key, `${key} has an English translation`);
       assert.ok(painted.includes(translated), `the canvas actually paints ${translated}`);
     }
+    assert.ok(painted.some(text => /BLOCK 59/.test(text)), 'the English canvas uses Block 59');
+    assert.ok(painted.every(text => !/(?:BLOCK|БЛОК)\s*42/.test(text)), 'no old Block 42 canvas label remains');
     assert.ok(painted.every(text => !/[А-Яа-я]/.test(text)), `English board labels: ${JSON.stringify(painted)}`);
     await euro(desktop, '#balance', CONFIG.initialBalanceCents);
     await euro(desktop, '#spin-cost', CONFIG.defaultBetCents);
@@ -462,6 +538,10 @@ try {
       assert.equal(p.kind, 'spin', 'all five modes use scatter/cascade mathematics');
       assert.equal(p.roundCostCents, Math.round(20 * price));
       assert.ok(p.initialPositionMultipliers.every(column => column.every(value => value === multiplier)));
+      for (const step of p.cascadeSteps) {
+        for (const grid of [step.grid, step.refilledGrid].filter(Boolean) as Grid[]) assert.equal(grid.flat().includes('infectious'), false, 'every base mode reserves upgraded badges for the bonus perk');
+        assert.equal(step.modifiers.some(event => event.kind === 'infectious'), false);
+      }
       if (mode === 'hunt') assert.ok(p.initialGrid[1].includes('scatter'), 'xBet guarantees an invitation on reel two');
       await finish(desktop);
       const settled = await snapshot(desktop); paidRound(settled, Math.round(20 * price));
@@ -479,6 +559,9 @@ try {
       const first = await snapshot(desktop), p = first.presentation!;
       assert.equal(p.tier, tier); assert.equal(p.intro, true);
       assert.equal(p.upgrades.length, upgrades); assert.equal(new Set(p.upgrades).size, upgrades);
+      for (const step of p.cascadeSteps) for (const grid of [step.grid, step.refilledGrid].filter(Boolean) as Grid[]) {
+        assert.equal(grid.flat().includes(p.upgrades.includes('infectious') ? 'xways' : 'infectious'), false, 'the infection perk chooses which badge variant is eligible in the bonus');
+      }
       assert.equal(p.roundCostCents, 20 * price);
       assert.equal(first.activeRound?.spinsRemaining, spins - 1 + p.shotsAdded);
       assert.ok(p.initialPositionMultipliers.every(column => column.every(value => value === 1)));
@@ -527,6 +610,89 @@ try {
     assert.deepEqual(intro?.awardedUpgrades, first.activeRound!.upgrades);
     await finish(desktop); const settled = await snapshot(desktop); paidRound(settled, 20);
     assert.deepEqual(settled, playCompleteRound(createSession(scatterSeed), {kind: 'mode', mode: 'standard'}));
+  });
+
+  const sourceOnlySeed = naturalSeed('normal-source-only-emitter-with-visible-matches', {kind:'mode', mode:'standard'}, p => !p.bonusAwarded && p.initialGrid.flat().includes('xways') && p.payoutCents < 400 && p.cascadeSteps.length <= 3 && p.cascadeSteps[0].modifiers.some(event => event.kind === 'xways' && event.gridAfter!.flat().filter(symbol => symbol === event.symbol).length > 2));
+  await check('A normal badge reveals its symbol and multiplies only its own position despite other visible matches', desktop, async () => {
+    await reset(desktop, sourceOnlySeed); await desktop.evaluate(() => window.__slot.setTurbo(false));
+    await observeArtworkAndDrops(desktop); await desktop.locator('#spin').click();
+    const before = await snapshot(desktop), view = before.presentation!;
+    assert.equal(view.tier, null); assert.equal(view.upgrades.includes('infectious'), false);
+    const event = view.cascadeSteps[0].modifiers.find(event => event.kind === 'xways')!;
+    assert.equal(view.initialGrid[event.source.reel][event.source.row], 'xways');
+    assert.deepEqual(event.targets, [event.source], 'a normal badge boosts only its own position');
+    assert.ok(event.gridAfter!.flat().filter(symbol => symbol === event.symbol).length > 2, 'the source-only rule is exercised with several eligible-looking regular symbols present');
+    for (let reel = 0; reel < CONFIG.reels; reel++) for (let row = 0; row < CONFIG.rows; row++) {
+      const previous = view.cascadeSteps[0].positionMultipliers[reel][row];
+      assert.equal(event.positionMultipliersAfter![reel][row], reel === event.source.reel && row === event.source.row ? Math.min(CONFIG.positionMultiplierLimit, previous * event.factor) : previous);
+    }
+    for (const step of view.cascadeSteps) {
+      for (const grid of [step.grid, step.refilledGrid].filter(Boolean) as Grid[]) assert.equal(grid.flat().includes('infectious'), false, 'the base game has no perk-only upgraded badges');
+      assert.equal(step.modifiers.some(modifier => modifier.kind === 'infectious'), false);
+    }
+    await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.animation === 'xways');
+    assert.ok(await desktop.evaluate(() => window.__paintedArt?.includes('xways')), 'the actual board paints the normal speaker asset on its own destination');
+    assert.equal(await desktop.evaluate(() => window.__paintedArt?.includes('infectious-upgraded')), false);
+    await shot(desktop, 'desktop-source-only-emitter');
+    await desktop.waitForFunction(expected => {
+      const board = window.__slot.board();
+      return JSON.stringify(board.grid) === JSON.stringify(expected.gridAfter) && JSON.stringify(board.positionMultipliers) === JSON.stringify(expected.positionMultipliersAfter);
+    }, event, {timeout: 15_000});
+    assert.deepEqual(await snapshot(desktop), before, 'opening the normal badge does not change committed RNG or awards');
+    await finish(desktop); await desktop.evaluate(() => window.__restoreImageSpy?.());
+    assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(sourceOnlySeed), {kind:'mode',mode:'standard'}));
+  });
+
+  const sharedSeed = naturalSeed('shared-badge-reveal-on-one-drop', {kind:'mode',mode:'standard'}, p => !p.bonusAwarded && p.cascadeSteps.length <= 3 && p.payoutCents < 400 && p.cascadeSteps[0].modifiers.filter(event => event.kind === 'xways').length >= 2 && new Set(p.cascadeSteps[0].modifiers.filter(event => event.kind === 'xways').map(event => event.factor)).size >= 2);
+  await check('Multiple normal badges on one drop share one revealed symbol and visibly boost their own exact sources', desktop, async () => {
+    await reset(desktop, sharedSeed); await desktop.locator('#spin').click();
+    const before = await snapshot(desktop), view = before.presentation!;
+    const events = view.cascadeSteps[0].modifiers.filter(event => event.kind === 'xways' || event.kind === 'infectious');
+    assert.ok(events.length >= 2); assert.equal(new Set(events.map(event => event.symbol)).size, 1, 'the drop chooses one common revealed paying symbol');
+    assert.ok(new Set(events.map(event => event.factor)).size >= 2, 'badge multiplier factors can differ even when their revealed symbol is shared');
+    let revealed = view.initialGrid.map(column => [...column]);
+    for (const event of events) {
+      assert.equal(revealed[event.source.reel][event.source.row], event.kind === 'infectious' ? 'infectious' : 'xways', 'later badges remain concealed until their own reveal');
+      revealed[event.source.reel][event.source.row] = event.symbol!;
+      assert.deepEqual(event.gridAfter, revealed, 'each event reveals only its own badge using the shared symbol');
+      assert.ok(event.targets.every(target => revealed[target.reel][target.row] === event.symbol), 'a badge never multiplies a different revealed symbol');
+      if (event.kind === 'xways') assert.deepEqual(event.targets, [event.source], 'normal badges boost only their source');
+      await desktop.waitForFunction(expected => {
+        const board = window.__slot.board();
+        return JSON.stringify(board.grid) === JSON.stringify(expected.gridAfter) && JSON.stringify(board.positionMultipliers) === JSON.stringify(expected.positionMultipliersAfter);
+      }, event, {timeout: 15_000});
+      assert.deepEqual(await snapshot(desktop), before, 'visual badge resolution leaves the full committed receipt and RNG unchanged');
+    }
+    await finish(desktop);
+    assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(sharedSeed), {kind:'mode',mode:'standard'}));
+  });
+
+  const perkSeed = naturalSeed('bonus-perk-upgrades-every-badge', {kind:'buy',bonus:'dorm'}, p => p.upgrades.includes('infectious') && p.cascadeSteps.some(step => step.modifiers.some(event => event.kind === 'infectious')));
+  await check('The infection wheel perk guarantees upgraded badges on initial bonus grids and every refill', desktop, async () => {
+    await reset(desktop, perkSeed); await observeBonusPresentation(desktop); await observeArtworkAndDrops(desktop); await buy(desktop, 'dorm');
+    const begun = await snapshot(desktop), view = begun.presentation!;
+    assert.deepEqual(view.upgrades, ['infectious']);
+    await assertReadyWheel(desktop, 'dorm', view.upgrades, true);
+    await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.animation === 'infectious', undefined, {timeout: 20_000});
+    assert.ok(await desktop.evaluate(() => window.__paintedArt?.includes('infectious-upgraded')), 'the bonus board really paints the perk-selected upgraded speaker');
+    await shot(desktop, 'desktop-perk-upgraded-emitter');
+    let pure = startRound(createSession(perkSeed), {kind:'buy',bonus:'dorm'});
+    for (;;) {
+      const spin = pure.presentation!;
+      assert.ok(spin.upgrades.includes('infectious'));
+      for (const step of spin.cascadeSteps) {
+        for (const grid of [step.grid, step.refilledGrid].filter(Boolean) as Grid[]) assert.equal(grid.flat().includes('xways'), false, 'the perk never permits a normal badge on a bonus drop or refill');
+        assert.equal(step.modifiers.some(event => event.kind === 'xways'), false);
+        for (const event of step.modifiers.filter(event => event.kind === 'infectious')) {
+          const matches = event.gridAfter!.flatMap((column, reel) => column.flatMap((symbol, row) => symbol === event.symbol ? [{reel, row}] : []));
+          assert.deepEqual(event.targets, matches, 'each upgraded reveal infects all its currently visible matching symbols');
+        }
+      }
+      pure = dismissPresentation(pure);
+      if (!pure.activeRound) break;
+      pure = advanceRound(pure);
+    }
+    await finish(desktop); await desktop.evaluate(() => window.__restoreImageSpy?.()); assert.deepEqual(await snapshot(desktop), pure);
   });
 
   for (const tier of ['dorm', 'friday', 'december'] as const) {
@@ -642,6 +808,7 @@ try {
     });
     await observeFormulaAndCount(desktop);
     await observeVisualPhases(desktop);
+    await observeArtworkAndDrops(desktop);
     await desktop.locator('#spin').click();
     const animated = (await presentation(desktop))!;
     await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.animation === 'cascade');
@@ -651,9 +818,10 @@ try {
     for (const phase of ['spin', 'win', 'clear', 'cascade', 'idle']) assert.ok(phases.includes(phase), `${phase} appears in ${JSON.stringify(phases)}`);
     assert.ok(phases.includes('bomb') || phases.includes('xways'));
     await assertFormulasAndCount(desktop, animated, 'en');
+    await assertDrops(desktop, animated, 'normal');
     const normalDurations = await phaseDurations(desktop);
     timingEvidence.normalReels = normalDurations;
-    for (const [phase, minimum] of [['spin', 1400], ['win', 600], ['cascade', 600]] as const) {
+    for (const [phase, minimum] of [['spin', 1800], ['win', 600], ['cascade', 900]] as const) {
       const observed = normalDurations.filter(item => item.phase === phase);
       assert.ok(observed.length && observed.every(item => item.duration >= minimum), `normal ${phase} remains readable: ${JSON.stringify(observed)}`);
     }
@@ -673,16 +841,19 @@ try {
     await assertFormulasAndCount(desktop, fractionalView, 'bg');
     assert.equal(fractionalView.lockedBetCents, 10);
     assert.deepEqual(await snapshot(desktop), playCompleteRound(selectBet(createSession(fractionalSeed),10), {kind:'mode',mode:'standard'}));
+    await declineOffer(desktop);
     await desktop.locator('#language').click();
   });
 
   await check('Turbo keeps real reel stops, wins and cascades readable without changing RNG or settlement', desktop, async () => {
-    await reset(desktop, animationSeed); await observeVisualPhases(desktop);
+    await reset(desktop, animationSeed); await observeVisualPhases(desktop); await observeArtworkAndDrops(desktop);
     await desktop.locator('#spin').click();
+    const view = (await presentation(desktop))!;
     await desktop.waitForFunction(() => !window.__slot.busy(), undefined, {timeout: 20_000});
     const durations = await phaseDurations(desktop);
     timingEvidence.turboReels = durations;
-    for (const [phase, minimum] of [['spin', 650], ['win', 250], ['cascade', 250]] as const) {
+    await assertDrops(desktop, view, 'turbo');
+    for (const [phase, minimum] of [['spin', 1000], ['win', 250], ['cascade', 500]] as const) {
       const observed = durations.filter(item => item.phase === phase);
       assert.ok(observed.length && observed.every(item => item.duration >= minimum), `turbo ${phase} remains readable: ${JSON.stringify(observed)}`);
     }
