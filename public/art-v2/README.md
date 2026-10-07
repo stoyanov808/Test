@@ -30,3 +30,5 @@ variants. None introduces additional payable symbols or random modifiers.
 Copyright 2026 Studentski Grad project contributors.
 Original artwork is licensed under CC0 1.0 Universal:
 https://creativecommons.org/publicdomain/zero/1.0/
+
+Version 5 uses more muted skin, cloth and neon material tones and finer ink contours while retaining the original student-party drawings. Bright Bonus/Wild outlines remain readable. Beer projectiles and foam are original canvas geometry, drawn only toward engine-recorded badge targets; no external image assets or extra paying copies are introduced.

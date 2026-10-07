@@ -1,0 +1,13 @@
+{
+  "version": "studentski-duck-4",
+  "commit": "30ed5dbb33fe10db2eab4048f190614d906f2ba1",
+  "sourceSha256": {
+    "README.md": "5ab1ee6398be045c337d6bb9affb9976ae398b6420543ca463a9ce99d0826156",
+    "docs/RESEARCH.md": "36e49a2a1f806adeb31c5004b221124468739fca0585479b843c050fdd7a98c1",
+    "docs/DUCK-HUNTERS-REDESIGN.md": "24ff50fa5a8f7d3c7780de9749b02ec1fd32dabeb8786964926239c2aaae3d43",
+    "docs/PRESENTATION.md": "01547e827457a892633a9efbf7d559274379694c5a0473e19ce8b1baacddc6dd",
+    "docs/MATHEMATICS.md": "66d60c2c9673f1e3ab4ca3802f82e1404394dd1102269ab82b949031cdbe7063",
+    "docs/simulation-results.json": "0e301f95acf3bc4968e189fe08e3709f3bed72a7d985aee51bad03740948f932",
+    "docs/duck-hunters-public-paytable.json": "dce79d12d59a279142aec6305383f30872a807bc9a21167ce43934063dfafe41"
+  }
+}

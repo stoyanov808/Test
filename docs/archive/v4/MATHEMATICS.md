@@ -1,6 +1,6 @@
-# Studentski Grad mathematics, version 5
+# Studentski Grad mathematics, version 4
 
-This implementation uses a **6×5 board, scatter pays and persistent position multipliers**. Version 5 retains verified Duck Hunters xWays behavior: a normal badge boosts only its source position, an upgraded infection boosts all current matches, and every badge on a drop reveals the same common regular symbol. The browser and simulator use the same pure TypeScript engine. Credits and debits are virtual euro cents.
+This implementation uses a **6×5 board, scatter pays and persistent position multipliers**. Version 4 restores verified Duck Hunters xWays behavior: a normal badge boosts only its source position, an upgraded infection boosts all current matches, and every badge on a drop reveals the same common regular symbol. The browser and simulator use the same pure TypeScript engine. Credits and debits are virtual euro cents.
 
 Duck Hunters' primary rules and official footage establish the observable mechanics described in [the research record](DUCK-HUNTERS-REDESIGN.md). The nine-symbol numerical paytable and current feature prices were verified from the official public guest initialization on 7 October 2026. [Paytable evidence](duck-hunters-public-paytable.json) preserves the filtered response, normalization, source hashes and original-symbol mapping. The private sampler probabilities and Extra Spin pricing remain original; they are not the publisher's private reel strips or certified theoretical return.
 
@@ -76,26 +76,24 @@ Day 1024 is a high-state booster on the ordinary board. Duck Hunters' public rul
 
 Regular draws use the fixed, disclosed paying-symbol weights in the paytable's order. The probability of a regular type is its weight divided by the sum of those weights. The same distribution chooses the common xWays symbol once for each drop; later badges share that reveal. A later cascade chooses again and may reveal a different type. Draws use no concealed win normalization or balance-dependent adjustment.
 
-One uniform draw selects mutually exclusive special outcomes; its remaining probability selects a regular symbol using those weights. These rates apply to initial positions and new non-Bonus refill symbols. The final frozen version 5 profiles and weights are recorded in [`CONFIG`](../src/engine/config.ts) and copied into [simulation-results.json](simulation-results.json), along with exact source hashes. These original rates target approximately 96% under source-only normal badges and a common reveal; the completed current-source validation below measures their actual return. Archived version 3 rates do not describe this rule.
+One uniform draw selects mutually exclusive special outcomes; its remaining probability selects a regular symbol using those weights. These rates apply to initial positions and new non-Bonus refill symbols. The final frozen version 4 profiles and weights are recorded in [`CONFIG`](../src/engine/config.ts) and copied into [simulation-results.json](simulation-results.json), along with exact source hashes. These original rates target approximately 96% under source-only normal badges and a common reveal; the completed current-source validation below measures their actual return. Archived version 3 rates do not describe this rule.
 
 Every regular symbol uses weight 1, so conditional regular draws and the common xWays reveal are uniform over the nine paying types. The same weights apply to all paid modes, refills, bonuses and Extra Spins.
 
 | Profile | Wild | Badge | Bomb | Extra-shot |
 | --- | ---: | ---: | ---: | ---: |
-| Normal | 0.008 | 0.0490 | 0.006 | 0 |
+| Normal | 0.008 | 0.0520 | 0.006 | 0 |
 | xBet | 0.004 | 0.0195 | 0.0015 | 0 |
-| Day 2 | 0.008 | 0.0563 | 0.006 | 0 |
-| Day 64 | 0.008 | 0.0648 | 0.006 | 0 |
-| Day 1024 | 0.008 | 0.1114 | 0.006 | 0 |
+| Day 2 | 0.008 | 0.0590 | 0.006 | 0 |
+| Day 64 | 0.008 | 0.0662 | 0.006 | 0 |
+| Day 1024 | 0.008 | 0.1117 | 0.006 | 0 |
 | Dorm | 0.008 | 0.02135 | 0.004 | 0.003 |
-| Friday | 0.008 | 0.0192 | 0.004 | 0.003 |
-| December | 0.008 | 0.01685 | 0.004 | 0.003 |
+| Friday | 0.008 | 0.0194 | 0.004 | 0.003 |
+| December | 0.008 | 0.0171 | 0.004 | 0.003 |
 
-Outside the infection perk, each badge draw independently has an original **0.5%** probability of being upgraded. With that perk, every badge draw is upgraded on initial landings and refills. The perk changes the variant rather than total badge probability. Public sources establish its guarantee, not these private occurrence rates. Rare natural upgrades also remain eligible in Extras and non-perk bonuses.
+This sampler draws normal badges outside an active infection perk. With that perk, every badge draw in the feature is upgraded, on initial landings and refills. The perk changes operation rather than increasing total badge-arrival probability. The reference's public rules establish the all-upgraded perk guarantee; its private occurrence rates are undisclosed, so this implementation's perk-only sampling is not evidence of a verified zero natural-upgrade frequency in the commercial game.
 
-After generating an ordinary paid landing, each column independently has a 0.057 chance (Normal/Day 2) or 0.06 chance (Day 64/1024) of replacing one uniformly chosen cell with Bonus. xBet instead guarantees column two and uses 0.0415 on its other columns. During a refill, a column lacking a surviving Bonus can replace one of its `k` incoming cells with Bonus at probability `profile scatter rate × k / 5`. Bonuses and Extra Spins suppress this Bonus draw. This refill process means natural trigger frequency cannot be inferred from the initial landing's binomial probability alone.
-
-When an ordinary paid initial landing or refill first reaches exactly three invitations, one fixed lottery promotes that actual grid to five with probability 2%, four with probability 10%, or leaves three with probability 88%. New invitations occupy distinct columns before modifiers and awards are evaluated. A failed promotion is not retried while those three invitations survive. Natural further invitation arrivals remain possible. Bonuses and Extra Spins never use this lottery. It depends on no spin counter, balance or previous result. This is an original frequency adjustment, not a verified publisher probability.
+After generating an ordinary paid landing, each column independently has a 0.06 chance of replacing one uniformly chosen cell with Bonus. xBet instead guarantees column two and uses 0.0485 on its other columns. During a refill, a column lacking a surviving Bonus can replace one of its `k` incoming cells with Bonus at probability `profile scatter rate × k / 5`. Bonuses and Extra Spins suppress this Bonus draw. This refill process means natural trigger frequency cannot be inferred from the initial landing's binomial probability alone.
 
 The profiles are fixed and public. Their differences balance the initial multiplier grid and guaranteed Bonus, rather than changing outcomes according to player history. xBet's actual relative bonus frequency is measured in the simulation; this implementation does not simply copy the publisher's advertised five-times claim.
 
@@ -118,61 +116,63 @@ The **30,000× locked base bet cap** applies to the original paid round and ever
 
 A pure transition produces a paid debit, complete spin/cascade award, RNG state and active feature together. The UI validates and saves the candidate session before replacing its live state or animating it. Failed persistence retains the earlier live and saved state. Presentation acknowledgments consume no money or randomness. Reload replays or skips an already settled presentation; it does not redraw or credit it again.
 
-Storage uses `studentski-grad-session-v5` with schema 5. Existing `studentski-grad-session-v1`, `studentski-grad-session-v2` , `studentski-grad-session-v3` and `studentski-grad-session-v4` entries are left untouched and never replayed under the changed rule. The preference key is unchanged, preserving language, sound, volume and speed settings. Bonus-wheel replay and synthetic purchased invitations leave these saved outcomes and grant selections unchanged. Saved data is validated against grids, sequential modifier causes, common per-drop reveals, source-only normal versus upgraded-all target selection, infection-perk guarantees, target multipliers, Wild substitution, win allocation, removals, surviving/refilled positions, bonus entitlements, extra-shot counts, chain offsets and receipts. Active rounds lock further paid actions. History retains the last 100 completed paid receipts, including individual continuation purchases.
+Storage uses `studentski-grad-session-v4` with schema 4. Existing `studentski-grad-session-v1`, `studentski-grad-session-v2` and `studentski-grad-session-v3` entries are left untouched and never replayed under the changed rule. The preference key is unchanged, preserving language, sound, volume and speed settings. Bonus-wheel replay and synthetic purchased invitations leave these saved outcomes and grant selections unchanged. Saved data is validated against grids, sequential modifier causes, common per-drop reveals, source-only normal versus upgraded-all target selection, infection-perk guarantees, target multipliers, Wild substitution, win allocation, removals, surviving/refilled positions, bonus entitlements, extra-shot counts, chain offsets and receipts. Active rounds lock further paid actions. History retains the last 100 completed paid receipts, including individual continuation purchases.
 
 The injectable xorshift32 state is deterministic demo randomness, not a real-money random-number certification. Outcomes do not inspect balance or earlier wins/losses; balance only governs affordability. Original Web Audio synthesis has independent presentation randomness.
 
 ## Measured validation
 
-The original sampler targets approximately 96%; the public paytable does not establish its theoretical return. These results measure complete paid rounds at a €0.20 base bet, including every triggered free spin and declining Extra offers. Hit means any positive award; profit means total payout above the actual debit. Intervals are approximate 95% Monte Carlo intervals and can understate uncertainty for rare extreme awards. No session is guaranteed profitable.
+The target for the five modes and three direct buys is approximately 96%. A tuning target is not a theoretical result or a guarantee of session profit. Lucky Draw’s expected return follows its weighted tier entitlements: its verified 235× charge equals the 235× weighted direct-buy cost. If all three direct-buy expectations were exactly 96%, Lucky would also return 96%, without modifying payouts.
 
-Independent validation completed **13,500,000 ordinary paid rounds**: five million each for Normal and xBet, plus 500,000 for every other choice. The larger xBet cohort replaces its exploratory 500,000-round subset; it is not counted twice. The independent base seed is **3671928041**, distinct from calibration seeds.
+The final report in [simulation-results.json](simulation-results.json) records actual paid-round debits, full bonus payouts, cap settlement, independent seeds and exact engine/configuration/simulator SHA-256 provenance. It also records positive awards, profitable awards, medians, quantiles, modifier counts, physical matches, upgrade combinations, shot additions and accounting checks. Approximate 95% Monte Carlo intervals can be optimistic for very rare extreme awards; these are not certified theoretical RTPs. Different small stakes can differ slightly because cent rounding is part of the rules.
 
-| Choice | Paid rounds | Measured return | Approx. 95% interval | Hit | Profit over debit | Median payout | Cap wins |
+A separate qualified Extra Spin experiment accepts one offered continuation after each source round and declines subsequent offers. It reports a ratio-of-means confidence interval because quotes vary. Its return describes that conditional cohort and acceptance policy, not the unconditional RTP of an ordinary paid mode or an arbitrary repeat-until-finished strategy.
+
+Independent validation completed **9,000,000 ordinary paid rounds** at a €0.20 locked base bet: five million Normal rounds and 500,000 of each other choice. Each row includes the whole paid round and any triggered free spins, and declines Extra Spin offers. Hit means any positive award; profit means the total award exceeds that choice's actual debit. Median payout is the total settled award in euros, not the net balance change.
+
+| Choice | Paid rounds | Measured RTP | Approx. 95% interval | Hit | Profit over debit | Median payout | 30,000× cap wins |
 | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
-| Normal | 5,000,000 | 96.86% | 91.68–102.03% | 21.60% | 8.98% | €0.00 | 5 |
-| xBet | 5,000,000 | 89.86% | 85.09–94.63% | 13.69% | 1.84% | €0.00 | 15 |
-| Day 2 | 500,000 | 96.48% | 89.13–103.82% | 22.78% | 15.28% | €0.00 | 1 |
-| Day 64 | 500,000 | 96.12% | 94.61–97.63% | 24.64% | 17.55% | €0.00 | 18 |
-| Day 1024 | 500,000 | 96.07% | 95.49–96.65% | 38.59% | 24.13% | €0.00 | 13,153 |
-| Buy Dorm | 500,000 | 95.56% | 92.95–98.17% | 80.93% | 7.12% | €0.52 | 70 |
-| Buy Friday | 500,000 | 94.76% | 93.13–96.38% | 85.84% | 9.79% | €1.38 | 213 |
-| Buy December | 500,000 | 93.46% | 92.47–94.45% | 91.88% | 14.30% | €6.00 | 672 |
-| Lucky Draw | 500,000 | 93.73% | 92.18–95.28% | 84.93% | 9.39% | €1.12 | 234 |
+| Normal | 5,000,000 | 95.82% | 90.75–100.88% | 22.04% | 9.71% | €0.00 | 5 |
+| xBet | 500,000 | 87.78% | 73.74–101.83% | 14.03% | 2.11% | €0.00 | 3 |
+| Day 2 | 500,000 | 96.53% | 90.90–102.17% | 23.33% | 15.99% | €0.00 | 0 |
+| Day 64 | 500,000 | 96.64% | 95.20–98.08% | 24.97% | 18.02% | €0.00 | 14 |
+| Day 1024 | 500,000 | 95.79% | 95.21–96.37% | 38.73% | 24.20% | €0.00 | 12,991 |
+| Buy Dorm | 500,000 | 95.41% | 92.79–98.03% | 81.06% | 7.08% | €0.52 | 88 |
+| Buy Friday | 500,000 | 96.23% | 94.62–97.83% | 85.84% | 9.91% | €1.38 | 184 |
+| Buy December | 500,000 | 97.98% | 96.95–99.01% | 91.85% | 14.74% | €6.22 | 791 |
+| Lucky Draw | 500,000 | 96.02% | 94.44–97.59% | 84.95% | 9.59% | €1.12 | 251 |
 
-Normal is close to the 96% target in this sample. xBet, December and Lucky Draw measured below it, with intervals also below the target; no 96% claim is made for every choice. These are measured estimates, rather than substituted 96% labels. The full report preserves exact amounts, quantiles, actual seeds, upgrade combinations and source hashes. Modes with very rare large features have wider uncertainty than the frequent high-state Day modes.
+The December sample is above the 96% target, with an interval that also lies above it. xBet's lower mean has a much wider interval, reflecting rare large awards. These measured differences are shown rather than replaced with the tuning target. All observed cap wins paid exactly €6,000 at this locked bet; Day 2's largest observed award was €4,494.30 and did not reach the cap. The nine cohorts produced **14,327** actual cap wins in total.
 
-Natural invitation tiers in Normal play:
+Natural bonus frequency was **0.51702%** for Normal, **2.3022%** for xBet, **0.5070%** for Day 2, **0.5302%** for Day 64 and **0.5906%** for Day 1024. xBet therefore triggered approximately **4.45 times** as often as Normal in this sample. Direct buys always start their bought tier; Lucky Draw selected 249,510 Dorm, 125,294 Friday and 125,196 December features.
 
-| Tier | Trigger count | Recorded features | Approximate rounds per feature |
-| --- | --- | ---: | ---: |
-| Dorm | 3 | 18,675 | 268 |
-| Friday | 4 | 3,229 | 1,548 |
-| 8 December | 5+ | 453 | 11,038 |
+| Bonus buy | Actual debit | Mean total payout | Median total payout |
+| --- | ---: | ---: | ---: |
+| Dorm | €14.00 | €13.36 | €0.52 |
+| Friday | €40.00 | €38.49 | €1.38 |
+| December | €120.00 | €117.58 | €6.22 |
+| Lucky Draw | €47.00 | €45.13 | €1.12 |
 
-The version 4 Normal cohort recorded 1,345 Friday and 31 December features in five million rounds. Those historical rates were about one in 3,717 and one in 161,290. The new fixed invitation lottery makes both tiers more accessible. A thousand spins still do not guarantee either tier; no counter forces an award.
+Across the ordinary cohorts, recorded badge draws were **12,952,954 normal / 0 upgraded** in base spins, **4,516,066 normal / 0 upgraded** in bonuses without the infection perk, and **0 normal / 8,573,389 upgraded** in bonuses with it. All **6,027,147** drops containing multiple badges revealed one common paying type; none revealed multiple types. Each cohort recorded **zero** accounting errors, cap-accounting errors, physical-count errors and truncated rounds, with no safety events.
 
-| Badge context | Normal badges | Upgraded badges |
-| --- | ---: | ---: |
-| base | 14,957,062 | 75,401 |
-| bonus-without-perk | 4,724,289 | 23,815 |
-| bonus-with-perk | 0 | 8,651,202 |
+The separate Extra Spin cohort processed **1,000,000 Normal source rounds** and accepted **67,460** qualified offers, an offer frequency of **6.746%**. It declined 6,702 subsequent offers. The accepted continuations debited **€30,396.40** and paid **€30,170.07**, returning **99.26%** with an approximate 95% interval of **94.65–103.86%**. Their hit frequency was **23.28%**, profit-over-quote frequency **16.89%**, mean quote **€0.45** and mean award **€0.45**; their median quote was **€0.38** and median award **€0.00**. No accepted continuation reached the cap. All 118,248 recorded badges were normal, and all 33,647 multi-badge drops used a common reveal. Extra accounting, cap-accounting and truncation errors were zero.
 
-All 6,381,792 multi-badge drops used one common revealed type; none used mixed types. Every cohort recorded zero accounting, cap-accounting, physical-count and truncation errors, with no safety events. All perk-context badges were upgraded. Natural upgraded arrivals outside the perk are expected and valid.
+Including source-round costs and payouts, this specific source-plus-one-Extra acceptance policy returned **92.46%** on **€230,396.40** of total debits and **€213,028.69** of total awards, with an approximate 95% interval of **85.72–99.20%**. This is a separate experiment, not an extension of the nine-million-round ordinary sample, and its two returns answer different questions: continuation return relative to quoted costs, and the complete source-plus-continuation policy return.
 
-The separately defined Extra experiment processed **1,000,000 Normal source rounds**, accepting **62,607** qualified continuations and declining subsequent offers. These Extras returned **95.25%**, interval **90.19–100.30%**, against their quoted costs. Mean quote was €0.45, and mean award €0.43. Its source-plus-one-Extra policy returned **101.13%**, interval **90.02–112.24%**. These conditional policy results describe a different experiment from ordinary mode return. Extra accounting, cap-accounting and truncation errors were zero.
+## Current report and historical separation
 
-## Current evidence and reproduction
+The [version 2 archive](archive/v2/ARCHIVE.md) preserves source-only normal badges. The [version 3 archive](archive/v3/ARCHIVE.md) preserves the additional normal target with a common symbol reveal per landing and perk-bound upgraded arrivals. Version 4 restores the source-only/common-reveal contract, and the completed frozen-source report identifies `studentski-duck-4`. Earlier reports are retained as history. Current configuration, engine algorithm and simulator hashes were verified against this report; changed sources require a new run.
 
-Version 4’s slower drops and perk-only sampler are preserved unchanged in [the version 4 archive](archive/v4/ARCHIVE.md), alongside older v1–v3 history. The current report identifies `studentski-duck-5`.
+The report's configuration hash is `66de5e9f92684250b7b188c80ed3e57de2fc163f3fa1ba4fe632f32cde8279e0`, aggregate math-algorithm hash is `c9bb86bf4a0d5e22a1a0999509faed42ca548f810a21ed6e0620744083feb456`, and simulator-program hash is `79b8a5d358c95088fb7e5eefb30f657dc5af362e625c94c2e5c53b54171987fb`. Individual math-source hashes, exact unrounded measurements, each actual seed and public-paytable provenance are stored in the report. These measurements come from the independent validation seed, not publisher RTP declarations, old version 3 metrics or exploratory calibration samples.
 
-Configuration hash: `665ef81ff2aff74bf0d6f42e570253fa4edbf059b2daf2888164bf81be666f83`. Aggregate math hash: `011eab9987b8c38e9575d2b7ac35ca7f3d559e67c50b3a7c2817ed0d0947944c`. Simulator hash: `549927b3ae7c7ce118b4c28a29079d509ff57d5b7f40b9d3c5c99d0503b5ca9e`. Individual source hashes and public-paytable evidence hash are stored in [simulation-results.json](simulation-results.json). Results must not be reused after changing these sources.
+## Reproduce the measured run
 
-Reproduce the ordinary cohorts and separate Extra experiment in Bash. The main command uses five million Normal and 500,000 for other choices; the second replaces xBet with its five-million-round cohort under identical source hashes:
+The completed independent validation covers 9,000,000 paid rounds at €0.20 base bet: 5,000,000 Normal rounds and 500,000 for each other paid choice, plus 1,000,000 source rounds for a separate conditional Extra Spin cohort. The independent base seed is **2817946327**, distinct from exploratory calibration seeds. Per-choice offsets are stored in the report. The measured rows above were populated after completion and source-provenance verification.
+
+Reproduce the complete ordinary cohort and separate Extra Spin cohort in Bash:
 
 ```bash
-SIM_ROUNDS=500000 SIM_STANDARD_ROUNDS=5000000 SIM_SEED=3671928041 SIM_EXTRA_ROUNDS=1000000 SIM_OUTPUT=docs/simulation-results.json npm run simulate
-SIM_MODE=hunt SIM_ROUNDS=5000000 SIM_SEED=3671928041 SIM_MERGE=1 SIM_OUTPUT=docs/simulation-results.json npm run simulate
+SIM_ROUNDS=500000 SIM_STANDARD_ROUNDS=5000000 SIM_SEED=2817946327 SIM_EXTRA_ROUNDS=1000000 SIM_OUTPUT=docs/simulation-results.json npm run simulate
 ```
 
-PowerShell users set the corresponding `$env:SIM_*` variables before `npm run simulate`. `SIM_MODE` accepts `standard`, `hunt`, `frames`, `wild`, `god`, `buy-dorm`, `buy-friday`, `buy-december`, `lucky` or `extra`. Internal IDs `frames`, `wild` and `god` refer to Day 2, Day 64 and Day 1024. Merging requires identical configuration, engine and simulator hashes; old configurations and calibration candidates cannot be combined.
+PowerShell users set the equivalent `$env:SIM_*` variables before `npm run simulate`. `SIM_MODE` accepts `standard`, `hunt`, `frames`, `wild`, `god`, `buy-dorm`, `buy-friday`, `buy-december`, `lucky` or `extra`. The identifiers `frames`, `wild` and `god` refer to Day 2, Day 64 and Day 1024, respectively. Each result stores its actual mode-offset seed. Merge requires identical configuration, engine algorithm and simulator hashes; archived v1/v2/v3 diagnostics or earlier candidates cannot be combined with changed sources.

@@ -16,7 +16,7 @@ interface PartialBoardView {
 }
 interface SpinView { target: BoardView; previous: Grid; elapsed: number; stops: number[]; starts: number[]; flight: number; rowDelay: number; clearDuration: number; duration: number; stopped: Set<number> }
 interface TumbleView { from: Grid; to: Grid; removed: Set<string>; progress: number; duration: number; flight: number; columnDelay: number; rowDelay: number }
-interface MovingCell { reel: number; row: number; symbol: SymbolId; startY: number; y: number; targetY: number; progress: number; sourceRow: number }
+interface MovingCell { reel: number; row: number; symbol: SymbolId; startY: number; y: number; targetY: number; progress: number; sourceRow: number; rotation: number }
 interface EffectView { event: ModifierEvent; progress: number; before: BoardView }
 interface Particle { x: number; y: number; vx: number; vy: number; spin: number; size: number; color: string; born: number; lifetime: number }
 
@@ -34,6 +34,7 @@ const clamp = (n: number, min = 0, max = 1) => Math.max(min, Math.min(max, n));
 const ease = (p: number) => 1 - (1 - clamp(p)) ** 3;
 // A single fall accelerates from rest and decelerates gently into the cell.
 // Its position is monotonic: no reel loop, rebound or invented intermediate symbol.
+const fallWobble = (p: number, reel: number, row: number) => Math.sin(p * Math.PI * 5 + reel * .7 + row * .9) * Math.sin(p * Math.PI) * .055;
 const fallEase = (p: number) => { const t = clamp(p); return t * t * t * (10 + t * (-15 + t * 6)); };
 const seeded = (n: number) => { const value = Math.sin(n * 127.1 + 19.7) * 43758.5453123; return value - Math.floor(value); };
 const matrix = (value: number) => Array.from({ length: REELS }, () => Array(ROWS).fill(value) as number[]);
@@ -114,7 +115,7 @@ export class SlotRenderer {
       kind: 'cascade' as const, elapsedMs: this.tumble.progress * this.tumble.duration,
       durationMs: this.tumble.duration, cells: this.tumbleCells(),
     } : null;
-    return { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), cascade: this.cascadeIndex, motion };
+    return { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), cascade: this.cascadeIndex, motion, modifier: this.effect ? {kind: this.effect.event.kind, progress: this.effect.progress, source: {...this.effect.event.source}, targets: this.effect.event.targets.map(target => ({...target}))} : null };
   }
   private publishStep(payoutCents = 0) { this.options.onStep?.({ ...this.snapshot(), payoutCents }); }
   private label(symbol: SymbolId) { const name = `symbol.${symbol}`, value = this.options.translate?.(name); return value && value !== name ? value : SYMBOL_LABELS[symbol] ?? symbol; }
@@ -139,11 +140,11 @@ export class SlotRenderer {
     this.canvas.dataset.animation = 'idle'; this.draw(performance.now());
   }
   private createLanding(target: BoardView, turbo: boolean): SpinView {
-    const clearDuration = turbo ? 160 : 230, columnDelay = turbo ? 60 : 130;
-    const flight = turbo ? 480 : 780, rowDelay = turbo ? 20 : 28;
+    const clearDuration = turbo ? 90 : 140, columnDelay = turbo ? 40 : 90;
+    const flight = turbo ? 330 : 570, rowDelay = turbo ? 16 : 26;
     const starts = Array.from({ length: REELS }, (_, reel) => clearDuration + reel * columnDelay);
     const stops = starts.map(start => start + (ROWS - 1) * rowDelay + flight);
-    return { target, previous: copyGrid(this.current.grid), elapsed: 0, starts, stops, flight, rowDelay, clearDuration, duration: stops[REELS - 1] + (turbo ? 90 : 140), stopped: new Set() };
+    return { target, previous: copyGrid(this.current.grid), elapsed: 0, starts, stops, flight, rowDelay, clearDuration, duration: stops[REELS - 1] + (turbo ? 60 : 100), stopped: new Set() };
   }
   /** These same coordinates drive both the painting and the read-only motion view. */
   private landingCells(): MovingCell[] {
@@ -153,7 +154,7 @@ export class SlotRenderer {
       const targetY = centre({ reel, row }).y, sourceRow = row - ROWS - .85;
       const startY = AREA.y + (sourceRow + .5) * CELL_H;
       const progress = clamp((spin.elapsed - spin.starts[reel] - (ROWS - 1 - row) * spin.rowDelay) / spin.flight);
-      return { reel, row, symbol, sourceRow, startY, targetY, progress, y: startY + (targetY - startY) * fallEase(progress) };
+      return { reel, row, symbol, sourceRow, startY, targetY, progress, y: startY + (targetY - startY) * fallEase(progress), rotation: fallWobble(progress, reel, row) };
     }));
   }
   private tumbleCells(): MovingCell[] {
@@ -167,7 +168,7 @@ export class SlotRenderer {
         const startY = AREA.y + (sourceRow + .5) * CELL_H, targetY = centre({ reel, row }).y;
         const delay = reel * tumble.columnDelay + (ROWS - 1 - row) * tumble.rowDelay;
         const progress = sourceRow === row ? 1 : clamp((tumble.progress * tumble.duration - delay) / tumble.flight);
-        return { reel, row, symbol, sourceRow, startY, targetY, progress, y: startY + (targetY - startY) * fallEase(progress) };
+        return { reel, row, symbol, sourceRow, startY, targetY, progress, y: startY + (targetY - startY) * fallEase(progress), rotation: fallWobble(progress, reel, row) };
       });
     });
   }
@@ -224,13 +225,13 @@ export class SlotRenderer {
       if (step.wins.length) {
         for (const win of step.wins) {
           this.current.wins = [win]; this.canvas.dataset.animation = 'win'; this.options.onEvent?.('win', win.payoutCents);
-          await this.animate(turbo ? 330 : 950, p => { this.highlightProgress = ease(p); });
+          await this.animate(turbo ? 240 : 640, p => { this.highlightProgress = ease(p); });
         }
         this.current.wins = step.wins;
         const winning = [...new Map(step.wins.flatMap(win => win.cells).map(cell => [key(cell), cell])).values()];
         this.removal = { cells: new Set(winning.map(key)), progress: 0 };
         for (const cell of winning) { const pos = centre(cell); this.emit(pos.x, pos.y, 8, '#f7e8ad', 560); }
-        await this.animate(turbo ? 170 : 380, p => { if (this.removal) this.removal.progress = p; });
+        await this.animate(turbo ? 130 : 260, p => { if (this.removal) this.removal.progress = p; });
         for (const cell of winning) this.current.positionMultipliers[cell.reel][cell.row] = Math.min(8192, this.current.positionMultipliers[cell.reel][cell.row] * 2);
         this.current.wins = []; this.highlightProgress = 0;
       }
@@ -243,13 +244,13 @@ export class SlotRenderer {
         ]);
         this.removal = { cells: new Set(step.removed.map(key)), progress: 0, fixed: alreadyCleared };
         for (const cell of step.removed.filter(cell => !step.wins.some(win => win.cells.some(winner => key(winner) === key(cell))))) { const pos = centre(cell); this.emit(pos.x, pos.y, 8, '#f7e8ad', 560); }
-        await this.animate(turbo ? 200 : 420, p => { if (this.removal) this.removal.progress = p; });
+        await this.animate(turbo ? 150 : 300, p => { if (this.removal) this.removal.progress = p; });
         this.current.positionMultipliers = copyMatrix(step.positionMultipliersAfter); this.current.wins = []; this.highlightProgress = 0;
         this.publishStep(step.payoutCents);
-        await this.animate(turbo ? 100 : 180, () => {});
+        await this.animate(turbo ? 70 : 110, () => {});
         if (step.refilledGrid) {
-          const columnDelay = turbo ? 10 : 20, rowDelay = turbo ? 10 : 18, flight = turbo ? 450 : 800;
-          const duration = flight + (REELS - 1) * columnDelay + (ROWS - 1) * rowDelay + (turbo ? 60 : 100);
+          const columnDelay = turbo ? 8 : 15, rowDelay = turbo ? 8 : 14, flight = turbo ? 300 : 500;
+          const duration = flight + (REELS - 1) * columnDelay + (ROWS - 1) * rowDelay + (turbo ? 50 : 80);
           this.tumble = { from: copyGrid(step.resolvedGrid), to: copyGrid(step.refilledGrid), removed: new Set(step.removed.map(key)), progress: 0, duration, flight, columnDelay, rowDelay };
           this.removal = null; this.canvas.dataset.animation = 'cascade';
           await this.animate(duration, p => { if (this.tumble) this.tumble.progress = p; });
@@ -270,7 +271,7 @@ export class SlotRenderer {
     const source = centre(event.source);
     if (event.kind === 'bomb') for (const target of event.targets) { const pos = centre(target); this.emit(pos.x, pos.y, 14, '#eaa756', 750); }
     if (event.kind === 'shot') this.emit(source.x, source.y, 12, '#f8e9ac', 600);
-    const duration = event.kind === 'infectious' ? 1550 : event.kind === 'bomb' ? 1080 : event.kind === 'shot' ? 1000 : 1300;
+    const duration = event.kind === 'infectious' ? 1120 : event.kind === 'bomb' ? 780 : event.kind === 'shot' ? 740 : 900;
     await this.animate(turbo ? Math.round(duration * .55) : duration, p => { if (this.effect) this.effect.progress = p; });
     if (event.gridAfter) this.current.grid = copyGrid(event.gridAfter);
     if (event.positionMultipliersAfter) this.current.positionMultipliers = copyMatrix(event.positionMultipliersAfter);
@@ -351,7 +352,7 @@ export class SlotRenderer {
         // Entire columns enter from above; the first artwork is never below the grid.
         for (const cell of landing.filter(cell => cell.reel === reel)) {
           const pos = centre(cell);
-          this.drawSymbol(cell.symbol, pos.x, cell.y, time);
+          this.drawSymbol(cell.symbol, pos.x, cell.y, time, 1, 1, cell.rotation);
           if (cell.progress >= 1) this.drawMultiplier(spin.target.positionMultipliers[reel]?.[cell.row] ?? 1, pos.x, pos.y, false);
         }
       } else {
@@ -372,9 +373,11 @@ export class SlotRenderer {
               const source = key(event!.source) === cellKey;
               // The badge opens before it sends a multiplier. A receiving cell
               // changes only when that visible transmission reaches it.
-              if (source && p > .3 || !source && p > .74) {
+              const targetIndex = event!.targets.findIndex(target => key(target) === cellKey);
+              const impact = .69 + Math.max(0, targetIndex) * .10 / Math.max(1, event!.targets.length - 1);
+              if (source && p > .3 || !source && p >= impact) {
                 this.drawSymbol(event!.gridAfter[reel][row], pos.x, pos.y, time, .97 + Math.sin(p * Math.PI) * .08, alpha, source ? .018 * Math.sin(p * 24) : 0);
-                this.drawMultiplier(event!.positionMultipliersAfter?.[reel]?.[row] ?? mult, pos.x, pos.y, false); continue;
+                this.drawMultiplier(p >= impact ? event!.positionMultipliersAfter?.[reel]?.[row] ?? mult : mult, pos.x, pos.y, false); continue;
               }
             }
           }
@@ -442,7 +445,7 @@ export class SlotRenderer {
       const x = AREA.x + (reel + .5) * CELL_W;
       ctx.save(); ctx.beginPath(); ctx.rect(AREA.x + reel * CELL_W, AREA.y, CELL_W, AREA.h); ctx.clip();
       for (const cell of cells.filter(cell => cell.reel === reel)) {
-        this.drawSymbol(cell.symbol, x, cell.y, time);
+        this.drawSymbol(cell.symbol, x, cell.y, time, 1, 1, cell.rotation);
         if (cell.progress >= 1) this.drawMultiplier(this.current.positionMultipliers[reel]?.[cell.row] ?? 1, x, cell.targetY, false);
       }
       ctx.restore();
@@ -451,7 +454,8 @@ export class SlotRenderer {
   private drawEffect(time: number) {
     const ctx = this.ctx, { event, progress: p } = this.effect!, source = centre(event.source);
     const color = event.kind === 'infectious' ? '#f499d0' : event.kind === 'bomb' ? '#f6b25c' : event.kind === 'shot' ? '#f0d093' : '#74ddd1';
-    if (event.kind === 'infectious' || event.kind === 'xways' || event.kind === 'shot') for (const target of event.targets.filter(target => key(target) !== key(event.source))) {
+    if (event.kind === 'infectious' || event.kind === 'xways') this.drawBeerThrows(event, p);
+    if (event.kind === 'shot') for (const target of event.targets.filter(target => key(target) !== key(event.source))) {
       const pos = centre(target), t = event.kind === 'shot' ? ease(clamp(p * 1.6)) : ease(clamp((p - .4) / .35));
       if (t <= 0) continue;
       const bend = (target.reel % 2 ? 1 : -1) * Math.min(52, Math.hypot(pos.x - source.x, pos.y - source.y) * .12);
@@ -474,6 +478,35 @@ export class SlotRenderer {
     }
     if (event.kind === 'shot' && p > .45) outlinedText(ctx, `+${event.shotsAdded ?? 1} ${this.translate('render.extrashot', 'ЗАВЪРТАНЕ')}`, source.x, source.y - 44 - p * 30, 28, '#f8e2a0', INK, 5);
     if (event.kind === 'infectious') for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5 + time * .001; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(source.x + Math.cos(a) * 43, source.y + Math.sin(a) * 43, 4, 0, Math.PI * 2); ctx.fill(); }
+  }
+  /** Replay recorded recipients only; bottles never add symbols or alter awards. */
+  private drawBeerThrows(event: ModifierEvent, progress: number) {
+    const ctx=this.ctx, source=centre(event.source);
+    event.targets.forEach((target,index)=>{
+      const t=clamp((progress-.29-index*.10/Math.max(1,event.targets.length-1))/.40);
+      if(t<=0)return;
+      const end=centre(target), same=key(target)===key(event.source);
+      const start={x:source.x-28,y:source.y+12};
+      const mid={x:(start.x+end.x)/2+(same?48:0),y:Math.min(start.y,end.y)-Math.min(130,55+Math.abs(end.x-start.x)*.18)};
+      const x=(1-t)**2*start.x+2*(1-t)*t*mid.x+t*t*end.x;
+      const y=(1-t)**2*start.y+2*(1-t)*t*mid.y+t*t*end.y;
+      ctx.save();
+      if(t<1){
+        ctx.globalAlpha=1;ctx.translate(x,y);ctx.rotate(-.45+t*Math.PI*2);
+        // Original glass bottle: olive body, amber liquid, foil neck, cream label.
+        ctx.fillStyle='#384b32';ctx.strokeStyle=INK;ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(-5,-25);ctx.lineTo(5,-25);ctx.lineTo(5,-12);ctx.quadraticCurveTo(12,-7,12,0);ctx.lineTo(11,25);ctx.quadraticCurveTo(0,30,-11,25);ctx.lineTo(-12,0);ctx.quadraticCurveTo(-12,-7,-5,-12);ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle='#be974a';ctx.fillRect(-5,-25,10,5);ctx.fillStyle='#eee0b7';ctx.fillRect(-9,0,18,15);
+        ctx.fillStyle='#a6573b';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('SG',0,11);
+        ctx.strokeStyle='#b7c58c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(-7,22);ctx.stroke();
+      }else{
+        const splash=clamp((progress-(.69+index*.10/Math.max(1,event.targets.length-1)))/.21);ctx.translate(end.x,end.y);ctx.globalAlpha=1-splash;
+        ctx.strokeStyle='#f1d399';ctx.lineWidth=3;
+        for(let i=0;i<9;i++){const a=i*Math.PI*2/9,r=14+splash*39;ctx.beginPath();ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r);ctx.lineTo(Math.cos(a)*(r+8),Math.sin(a)*(r+8));ctx.stroke();}
+        ctx.fillStyle='#fff0cb';for(let i=0;i<6;i++){const a=i*2.4;ctx.beginPath();ctx.arc(Math.cos(a)*(20+splash*35),Math.sin(a)*(20+splash*35),3.5*(1-splash),0,Math.PI*2);ctx.fill();}
+      }
+      ctx.restore();
+    });
   }
   private emit(x: number, y: number, count: number, color: string, lifetime: number, rain = false) {
     const start = this.particles.length, now = performance.now();

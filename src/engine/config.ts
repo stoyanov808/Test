@@ -3,7 +3,7 @@ import type { BonusTier, Mode, PayingSymbol } from './types';
 export const PAYING_SYMBOLS: PayingSymbol[] = ['book','coffee','noodles','doner','beer','female','male','dj','bouncer'];
 export const BONUS_ORDER: BonusTier[] = ['dorm','friday','december'];
 export const CONFIG = {
-  version: 'studentski-duck-4', schemaVersion: 4, reels: 6, rows: 5,
+  version: 'studentski-duck-5', schemaVersion: 5, reels: 6, rows: 5,
   betsCents: [10,20,40,60,100,200,500,1000,2000], defaultBetCents: 20,
   initialBalanceCents: 1_000_000, refillCents: 1_000_000, historyLimit: 100, autoplayLimit: 100,
   capMultiplier: 30_000, payoutDenominator: 1_000_000,
@@ -37,17 +37,21 @@ export const CONFIG = {
   } satisfies Record<PayingSymbol, number[]>,
   // Independent original symbol distributions, not Nolimit City's private reel strips.
   symbolWeights: [1,1,1,1,1,1,1,1,1],
+  // Conditional on a badge draw; the infection perk guarantees upgraded badges.
+  naturalInfectiousProbability: .005,
+  // One fixed lottery when a base drop first reaches exactly three invitations.
+  invitationPromotionProbabilities: { friday: .10, december: .02 },
   modes: {
-    standard: { scatterProbability: .06, wildProbability: .008, xwaysProbability: .0520, bombProbability: .006 },
-    hunt: { scatterProbability: .0485, wildProbability: .004, xwaysProbability: .0195, bombProbability: .0015 },
-    frames: { scatterProbability: .06, wildProbability: .008, xwaysProbability: .059, bombProbability: .006 },
-    wild: { scatterProbability: .06, wildProbability: .008, xwaysProbability: .0662, bombProbability: .006 },
-    god: { scatterProbability: .06, wildProbability: .008, xwaysProbability: .1117, bombProbability: .006 },
+    standard: { scatterProbability: .057, wildProbability: .008, xwaysProbability: .049, bombProbability: .006 },
+    hunt: { scatterProbability: .0415, wildProbability: .004, xwaysProbability: .0195, bombProbability: .0015 },
+    frames: { scatterProbability: .057, wildProbability: .008, xwaysProbability: .0563, bombProbability: .006 },
+    wild: { scatterProbability: .06, wildProbability: .008, xwaysProbability: .0648, bombProbability: .006 },
+    god: { scatterProbability: .06, wildProbability: .008, xwaysProbability: .1114, bombProbability: .006 },
   } satisfies Record<Mode,{scatterProbability:number;wildProbability:number;xwaysProbability:number;bombProbability:number}>,
   bonuses: {
     dorm: { spins: 7, upgradesCount: 1, energy: 1, wildCount: 0, shotProbability: .003, wildProbability: .008, xwaysProbability: .02135, bombProbability: .004 },
-    friday: { spins: 8, upgradesCount: 2, energy: 1, wildCount: 0, shotProbability: .003, wildProbability: .008, xwaysProbability: .0194, bombProbability: .004 },
-    december: { spins: 10, upgradesCount: 3, energy: 1, wildCount: 0, shotProbability: .003, wildProbability: .008, xwaysProbability: .0171, bombProbability: .004 },
+    friday: { spins: 8, upgradesCount: 2, energy: 1, wildCount: 0, shotProbability: .003, wildProbability: .008, xwaysProbability: .0192, bombProbability: .004 },
+    december: { spins: 10, upgradesCount: 3, energy: 1, wildCount: 0, shotProbability: .003, wildProbability: .008, xwaysProbability: .01685, bombProbability: .004 },
   } satisfies Record<BonusTier,{spins:number;upgradesCount:number;energy:number;wildCount:number;shotProbability:number;wildProbability:number;xwaysProbability:number;bombProbability:number}>,
 } as const;
 

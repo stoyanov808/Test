@@ -57,7 +57,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class='mode-note'><small data-i18n='selectedMode'></small><strong id='mode-label'></strong><p id='mode-description'></p><button class='text-link' id='mode-open' data-i18n='exploreFeatures'></button></div>
         </aside>
         <section class='reel-section'>
-          <div class='reel-heading'><span class='edition'>VOL. 04 / <b>6 × 5</b></span><span class='ways-badge' id='board-counter'><strong id='ways'>8+</strong> <span data-i18n='scatterThreshold'></span></span></div>
+          <div class='reel-heading'><span class='edition'>VOL. 05 / <b>6 × 5</b></span><span class='ways-badge' id='board-counter'><strong id='ways'>8+</strong> <span data-i18n='scatterThreshold'></span></span></div>
           <div class='reel-bezel'><canvas id='reels' role='img' aria-label='Six reels, five rows. Eight matching symbols anywhere.'></canvas></div>
           <div class='event-strip' aria-live='polite'><span class='event-star'>✦</span><span id='event-message'></span><span id='cascade-counter'></span></div>
         </section>

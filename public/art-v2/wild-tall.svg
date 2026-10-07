@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 240" role="img" aria-labelledby="title">
 <title id="title">Wild party colleague with a gold illustrated crown</title>
 <defs>
-<linearGradient id="skin" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#ffe0b8"/><stop offset=".48" stop-color="#e5ac89"/><stop offset="1" stop-color="#b76969"/></linearGradient>
+<linearGradient id="skin" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#efd0b4"/><stop offset=".48" stop-color="#cd9c7c"/><stop offset="1" stop-color="#945f52"/></linearGradient>
 <linearGradient id="paper" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#fff9dd"/><stop offset=".7" stop-color="#e5ca97"/><stop offset="1" stop-color="#af815a"/></linearGradient>
 <linearGradient id="gold" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#fff0a3"/><stop offset=".45" stop-color="#e6a743"/><stop offset="1" stop-color="#9d522d"/></linearGradient>
-<linearGradient id="teal" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#90e5d1"/><stop offset=".5" stop-color="#4bb5a8"/><stop offset="1" stop-color="#245c63"/></linearGradient>
-<linearGradient id="pink" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#ff9dbb"/><stop offset=".5" stop-color="#d64d86"/><stop offset="1" stop-color="#71294f"/></linearGradient>
+<linearGradient id="teal" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#9abdaf"/><stop offset=".5" stop-color="#568f85"/><stop offset="1" stop-color="#245c63"/></linearGradient>
+<linearGradient id="pink" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#d7a4ae"/><stop offset=".5" stop-color="#a95977"/><stop offset="1" stop-color="#71294f"/></linearGradient>
 <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#66607b"/><stop offset=".5" stop-color="#353248"/><stop offset="1" stop-color="#161820"/></linearGradient>
 <linearGradient id="bread" x1="0" y1="0" x2=".5" y2="1"><stop stop-color="#ffe1a1"/><stop offset=".55" stop-color="#ce985e"/><stop offset="1" stop-color="#985335"/></linearGradient>
 <linearGradient id="beer" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b2b757"/><stop offset=".4" stop-color="#526941"/><stop offset="1" stop-color="#172d2c"/></linearGradient>

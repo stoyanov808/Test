@@ -5,8 +5,9 @@ import { createSession, quoteExtraSpinCostCents } from './engine';
 import type { CascadeStep, CellPosition, Grid, ModifierEvent, NumberGrid, RoundChoice, Session, SpinPresentation, StorageLike } from './types';
 
 /** Different mathematics gets a different key; old balances and pending rounds stay untouched. */
-export const STORAGE_KEY='studentski-grad-session-v4';
-export const PREVIOUS_STORAGE_KEY='studentski-grad-session-v3';
+export const STORAGE_KEY='studentski-grad-session-v5';
+export const PREVIOUS_STORAGE_KEY='studentski-grad-session-v4';
+export const PREVIOUS_V3_STORAGE_KEY='studentski-grad-session-v3';
 export const PREVIOUS_V2_STORAGE_KEY='studentski-grad-session-v2';
 export const LEGACY_STORAGE_KEY='studentski-grad-session-v1';
 const browserStorage=():StorageLike=>globalThis.localStorage;
@@ -139,7 +140,7 @@ function validatePresentation(view:SpinPresentation):void {
     validateCascadeStep(step,view,view.chainTotalCents-view.payoutCents+total);
     for(const board of [step.grid,step.resolvedGrid,step.refilledGrid])if(board){
       const infectious=view.tier&&view.upgrades.includes('infectious');
-      if(board.some(column=>column.includes(infectious?'xways':'infectious')))fail();
+      if(infectious&&board.some(column=>column.includes('xways')))fail();
       if(view.tier||view.choice.kind==='extra'){
         if(board.some(column=>column.includes('scatter')))fail();
       }else if(board.some(column=>column.filter(symbol=>symbol==='scatter').length>1||column.includes('shot')))fail();

@@ -49,9 +49,21 @@ function newSymbol(rng:RandomGenerator,options:CascadeOptions):SymbolId {
   let chance=rng.next();
   if(tier){const shotProbability=CONFIG.bonuses[tier].shotProbability;if(chance<shotProbability)return'shot';chance-=shotProbability;}
   if(chance<profile.wildProbability)return'wild';chance-=profile.wildProbability;
-  if(chance<profile.xwaysProbability)return options.upgrades?.includes('infectious')?'infectious':'xways';chance-=profile.xwaysProbability;
+  if(chance<profile.xwaysProbability)return (options.tier&&options.upgrades?.includes('infectious'))||rng.chance(CONFIG.naturalInfectiousProbability)?'infectious':'xways';chance-=profile.xwaysProbability;
   if(chance<profile.bombProbability)return'bomb';
   return randomPaying(rng);
+}
+/** Fixed per-landing odds, independent of balance, past outcomes and spin count. */
+function promoteInvitations(grid:Grid,rng:RandomGenerator,options:CascadeOptions):Grid {
+  if(options.tier||options.noBonus||countScatters(grid)!==3)return grid;
+  const draw=rng.next(), odds=CONFIG.invitationPromotionProbabilities;
+  const count=draw<odds.december?5:draw<odds.december+odds.friday?4:3;
+  const available=grid.flatMap((column,reel)=>column.includes('scatter')?[]:[reel]);
+  for(let i=3;i<count;i++){
+    const reel=available.splice(rng.integer(available.length),1)[0];
+    grid[reel][rng.integer(CONFIG.rows)]='scatter';
+  }
+  return grid;
 }
 function initialSpinGrid(rng:RandomGenerator,options:CascadeOptions):Grid {
   const grid=Array.from({length:CONFIG.reels},()=>Array.from({length:CONFIG.rows},()=>newSymbol(rng,options)));
@@ -59,10 +71,10 @@ function initialSpinGrid(rng:RandomGenerator,options:CascadeOptions):Grid {
     const mode=options.mode??'standard';
     for(let reel=0;reel<CONFIG.reels;reel++)if((mode==='hunt'&&reel===1)||rng.chance(CONFIG.modes[mode].scatterProbability))grid[reel][rng.integer(CONFIG.rows)]='scatter';
   }
-  return grid;
+  return promoteInvitations(grid,rng,options);
 }
 function refillGrid(grid:Grid,removed:Set<string>,rng:RandomGenerator,options:CascadeOptions):Grid {
-  return grid.map((column,reel)=>{
+  const next=grid.map((column,reel)=>{
     const remaining=column.filter((_symbol,row)=>!removed.has(`${reel}:${row}`));
     const missing=CONFIG.rows-remaining.length;
     const incoming=Array.from({length:missing},()=>newSymbol(rng,options));
@@ -73,6 +85,7 @@ function refillGrid(grid:Grid,removed:Set<string>,rng:RandomGenerator,options:Ca
     }
     return[...incoming,...remaining];
   });
+  return countScatters(grid)<3?promoteInvitations(next,rng,options):next;
 }
 function modifierSnapshot(kind:ModifierEvent['kind'],source:CellPosition,targets:CellPosition[],factor:number,grid:Grid,multipliers:NumberGrid,extra:Partial<ModifierEvent>={}):ModifierEvent {
   return{kind,source,targets,factor,...extra,gridAfter:copyGrid(grid),positionMultipliersAfter:copyNumbers(multipliers)};

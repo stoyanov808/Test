@@ -9,9 +9,9 @@ import { createServer, type ViteDevServer } from 'vite';
 import { CONFIG, PAYING_SYMBOLS, STORAGE_KEY, createSession, startRound, playCompleteRound, advanceRound, dismissPresentation, selectBet, setMode, type BonusTier, type BonusUpgrade, type Grid, type Mode, type RoundChoice, type Session, type SpinPresentation } from '../src/engine';
 import { t } from '../src/i18n';
 
-interface MotionCell { reel: number; row: number; symbol: string; startY: number; y: number; targetY: number; progress: number; sourceRow?: number }
+interface MotionCell { reel: number; row: number; symbol: string; startY: number; y: number; targetY: number; progress: number; rotation: number; sourceRow?: number }
 interface MotionView { kind: 'landing' | 'cascade'; elapsedMs: number; durationMs: number; previousAlpha?: number; cells: MotionCell[] }
-interface MotionFrame extends MotionView { cascade: number; paints: {symbol: string; x: number; y: number}[] }
+interface MotionFrame extends MotionView { cascade: number; paints: {symbol: string; x: number; y: number; rotation: number}[] }
 
 declare global {
   interface Window {
@@ -22,7 +22,7 @@ declare global {
       skip(): void;
       setTurbo(turbo: boolean): void;
       presentation(): SpinPresentation | null;
-      board(): {grid: Grid; positionMultipliers: number[][]; cascade: number; motion?: MotionView | null};
+      board(): {grid: Grid; positionMultipliers: number[][]; cascade: number; motion?: MotionView | null; modifier?: {kind: string; progress: number; source: {reel:number;row:number}; targets: {reel:number;row:number}[]} | null};
       bonusPresentation(): {phase: string; tier: BonusTier; triggerScatters: number; awardedUpgrades: BonusUpgrade[]; startedAt: number; wheelStartedAt?: number; finishedAt?: number} | null;
     };
     __animationPhases?: string[];
@@ -36,6 +36,8 @@ declare global {
     __motionTrace?: MotionFrame[];
     __paintedArt?: string[];
     __restoreImageSpy?: () => void;
+    __beerTrace?: {kind: string; x:number; y:number; progress:number; source:string}[];
+    __restoreBeerSpy?: () => void;
   }
 }
 
@@ -227,7 +229,7 @@ async function observeArtworkAndDrops(page: Page) {
           }
           // Every symbol SVG is centered at the renderer's translated origin.
           // Read the actual canvas transform to independently verify the motion diagnostics.
-          frame.paints.push({symbol, x: paintedX, y: paintedY});
+          frame.paints.push({symbol, x: paintedX, y: paintedY, rotation: Math.atan2(matrix.b / (this.canvas.height / 730), matrix.a / (this.canvas.width / 1040))});
         }
       }
       (original as (...parameters: unknown[]) => void).apply(this, [image, ...args]);
@@ -237,17 +239,20 @@ async function observeArtworkAndDrops(page: Page) {
 async function assertDrops(page: Page, view: SpinPresentation, label: string) {
   const trace = await page.evaluate(() => window.__motionTrace ?? []);
   const landing = trace.filter(frame => frame.kind === 'landing');
-  assert.ok(landing.length >= 15, `real ${label} landing frames are observed`);
+  assert.ok(landing.length >= (label === "turbo" ? 7 : 15), `real ${label} landing frames are observed`);
+  assert.ok(landing[0].durationMs <= (label === 'turbo' ? 850 : 1500), 'configured fall completes faster than the prior version');
   const boardTop = 48, cellWidth = 162;
   const visual = (symbol: string) => symbol === 'infectious' ? 'infectious-upgraded' : symbol;
   for (const frame of trace) {
     assert.equal(frame.cells.length, 30, 'each committed destination has exactly one moving symbol');
     for (const cell of frame.cells) {
       assert.ok(Number.isFinite(cell.y) && cell.progress >= 0 && cell.progress <= 1);
+      assert.ok(Math.abs(cell.rotation) <= .056, 'fall wobble stays subtle');
+      if(cell.progress === 1)assert.ok(Math.abs(cell.rotation)<.00001,'settled symbols are upright');
       assert.ok(cell.startY <= cell.y + .001 && cell.y <= cell.targetY + .001, `the symbol only falls toward its destination: ${JSON.stringify(cell)}`);
       const expected = frame.kind === 'landing' ? view.initialGrid : view.cascadeSteps[frame.cascade].refilledGrid;
       assert.equal(cell.symbol, expected?.[cell.reel]?.[cell.row], 'the painted identity is the committed destination symbol throughout its fall');
-      assert.ok(frame.paints.some(paint => paint.symbol === visual(cell.symbol) && Math.abs(paint.x - (34 + (cell.reel + .5) * cellWidth)) < .01 && Math.abs(paint.y - cell.y) < .01), `the actual canvas paints this cell at the diagnosed position: ${JSON.stringify(cell)}`);
+      assert.ok(frame.paints.some(paint => paint.symbol === visual(cell.symbol) && Math.abs(paint.x - (34 + (cell.reel + .5) * cellWidth)) < .01 && Math.abs(paint.y - cell.y) < .01 && Math.abs(paint.rotation - cell.rotation)<.001), `the actual canvas paints this cell at the diagnosed position: ${JSON.stringify(cell)}`);
       if (frame.kind === 'landing' || (cell.sourceRow ?? -1) < 0) assert.ok(cell.startY < boardTop, 'new symbols enter from above the board');
       else {
         const step = view.cascadeSteps[frame.cascade];
@@ -268,8 +273,9 @@ async function assertDrops(page: Page, view: SpinPresentation, label: string) {
       assert.ok(frames[index].cells[cell].y + .001 >= frames[index - 1].cells[cell].y, 'motion never wraps, teleports or falls from below');
     }
   }
+  assert.ok(trace.some(frame=>frame.cells.some(cell=>Math.abs(cell.rotation)>.01)),'actual falling symbols have damped angular movement');
   const cascading = trace.filter(frame => frame.kind === 'cascade');
-  assert.ok(cascading.length >= 8, 'the same top-down motion is observed during a real refill');
+  assert.ok(cascading.length >= (label === "turbo" ? 4 : 8), 'the same top-down motion is observed during a real refill');
   timingEvidence[`${label}-top-down-drops`] = {frames: trace.length, landingFrames: landing.length, cascadeFrames: cascading.length, durationMs: landing[0].durationMs, samples: [landing[0], landing[Math.floor(landing.length / 2)], landing.at(-1), cascading[0], cascading.at(-1)]};
   await page.evaluate(() => window.__restoreImageSpy?.());
 }
@@ -539,8 +545,7 @@ try {
       assert.equal(p.roundCostCents, Math.round(20 * price));
       assert.ok(p.initialPositionMultipliers.every(column => column.every(value => value === multiplier)));
       for (const step of p.cascadeSteps) {
-        for (const grid of [step.grid, step.refilledGrid].filter(Boolean) as Grid[]) assert.equal(grid.flat().includes('infectious'), false, 'every base mode reserves upgraded badges for the bonus perk');
-        assert.equal(step.modifiers.some(event => event.kind === 'infectious'), false);
+        assert.ok(step.modifiers.every(event => event.kind !== 'infectious' || event.targets.length >= 1));
       }
       if (mode === 'hunt') assert.ok(p.initialGrid[1].includes('scatter'), 'xBet guarantees an invitation on reel two');
       await finish(desktop);
@@ -560,7 +565,7 @@ try {
       assert.equal(p.tier, tier); assert.equal(p.intro, true);
       assert.equal(p.upgrades.length, upgrades); assert.equal(new Set(p.upgrades).size, upgrades);
       for (const step of p.cascadeSteps) for (const grid of [step.grid, step.refilledGrid].filter(Boolean) as Grid[]) {
-        assert.equal(grid.flat().includes(p.upgrades.includes('infectious') ? 'xways' : 'infectious'), false, 'the infection perk chooses which badge variant is eligible in the bonus');
+        if(p.upgrades.includes('infectious'))assert.equal(grid.flat().includes('xways'), false, 'the perk guarantees all badges upgraded');
       }
       assert.equal(p.roundCostCents, 20 * price);
       assert.equal(first.activeRound?.spinsRemaining, spins - 1 + p.shotsAdded);
@@ -612,6 +617,18 @@ try {
     assert.deepEqual(settled, playCompleteRound(createSession(scatterSeed), {kind: 'mode', mode: 'standard'}));
   });
 
+  for(const [tier,count] of [['friday',4],['december',5]] as const){
+    const seed=naturalSeed(`natural-${tier}-invitations`,{kind:'mode',mode:'standard'},p=>p.bonusAwarded===tier&&p.scatters===count);
+    await check(`${count} natural invitations award the ${tier} wheel and complete without a purchase debit`,desktop,async()=>{
+      await reset(desktop,seed);await desktop.evaluate(()=>window.__slot.setTurbo(true));await observeBonusPresentation(desktop);
+      await desktop.locator('#spin').click();const committed=await snapshot(desktop);
+      assert.equal(committed.presentation!.bonusAwarded,tier);assert.equal(committed.activeRound!.upgrades.length,count-2);
+      await assertReadyWheel(desktop,tier,committed.activeRound!.upgrades,true);
+      await finish(desktop);paidRound(await snapshot(desktop),20);
+      assert.deepEqual(await snapshot(desktop),playCompleteRound(createSession(seed),{kind:'mode',mode:'standard'}));
+    });
+  }
+
   const sourceOnlySeed = naturalSeed('normal-source-only-emitter-with-visible-matches', {kind:'mode', mode:'standard'}, p => !p.bonusAwarded && p.initialGrid.flat().includes('xways') && p.payoutCents < 400 && p.cascadeSteps.length <= 3 && p.cascadeSteps[0].modifiers.some(event => event.kind === 'xways' && event.gridAfter!.flat().filter(symbol => symbol === event.symbol).length > 2));
   await check('A normal badge reveals its symbol and multiplies only its own position despite other visible matches', desktop, async () => {
     await reset(desktop, sourceOnlySeed); await desktop.evaluate(() => window.__slot.setTurbo(false));
@@ -627,12 +644,11 @@ try {
       assert.equal(event.positionMultipliersAfter![reel][row], reel === event.source.reel && row === event.source.row ? Math.min(CONFIG.positionMultiplierLimit, previous * event.factor) : previous);
     }
     for (const step of view.cascadeSteps) {
-      for (const grid of [step.grid, step.refilledGrid].filter(Boolean) as Grid[]) assert.equal(grid.flat().includes('infectious'), false, 'the base game has no perk-only upgraded badges');
-      assert.equal(step.modifiers.some(modifier => modifier.kind === 'infectious'), false);
+      assert.ok(step.modifiers.every(event => event.kind !== 'infectious' || event.targets.length >= 1));
     }
     await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.animation === 'xways');
     assert.ok(await desktop.evaluate(() => window.__paintedArt?.includes('xways')), 'the actual board paints the normal speaker asset on its own destination');
-    assert.equal(await desktop.evaluate(() => window.__paintedArt?.includes('infectious-upgraded')), false);
+
     await shot(desktop, 'desktop-source-only-emitter');
     await desktop.waitForFunction(expected => {
       const board = window.__slot.board();
@@ -665,6 +681,38 @@ try {
     }
     await finish(desktop);
     assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(sharedSeed), {kind:'mode',mode:'standard'}));
+  });
+
+  const naturalInfectionSeed = naturalSeed('natural-upgraded-base-beer-throws', {kind:'mode',mode:'standard'}, p => !p.bonusAwarded && p.cascadeSteps.length <= 3 && p.cascadeSteps[0].modifiers.some(event => event.kind === 'infectious' && event.targets.length >= 3));
+  await check('A rare base-game upgraded speaker throws beer to every recorded target without changing settlement', desktop, async () => {
+    await reset(desktop,naturalInfectionSeed); await desktop.evaluate(() => {
+      window.__slot.setTurbo(false); window.__beerTrace=[];
+      const fillText=CanvasRenderingContext2D.prototype.fillText, arc=CanvasRenderingContext2D.prototype.arc;
+      CanvasRenderingContext2D.prototype.fillText=function(text,...args){
+        const modifier=window.__slot.board().modifier;
+        if(text==='SG'&&this.canvas.id==='reels'&&modifier){const m=this.getTransform();window.__beerTrace!.push({kind:'bottle',x:m.e/(this.canvas.width/1040),y:m.f/(this.canvas.height/730),progress:modifier.progress,source:`${modifier.source.reel}:${modifier.source.row}`});}
+        return (fillText as (...args:unknown[])=>void).apply(this,[text,...args]);
+      };
+      CanvasRenderingContext2D.prototype.arc=function(...args){
+        const modifier=window.__slot.board().modifier;
+        if(this.fillStyle==='#fff0cb'&&this.canvas.id==='reels'&&modifier){const m=this.getTransform();window.__beerTrace!.push({kind:'foam',x:m.e/(this.canvas.width/1040),y:m.f/(this.canvas.height/730),progress:modifier.progress,source:`${modifier.source.reel}:${modifier.source.row}`});}
+        return arc.apply(this,args);
+      };
+      window.__restoreBeerSpy=()=>{CanvasRenderingContext2D.prototype.fillText=fillText;CanvasRenderingContext2D.prototype.arc=arc;};
+    });
+    await observeArtworkAndDrops(desktop);await desktop.locator('#spin').click();
+    const committed=await snapshot(desktop),view=committed.presentation!;
+    const event=view.cascadeSteps[0].modifiers.find(event=>event.kind==='infectious')!;
+    assert.equal(view.tier,null);assert.equal(view.upgrades.includes('infectious'),false);
+    await desktop.waitForFunction(()=>document.getElementById('reels')?.dataset.animation==='infectious');
+    await desktop.waitForTimeout(620);await shot(desktop,'desktop-natural-infection-beer');
+    await desktop.waitForFunction(()=>!window.__slot.busy(),undefined,{timeout:25000});
+    const trace=await desktop.evaluate(()=>window.__beerTrace??[]),source=`${event.source.reel}:${event.source.row}`;
+    assert.ok(trace.some(p=>p.kind==='bottle'&&p.source===source),'actual canvas paints thrown beer bottles');
+    for(const target of event.targets)assert.ok(trace.some(p=>p.kind==='foam'&&p.source===source&&Math.abs(p.x-(34+(target.reel+.5)*162))<.01&&Math.abs(p.y-(48+(target.row+.5)*130))<.01),'every recorded target receives its visible beer impact');
+    assert.deepEqual(await snapshot(desktop),playCompleteRound(createSession(naturalInfectionSeed),{kind:'mode',mode:'standard'}),'visual throws consume no RNG or extra money');
+    timingEvidence.beerThrows={targets:event.targets,actualBottles:trace.filter(p=>p.kind==='bottle').length,actualImpacts:trace.filter(p=>p.kind==='foam').length};
+    await desktop.evaluate(()=>{window.__restoreBeerSpy?.();window.__restoreImageSpy?.();});
   });
 
   const perkSeed = naturalSeed('bonus-perk-upgrades-every-badge', {kind:'buy',bonus:'dorm'}, p => p.upgrades.includes('infectious') && p.cascadeSteps.some(step => step.modifiers.some(event => event.kind === 'infectious')));
@@ -821,7 +869,7 @@ try {
     await assertDrops(desktop, animated, 'normal');
     const normalDurations = await phaseDurations(desktop);
     timingEvidence.normalReels = normalDurations;
-    for (const [phase, minimum] of [['spin', 1800], ['win', 600], ['cascade', 900]] as const) {
+    for (const [phase, minimum] of [['spin', 1200], ['win', 600], ['cascade', 550]] as const) {
       const observed = normalDurations.filter(item => item.phase === phase);
       assert.ok(observed.length && observed.every(item => item.duration >= minimum), `normal ${phase} remains readable: ${JSON.stringify(observed)}`);
     }
@@ -853,7 +901,7 @@ try {
     const durations = await phaseDurations(desktop);
     timingEvidence.turboReels = durations;
     await assertDrops(desktop, view, 'turbo');
-    for (const [phase, minimum] of [['spin', 1000], ['win', 250], ['cascade', 500]] as const) {
+    for (const [phase, minimum] of [['spin', 600], ['win', 230], ['cascade', 330]] as const) {
       const observed = durations.filter(item => item.phase === phase);
       assert.ok(observed.length && observed.every(item => item.duration >= minimum), `turbo ${phase} remains readable: ${JSON.stringify(observed)}`);
     }
