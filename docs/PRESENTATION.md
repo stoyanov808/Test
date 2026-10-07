@@ -1,6 +1,6 @@
-# Studentski Grad presentation, version 5
+# Studentski Grad presentation, revision 5.1
 
-Version 5 keeps Sofia student nightlife and the 6×5 board, with organic ink illustrations, a larger integrated game stage and faster normal/turbo presentation with damped falling wobble. Official Duck Hunters footage supplies the cause-before-result sequence. The party-wheel layout and Studentski Grad illustrations belong to this adaptation. The badge replay follows verified Duck Hunters behavior: normal source-only growth, upgraded infection to all current matches, and one common revealed type for badges on a drop. Initial landings and refills now use smooth one-way top drops, with no spinning or cycling strip.
+Presentation 5.1 keeps Sofia student nightlife and the 6×5 board, with organic ink illustrations, a larger integrated game stage and faster normal/turbo presentation with damped falling wobble. Official Duck Hunters footage supplies the cause-before-result sequence. The party-wheel layout and Studentski Grad illustrations belong to this adaptation. The badge replay follows verified Duck Hunters behavior: normal source-only growth, upgraded infection to all current matches, and one common revealed type for badges on a drop. Initial landings and refills now use smooth one-way top drops, with no spinning or cycling strip.
 
 ## Reference and original visual direction
 
@@ -13,7 +13,7 @@ The 24 illustrations are directly authored SVG geometry in `public/art-v2`, with
 ## Recorded settlement replay
 
 1. Fade the previous symbols, then drop each actual recorded 6×5 symbol once from above. Stagger columns and rows, and ease smoothly into the destination cell. Symbols never wrap through the board, repeat on a cycling strip or change identity during flight. Position multiplier panels remain behind them.
-2. Reveal the common selected symbol on each badge in recorded sequence. A normal badge multiplies its source position only and sends no factor to a second cell. An upgraded badge sends its factor to every already visible matching regular symbol. The infection perk makes all arriving badges upgraded; otherwise 0.5% of badge draws are naturally upgraded. Original glass beer bottles follow arcs to exactly the recorded targets and finish with a foam splash. There are no copied paying symbols. Unresolved future badges remain badges; a later infection can compound an earlier revealed source.
+2. Reveal the common selected symbol on each badge in recorded sequence. A normal badge multiplies its source position only and sends no factor to a second cell. An upgraded badge sends its factor to every already visible matching regular symbol. The infection perk makes all arriving badges upgraded; otherwise 0.5% of badge draws are naturally upgraded. Upgraded beer bottles follow arcs to every recorded multiplier target. A normal badge samples a visible matching regular: beer marks that reference, its type travels back into the badge, and only the source receives the factor. With no visible match the reveal stays local. Large filled amber bursts, a foam crown and trailing liquid droplets remain visible after impact. There are no copied paying symbols. Unresolved future badges remain badges; a later infection can compound an earlier revealed source.
 3. Show each extra-shot award independently of Wild substitution.
 4. Mark participating physical scatter-win cells, display the base-stake award and sum of marked multipliers, then clear the paid cells and double their position values.
 5. Detonate recorded Bombs, protect Wild/Bonus symbols and show affected cell growth, including the Bomb source.
@@ -39,7 +39,7 @@ These are presentation timings chosen for this game, not claimed publisher milli
 
 The old board fades for 140/90 ms, then columns start 90/40 ms apart. Within a column, bottom-first row starts are 26/16 ms apart, with 570/330 ms flights and a 100/60 ms settled hold (normal/turbo). Flights use the monotonic quintic easing `p³ × (10 − 15p + 6p²)`, reaching the cell smoothly without vertical overshoot. A deterministic rotation of at most about three degrees wobbles in flight and settles to zero at the cell. It does not move the target center or consume gameplay randomness. One column landing cue fires after all its rows settle. Initial paid spins, free spins, Extra Spins and purchased-invitation staging share this motion. Cascade survivors retain their actual source identity; new symbols enter from above.
 
-Turbo remains readable. Skip shortens only the replay; all grids, targets, multipliers and awards were settled by the engine before animation. Each normal badge reveals the common symbol and grows its source; the upgraded badge uses a distinct appearance and links to all recorded targets. There are no decorative extra targets that disagree with the actual award.
+Turbo remains readable. Skip shortens only the replay; all grids, targets, multipliers and awards were settled by the engine before animation. Each normal badge reveals the common symbol and grows its source; the upgraded badge uses a distinct appearance and links to all recorded targets. Normal reference impacts are labelled as copying a symbol type. Factor labels and multiplier changes appear only at actual award targets.
 
 ## Bonus entry and the party wheel
 
@@ -69,6 +69,12 @@ BG/EN covers controls, rules, wheel labels, confirmations, modal decisions and e
 
 Measured frame timings are recorded in `test-results/browser-results.json` after the current-source run. Earlier observed timings remain in the version 4 archive. Nominal durations above describe this version; frame scheduling adds some overhead.
 
-Current validation passed **62 engine tests and 38 browser checks**, against **45** verified source/artwork hashes. Production Normal and purchased Dorm play/reload also matched the pure engine exactly, with development hooks absent and no runtime errors.
+The [current validation receipt](presentation-validation.json) records **62 engine tests and 40 browser checks**, against **45** verified source/artwork hashes. Production Normal and purchased Dorm play/reload also matched the pure engine exactly, with development hooks absent and no runtime errors.
 
-The fresh unskipped browser sample observed initial drops at **1,414 ms Normal / 767 ms Turbo** and refills at **754–764 ms / 449–464 ms**, including scheduling overhead. The natural base-upgrade check observed **nine exact beer recipients**, with actual bottle and foam canvas draws verified against the recorded targets.
+The fresh unskipped browser sample observed initial drops at **1,386 ms Normal / 770 ms Turbo** and refills at **729–738 ms / 441–450 ms**, including scheduling overhead. The natural base-upgrade check observed **nine exact beer recipients**, with actual bottle and foam canvas draws verified against the recorded targets. The normal-copy check painted a throw to a matching DJ and eight returning symbol frames, while its only paid target remained the source. The counter check showed 7 awarded spins, 6 after consuming the first, 7 after a visible +1 shot, and 0 throughout the last spin.
+
+Revision 5.1 rebuilds the nine paying-symbol bodies, with smaller adult heads/eyes, fuller bodies, cloth folds, glass reflection/condensation, dimensional cups/noodles/doner and DJ deck detail. Four scenes gain glazing, weathering, tile grout and speaker textures. Bonus and Wild retain their contrasting silhouettes. Versioned `?v=5.1` asset requests prevent older decoded/cached SVGs from hiding the revision.
+
+The dedicated BG/EN bonus counter sits above the reels on desktop and mobile. It shows the full award at entry, consumes each spin when play begins, adds recorded shot awards as they appear, and stays visible at zero during the final spin and completion overlay. It reads the committed presentation without consuming RNG, crediting money or exposing future shot awards.
+
+All version 5 mathematics, storage and simulation source hashes are unchanged by this presentation revision.

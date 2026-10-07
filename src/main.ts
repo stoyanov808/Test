@@ -24,6 +24,9 @@ let extraModalOpen = false;
 let extraReturnFocus: HTMLElement | null = null;
 let bonusPresentationState: {phase: string; tier: BonusTier; triggerScatters: number; awardedUpgrades: string[]; startedAt: number; wheelStartedAt?: number; finishedAt?: number} | null = null;
 let lastPresentation: SpinPresentation | null = session.presentation;
+// The engine has settled this spin already. Reveal additional spins with their
+// recorded shot animation instead of displaying future awards during the drop.
+let bonusSpinCounter: { id: string; tier: BonusTier; remaining: number; shotsShown: number } | null = null;
 const tr = (key: string, params?: Record<string, string | number>) => createTranslator(prefs.language)(key, params);
 const copy = (bg: string, en: string) => prefs.language === 'bg' ? bg : en;
 const money = (cents: number) => formatEuro(cents / 100, prefs.language);
@@ -57,7 +60,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class='mode-note'><small data-i18n='selectedMode'></small><strong id='mode-label'></strong><p id='mode-description'></p><button class='text-link' id='mode-open' data-i18n='exploreFeatures'></button></div>
         </aside>
         <section class='reel-section'>
-          <div class='reel-heading'><span class='edition'>VOL. 05 / <b>6 × 5</b></span><span class='ways-badge' id='board-counter'><strong id='ways'>8+</strong> <span data-i18n='scatterThreshold'></span></span></div>
+          <div class='reel-heading'><span class='edition'>VOL. 05 / <b>6 × 5</b></span><div class='bonus-spin-counter' id='bonus-spin-counter' role='status' aria-live='polite' aria-atomic='true' hidden><strong id='bonus-spins-count'></strong><span data-i18n='bonusSpinsRemaining'></span><b id='bonus-spins-added' hidden></b></div><span class='ways-badge' id='board-counter'><strong id='ways'>8+</strong> <span data-i18n='scatterThreshold'></span></span></div>
           <div class='reel-bezel'><canvas id='reels' role='img' aria-label='Six reels, five rows. Eight matching symbols anywhere.'></canvas></div>
           <div class='event-strip' aria-live='polite'><span class='event-star'>✦</span><span id='event-message'></span><span id='cascade-counter'></span></div>
         </section>
@@ -83,7 +86,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class='extra-offer' id='extra-offer' role='dialog' aria-modal='true' aria-labelledby='extra-title' aria-describedby='extra-description' hidden>
     <div class='extra-dialog'>
       <span class='extra-kicker' data-i18n='studentskiNights'></span>
-      <img class='extra-art' src='${import.meta.env.BASE_URL}art-v2/xways.svg' alt=''>
+      <img class='extra-art' src='${import.meta.env.BASE_URL}art-v2/xways.svg?v=5.1' alt=''>
       <h2 id='extra-title'></h2><p id='extra-description'></p>
       <strong id='extra-price'></strong><small id='extra-quote-label'></small>
       <div class='extra-actions'><button id='extra-dismiss'></button><button id='extra-spin'></button></div>
@@ -100,7 +103,13 @@ let shownMultipliers = session.presentation?.finalPositionMultipliers ?? initial
 const renderer = new SlotRenderer(el<HTMLCanvasElement>('reels'), {
   translate: key => tr(key),
   formatMoney: (euros, maximumFractionDigits = 2) => new Intl.NumberFormat(prefs.language === 'bg' ? 'bg-BG' : 'en-IE', {style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits}).format(euros),
-  onEvent: (name, value) => audio.cue(name, value),
+  onEvent: (name, value) => {
+    audio.cue(name, value);
+    if (name === 'shot' && value && bonusSpinCounter && session.presentation?.tier && !session.presentation.maxWin) {
+      const added = Math.min(value, session.presentation.shotsAdded - bonusSpinCounter.shotsShown);
+      bonusSpinCounter.remaining += added; bonusSpinCounter.shotsShown += added; update();
+    }
+  },
   onStep: step => { shownGrid = step.grid; shownMultipliers = step.positionMultipliers; el('cascade-counter').textContent = step.cascade ? tr('cascadeCount', {count: step.cascade}) : ''; update(); },
 });
 renderer.render(session.presentation ?? { grid: initialGrid, positionMultipliers: initialMultipliers });
@@ -167,8 +176,21 @@ function update() {
   const matrix = busy ? shownMultipliers : session.activeRound?.positionMultipliers ?? shownMultipliers;
   const highest = Math.max(1, ...matrix.flat());
   el('energy').textContent = highest.toLocaleString(prefs.language === 'bg' ? 'bg-BG' : 'en-GB');
-  el('spins-left').textContent = session.activeRound?.tier ? `${session.activeRound.spinsRemaining} ${tr('freeSpins')}` : copy('МНОЖИТЕЛ НА ПОЗИЦИЯ', 'POSITION MULTIPLIER');
-  el('energy-hint').textContent = session.activeRound?.tier ? tr('persistentMultipliers') : copy('Печалба → ×2 → ×4 → ×8…', 'Win → ×2 → ×4 → ×8…');
+  const bonusCounter = visibleBonusSpinCounter();
+  el('bonus-spin-counter').hidden = !bonusCounter;
+  if (bonusCounter) {
+    const count = String(bonusCounter.remaining);
+    if (el('bonus-spins-count').textContent !== count) el('bonus-spins-count').textContent = count;
+    const label = tr('bonusSpinsCounter', {count: bonusCounter.remaining});
+    if (el('bonus-spin-counter').getAttribute('aria-label') !== label) el('bonus-spin-counter').setAttribute('aria-label', label);
+    el('bonus-spin-counter').dataset.tier = bonusCounter.tier;
+    el('bonus-spins-added').hidden = !bonusCounter.shotsShown;
+    const added = `+${bonusCounter.shotsShown}`;
+    if (el('bonus-spins-added').textContent !== added) el('bonus-spins-added').textContent = added;
+    el('bonus-spins-added').setAttribute('aria-label', tr('shotsLeft', {count: bonusCounter.shotsShown}));
+  }
+  el('spins-left').textContent = bonusCounter ? tr('freeSpinsLeft', {count: bonusCounter.remaining}) : copy('МНОЖИТЕЛ НА ПОЗИЦИЯ', 'POSITION MULTIPLIER');
+  el('energy-hint').textContent = bonusCounter ? tr('persistentMultipliers') : copy('Печалба → ×2 → ×4 → ×8…', 'Win → ×2 → ×4 → ×8…');
   const selectionPending = !!(session.presentation?.intro || session.presentation?.bonusAwarded);
   const upgrades = selectionPending && bonusPresentationState?.phase !== 'result' ? [] : session.activeRound?.upgrades ?? lastPresentation?.upgrades ?? [];
   el('upgrade-list').innerHTML = (['infectious', 'bomb', 'shots'] as const).map((kind, i) => `<div class='upgrade-tag ${upgrades.includes(kind) ? 'unlocked' : ''}' data-upgrade='${kind}'><b>${['×', '✦', '+2'][i]}</b><span>${tr(`upgrade.${kind}`)}</span><small>${upgrades.includes(kind) ? copy('АКТИВНО', 'ACTIVE') : copy('ПОДОБРЕНИЕ', 'UPGRADE')}</small></div>`).join('');
@@ -194,6 +216,15 @@ function update() {
     el<HTMLButtonElement>('extra-spin').disabled = locked || session.balanceCents < offer.costCents;
     el('extra-dismiss').setAttribute('aria-label', copy('Откажи допълнителния спин', 'Decline the extra spin'));
   }
+}
+function visibleBonusSpinCounter() {
+  const view = session.presentation;
+  if (view?.tier) {
+    if (bonusSpinCounter?.id === view.id) return bonusSpinCounter;
+    return {tier: view.tier, remaining: view.intro ? CONFIG.bonuses[view.tier].spins : Math.max(0, (session.activeRound?.spinsRemaining ?? 0) - view.shotsAdded), shotsShown: 0};
+  }
+  if (view?.bonusAwarded) return bonusSpinCounter?.id === view.id ? bonusSpinCounter : null;
+  return session.activeRound?.tier ? {tier: session.activeRound.tier, remaining: session.activeRound.spinsRemaining, shotsShown: 0} : null;
 }
 function syncExtraModal(show: boolean) {
   if (show === extraModalOpen) return;
@@ -229,10 +260,11 @@ function overlay(title: string, detail: string, amount?: number, max = false, du
 }
 function winIllustration(): string {
   const assets = `${import.meta.env.BASE_URL}art-v2/`;
-  return `<div class='night-celebration' aria-hidden='true'><span></span><img class='win-friends' src='${assets}couple.svg' alt=''><img class='win-toast' src='${assets}beer.svg' alt=''></div>`;
+  return `<div class='night-celebration' aria-hidden='true'><span></span><img class='win-friends' src='${assets}couple.svg?v=5.1' alt=''><img class='win-toast' src='${assets}beer.svg?v=5.1' alt=''></div>`;
 }
 async function present(p: SpinPresentation) {
   lastPresentation = p;
+  bonusSpinCounter = p.tier ? {id: p.id, tier: p.tier, remaining: p.intro ? CONFIG.bonuses[p.tier].spins : Math.max(0, (session.activeRound?.spinsRemaining ?? 0) - p.shotsAdded), shotsShown: 0} : null;
   shownGrid = p.initialGrid; shownMultipliers = p.initialPositionMultipliers; update();
   if (p.intro && p.tier) {
     const purchased = p.choice.kind === 'buy' || p.choice.kind === 'lucky';
@@ -250,7 +282,12 @@ async function present(p: SpinPresentation) {
     document.querySelector<HTMLElement>('.night-stage')!.dataset.bonusPhase = 'result';
     setScene(p.tier); update();
   } else if (p.tier !== currentScene) setScene(p.tier);
+  if (bonusSpinCounter && p.tier) {
+    bonusSpinCounter.remaining = Math.max(0, (session.activeRound?.spinsRemaining ?? 0) - p.shotsAdded); update();
+  }
   await renderer.animateSpin(p, prefs.turbo);
+  if (p.tier && bonusSpinCounter) { bonusSpinCounter.remaining = session.activeRound?.spinsRemaining ?? 0; bonusSpinCounter.shotsShown = p.shotsAdded; }
+  else if (p.bonusAwarded) bonusSpinCounter = {id: p.id, tier: p.bonusAwarded, remaining: session.activeRound?.spinsRemaining ?? CONFIG.bonuses[p.bonusAwarded].spins, shotsShown: 0};
   shownGrid = p.finalGrid; shownMultipliers = p.finalPositionMultipliers;
   lastWin = p.payoutCents;
   el('cascade-counter').textContent = p.cascadeSteps.length > 1 ? tr('cascadeCount', {count: p.cascadeSteps.length - 1}) : '';
@@ -283,7 +320,7 @@ async function pump() {
 }
 function play(choice: RoundChoice = {kind: 'mode', mode: session.selectedMode}) {
   if (busy || session.activeRound || session.presentation || startupError || session.extraSpinOffer && choice.kind !== 'extra') return;
-  safe(() => { void audio.unlock(); bonusPresentationState = null; mutate(startRound(session, choice)); void pump(); });
+  safe(() => { void audio.unlock(); bonusPresentationState = null; bonusSpinCounter = null; mutate(startRound(session, choice)); void pump(); });
 }
 function playAuto() { if (session.extraSpinOffer) { autoplay = 0; update(); return; } if (busy || !autoplay) return; autoplay--; update(); play(); }
 el('spin').addEventListener('click', () => play());
@@ -338,7 +375,7 @@ if (startupError) {
 if (import.meta.env.DEV) {
   (window as unknown as {__slot: unknown}).__slot = {
     snapshot: () => structuredClone(session), busy: () => busy,
-    reset: (seed: number, balance?: number) => { if (busy) throw new Error('Busy'); mutate(createSession(seed, balance)); lastWin = 0; lastPresentation = null; shownGrid = initialGrid; shownMultipliers = initialMultipliers; renderer.render({grid: initialGrid, positionMultipliers: initialMultipliers}); update(); },
+    reset: (seed: number, balance?: number) => { if (busy) throw new Error('Busy'); bonusSpinCounter = null; mutate(createSession(seed, balance)); lastWin = 0; lastPresentation = null; shownGrid = initialGrid; shownMultipliers = initialMultipliers; renderer.render({grid: initialGrid, positionMultipliers: initialMultipliers}); update(); },
     skip: () => { renderer.skip(); skipOverlay?.(); skipBonusWheel(); }, setTurbo: (value: boolean) => { prefs.turbo = value; update(); },
     presentation: () => lastPresentation,
     bonusPresentation: () => bonusPresentationState ? structuredClone(bonusPresentationState) : null,

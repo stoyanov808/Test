@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 240" role="img" aria-labelledby="title">
-<title id="title">Warm late night doner with toasted pita, meat, salad and garlic sauce</title>
+<title id="title">Original hand-ink Studentski Grad doner with cut grilled chicken, lettuce, tomato, toasted flatbread and creased wrapping</title>
 <defs>
 <linearGradient id="skin" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#efd0b4"/><stop offset=".48" stop-color="#cd9c7c"/><stop offset="1" stop-color="#945f52"/></linearGradient>
 <linearGradient id="paper" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#fff9dd"/><stop offset=".7" stop-color="#e5ca97"/><stop offset="1" stop-color="#af815a"/></linearGradient>
@@ -15,6 +15,33 @@
 <filter id="shadow" x="-30%" y="-25%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#100f19" flood-opacity=".52"/></filter>
 <filter id="bloom" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3"/></filter>
 <pattern id="inkgrain" width="19" height="23" patternUnits="userSpaceOnUse"><path d="M2 4l3 1m8 12 2-1m-6 8 2 1" stroke="#fff4d4" stroke-width=".6" opacity=".15"/><path d="m9 8 2-1m6 14 2-1" stroke="#201b2a" stroke-width=".7" opacity=".2"/></pattern>
+
+<linearGradient id="face-light" x1="0" y1="0" x2="1" y2=".65"><stop stop-color="#edd2b6"/><stop offset=".38" stop-color="#d3a482"/><stop offset=".78" stop-color="#b47962"/><stop offset="1" stop-color="#805347"/></linearGradient>
+<linearGradient id="cotton" x1="0" y1="0" x2="1" y2=".7"><stop stop-color="#8bafa3"/><stop offset=".36" stop-color="#648d82"/><stop offset=".7" stop-color="#3c645e"/><stop offset="1" stop-color="#243f41"/></linearGradient>
+<linearGradient id="glass-light" x1="0" y1="0" x2="1" y2=".12"><stop stop-color="#102922"/><stop offset=".16" stop-color="#527341"/><stop offset=".3" stop-color="#b3ba70"/><stop offset=".4" stop-color="#607747"/><stop offset=".68" stop-color="#2c492f"/><stop offset=".91" stop-color="#142e25"/><stop offset="1" stop-color="#546640"/></linearGradient>
+<linearGradient id="leather" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#575565"/><stop offset=".42" stop-color="#343643"/><stop offset=".7" stop-color="#22242d"/><stop offset="1" stop-color="#11171d"/></linearGradient>
+<linearGradient id="chicken" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="#dbad78"/><stop offset=".45" stop-color="#a76b42"/><stop offset="1" stop-color="#58382b"/></linearGradient>
+<linearGradient id="lettuce" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#afb875"/><stop offset=".4" stop-color="#789452"/><stop offset="1" stop-color="#3e613b"/></linearGradient>
 </defs>
-<g stroke-linecap="round" stroke-linejoin="round"><ellipse cx="110" cy="215" rx="74" ry="11" fill="#100f19" stroke="none" stroke-width="0" opacity=".35"/><g transform="rotate(8 110 120)" filter="url(#shadow)"><path d="M48 79C41 49 63 28 89 27C115 12 158 22 174 51L166 149C159 184 137 205 107 218C80 191 51 143 48 79Z" fill="url(#bread)" stroke="#211c2a" stroke-width="3.2" /><path d="M52 82C57 55 80 52 108 65C130 49 156 47 168 70L157 144C127 157 80 145 59 117Z" fill="#5c3630" stroke="#211c2a" stroke-width="2.5" /><path d="M60 75q18-13 39 2t38-4l21 7M64 95q21-14 32-1t32 0q15-9 30 6M69 113q15-13 26 0t33 0q12-9 25 2" fill="none" stroke="#bd7652" stroke-width="8" /><path d="M57 69q10-15 23-6t22 0q8-13 21-3t34 3L163 84Q149 73 132 82T104 79Q90 88 77 80T58 86Z" fill="url(#teal)" stroke="#211c2a" stroke-width="2" /><path d="M65 82q12-5 23 2M119 75q8-7 21-4M71 105q15 5 28 3M132 105q8-2 16-1" fill="none" stroke="#fff0cf" stroke-width="3.2" /><path d="M86 79q6-11 20-7l3 12q-16 7-23-5M138 89q9-7 17-1l-4 12q-14 0-13-11" fill="url(#red)" stroke="#211c2a" stroke-width="2" /><path d="M59 124Q111 145 164 136L146 187Q131 207 110 219L80 186Z" fill="url(#paper)" stroke="#211c2a" stroke-width="2.5" /><path d="M64 135Q92 170 113 202M153 145Q133 164 123 194" fill="none" stroke="#b0926d" stroke-width="2" /><text x="111" y="178" font-family="Arial,sans-serif" font-size="19" font-weight="900" text-anchor="middle" fill="#bc4b4d" transform="rotate(8 111 178)">ДЮНЕР</text><path d="M61 44l11 7M65 38l9 5M155 35l-5 7M166 48l-6 4M53 99l9 7" fill="none" stroke="#211c2a" stroke-width="1.3" opacity=".43"/></g><path d="M75 41l8 3M72 48l7 4M134 39l7 5M147 45l6 5M91 194l8 9M132 167l-5 11" fill="none" stroke="#211c2a" stroke-width="1.3" opacity=".43"/></g>
+<g stroke="#25232a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9">
+<ellipse cx="110" cy="226" rx="74" ry="8" fill="#0d1016" stroke="none" opacity=".45"/>
+<g transform="rotate(6 110 127)" filter="url(#shadow)">
+<path d="M47 75Q42 45 66 29Q86 18 108 26Q137 19 164 38Q181 53 171 87L154 156L117 216Q111 223 104 215L70 169Z" fill="url(#bread)" stroke-width="2.1"/>
+<path d="M58 65Q69 42 92 48Q119 43 143 52L159 71L148 143Q106 161 65 124Z" fill="#513c2e" stroke-width="1.4"/>
+<path d="M59 72L73 58L84 70L104 60L120 70L139 59L157 73L149 94L127 84L112 100L92 87L71 99Z" fill="url(#lettuce)" stroke-width="1"/>
+<path d="M65 76l13 2 8-8M87 82l14-3 8 8M117 83l15-14M135 82l13-6" stroke="#c9cc8f" fill="none" stroke-width="1.2"/>
+<path d="M67 100L81 91L99 96L103 105L88 111L73 111ZM111 98L125 91L147 97L148 107L130 114L116 108ZM70 119L82 113L96 117L98 126L84 132ZM104 121L117 115L142 121L137 132L118 137Z" fill="url(#chicken)" stroke-width="1.1"/>
+<path d="M74 99l12 5M83 96l9 4M119 98l16 7M75 123l12 2M111 122l17 5" stroke="#e2c18e" fill="none" stroke-width="1.1"/>
+<path d="M84 80Q99 68 112 81Q106 95 89 91Z" fill="url(#red)" stroke-width=".9"/><path d="M121 91Q139 82 152 92L147 102Q132 107 121 99Z" fill="url(#red)" stroke-width=".9"/>
+<path d="M91 82l9-3M101 87l5-2M128 93l9 2" stroke="#ecc194" stroke-width="1.4"/>
+<path d="M72 111Q97 119 113 111M119 117l20 2" stroke="#ead9ae" stroke-width="3.1" fill="none"/>
+<path d="M61 129Q111 152 158 137L144 177Q134 198 111 217L82 186Z" fill="url(#paper)" stroke-width="1.6"/>
+<path d="M65 136Q84 164 111 205M151 145Q133 161 124 188M81 149l13 14M142 160l-12 21" stroke="#9c8668" stroke-width="1.2" fill="none"/>
+<path d="M79 142Q87 160 106 174L111 192Q92 177 84 162Z" fill="#e6cda1" stroke="none"/>
+<text x="111" y="177" font-family="Georgia,serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#904e40" stroke="none" transform="rotate(6 111 177)">ДЮНЕР</text>
+<path d="M65 42l8 6M71 32l5 3M148 37l-5 6M164 53l-6 3M54 83l5 8M74 179l8 10" stroke="#8b5f3c" stroke-width="1.2" fill="none"/>
+<g fill="#6f4a30" stroke="none" opacity=".65"><ellipse cx="62" cy="58" rx="2" ry="1.2"/><ellipse cx="83" cy="35" rx="2.7" ry="1.4"/><ellipse cx="135" cy="35" rx="2" ry="1.1"/><ellipse cx="151" cy="48" rx="2.4" ry="1.2"/><ellipse cx="56" cy="107" rx="1.2" ry="2"/></g>
+</g>
+
+</g>
 </svg>

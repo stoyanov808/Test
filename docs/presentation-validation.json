@@ -1,0 +1,387 @@
+{
+  "presentationVersion": "5.1.0",
+  "mathematicsVersion": "studentski-duck-5",
+  "browserGeneratedAt": "2026-10-07T23:50:23.681Z",
+  "engineTestsPassed": 62,
+  "browserChecksPassed": 40,
+  "browserChecksFailed": 0,
+  "browserSourceHashes": {
+    "index.html": "ff0fd82334ea51b0e79a9b6702d7ff6cf59a381c482e2f1f30561b1895af64e4",
+    "public/art-v2/beer.svg": "cf186fe862c105d52d3c9dab6244ac9836e6dead699f8d15cd168c3ad1cf0224",
+    "public/art-v2/bomb.svg": "902b6d8ddb9456e4cabcef15724e9f7cb8a466f709198afc7b702e57befe7096",
+    "public/art-v2/book.svg": "468ab7fb4252bac5bed803232ca141b5a268008aa1f3616427fec043a9265150",
+    "public/art-v2/bouncer.svg": "bc6c7aaf4b216cf752ac4ee7902ad5c6a22b75da3a4dc9fceb50d7195bc22c98",
+    "public/art-v2/coffee.svg": "85416f46ebae65a7acb2483fa8e87bda66c294b79eb59338588a881573333499",
+    "public/art-v2/couple.svg": "0eecbc36f02ac7bb6088446ef8ed03a83d496d5e3b8e7a03826dede0def12824",
+    "public/art-v2/dj.svg": "a59680b80eef0c27c2708c8de1cefe5269c6a6ab829c5336ddc99f33cc8e6ce5",
+    "public/art-v2/doner.svg": "eaa401c97bbeca2b4b4517cedbb8046adae6717365ffb6a9d09bac34fce63bfe",
+    "public/art-v2/female.svg": "e978faefc40245c654e5ba66ee48f37bb76dee9214ae83b0f5773a598a550988",
+    "public/art-v2/infectious-upgraded.svg": "8a0382e8994baca4bbdf0c9ce75e891eef1a5ac1800f8542b799ce7c864b294e",
+    "public/art-v2/infectious.svg": "8a0382e8994baca4bbdf0c9ce75e891eef1a5ac1800f8542b799ce7c864b294e",
+    "public/art-v2/male.svg": "f1c52039ce9c35da23c88732b93ef6eeed39a81d4fa657e89abcb99b639bc8cb",
+    "public/art-v2/noodles.svg": "8a0987b56b01f1283873367383c5f867626643340e0294fb4b73f7405c7ecad0",
+    "public/art-v2/party-shuttle.svg": "dadbe28ca4c1f48387fc0810ba2a95dd6ae703c3044e237eaca2cb1ea8cdaed0",
+    "public/art-v2/scatter.svg": "c69de858e23758519c4546e4444dacff531cc051388cacd1699889ecdb328870",
+    "public/art-v2/scene-base.svg": "9fa8099c39fdce85ad6e3e09ec687f531d63819a72a84d92df9f13838e36a2f2",
+    "public/art-v2/scene-december.svg": "d48f20a010e1701d39f4141294a676d5e87e400564694f9cad40b514eabbc710",
+    "public/art-v2/scene-dorm.svg": "6d5dec9d9aa98983f9287b34bd073188ab9e73131547a202ea7e23ad99627f38",
+    "public/art-v2/scene-friday.svg": "0d75b2f19cffa6e5b3ce2666c94cdb1ae8c7cc6ca870b2df35316cf436c139d8",
+    "public/art-v2/shot.svg": "1836320d97ed258df3f662a169326eb7a4f5e1e4480456f1a6085b2f2958f76b",
+    "public/art-v2/vip.svg": "e989efac6785638feae827d0ba22779273d953b2881dfce3fb02c93914903ddc",
+    "public/art-v2/wild-tall.svg": "1587854007ca373cdd64390cfcd7cd11ddc033dda4cf405cdb512f0dea004825",
+    "public/art-v2/wild.svg": "58f952541e3440618968b94be492d8b5145715751290eba8d06a57485c83e4ce",
+    "public/art-v2/xways.svg": "2051a68d44d5f25ebc324e4829b6eb27f73662a52472bbe02f3dbed6dc7b66b8",
+    "scripts/browser-test.ts": "46be8059b5769f41f89c83c76045f22f67f5a0b2253bb01ee1a7cbd375003a0e",
+    "src/audio.ts": "29807275831a3e06f70536b401861ea1cb282de3ee263a0faf949f7b74bc796f",
+    "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
+    "src/engine/config.ts": "e139911399a038a1df509fbbe3c01b6577e5051ca9797b0ff0dac6658e70333d",
+    "src/engine/engine.ts": "c446e1b5c7416a6d3fbda4726cca1f96d3a9e96d2453ef386a967f93b2fc34b7",
+    "src/engine/evaluator.ts": "277a83a354275920f9f46caa50eee3f996f187cdea37657b91dbca61f82f1b86",
+    "src/engine/index.ts": "ee8c6afeae6dc2cdfda4811c976018f61cfa2b930fe7d215dde3e383f712d01a",
+    "src/engine/persistence.ts": "cf373b37712efe3418c4ceb3fd4667f6ec0777b5d8a6a1a68b1ceb8bed231c91",
+    "src/engine/rng.ts": "029519d1be2b0a27acecf6f5c4f728685fd8e44db86abd782f7cd20ded45cbf4",
+    "src/engine/types.ts": "e79766a2a6c5e0192175a2e631408130e5078ef7e0179cb8f758c792ff675e9c",
+    "src/i18n.ts": "0dc38fc46fc6b3e0ee18032fb7f0812f01feb2047805404c870a7695c40a679b",
+    "src/main.ts": "6f9a292759f98a46423a31e4eb61c9b2b076d138457d84bd7bcda07d7ce034dc",
+    "src/menus.css": "54b7022b626a166a98b2977325f6dcee44a7e9f505eb7411947830a570cacf83",
+    "src/menus.ts": "39a56216ea5186e6b059f6b98a0154a42a9241d7d0dee5e9bdba4e48422ddffc",
+    "src/render/art-v2.ts": "8e37bf6d72d726667c22330a96529f95e06a5a8f9d5cfacabce039ffcefa065b",
+    "src/render/bonus-wheel.ts": "a064035444dfc2e7c7b0ec20972cdc8dc5e9fe034679bebeb16b19ba00b98cbd",
+    "src/render/index.ts": "cf8c66a896a83e46bf1eb429df69a363a7f317c4deb69125f0fc52652618b0ec",
+    "src/render/renderer.ts": "48344cc6fcd17b43273c01fd670326b652e3d34b8e821b9e26b2dce4e43f9a93",
+    "src/style.css": "97c43c5de56ebdf2d9bdc0bc33d8f3aaa77fd9d9ed5957924850da6f451309f1",
+    "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
+  },
+  "browserChecks": [
+    {
+      "name": "Desktop renders the original 6 \u00d7 5 SVG board, 9 paying symbols and local fonts",
+      "passed": true
+    },
+    {
+      "name": "English/Bulgarian settings and euro formatting persist through a reload",
+      "passed": true
+    },
+    {
+      "name": "Paytable lists 9 physical-count awards and complete translated rules",
+      "passed": true
+    },
+    {
+      "name": "Scatter wins include reels five/six and repeated clicks debit one complete round",
+      "passed": true
+    },
+    {
+      "name": "standard charges 1\u00d7 and starts every position at 1\u00d7",
+      "passed": true
+    },
+    {
+      "name": "hunt charges 2\u00d7 and starts every position at 1\u00d7",
+      "passed": true
+    },
+    {
+      "name": "frames charges 2.8\u00d7 and starts every position at 2\u00d7",
+      "passed": true
+    },
+    {
+      "name": "wild charges 90\u00d7 and starts every position at 64\u00d7",
+      "passed": true
+    },
+    {
+      "name": "god charges 3000\u00d7 and starts every position at 1024\u00d7",
+      "passed": true
+    },
+    {
+      "name": "dorm buy lands 3 invitations, shows 1 exact wheel awards and charges one 70\u00d7 debit",
+      "passed": true
+    },
+    {
+      "name": "friday buy lands 4 invitations, shows 2 exact wheel awards and charges one 200\u00d7 debit",
+      "passed": true
+    },
+    {
+      "name": "december buy lands 5 invitations, shows 3 exact wheel awards and charges one 600\u00d7 debit",
+      "passed": true
+    },
+    {
+      "name": "Bonus remaining spins consume the first spin, add visible shots and show zero on the final spin",
+      "passed": true
+    },
+    {
+      "name": "Bonus Wild occurrences come from each random grid and are not a fixed allowance",
+      "passed": true
+    },
+    {
+      "name": "Three natural invitations show the same exact one-pointer wheel before the seven-spin bonus",
+      "passed": true
+    },
+    {
+      "name": "4 natural invitations award the friday wheel and complete without a purchase debit",
+      "passed": true
+    },
+    {
+      "name": "5 natural invitations award the december wheel and complete without a purchase debit",
+      "passed": true
+    },
+    {
+      "name": "A normal badge throws beer at a matching symbol, visibly copies it home and boosts only its source",
+      "passed": true
+    },
+    {
+      "name": "Multiple normal badges on one drop share one revealed symbol and visibly boost their own exact sources",
+      "passed": true
+    },
+    {
+      "name": "A rare base-game upgraded speaker throws beer to every recorded target without changing settlement",
+      "passed": true
+    },
+    {
+      "name": "The infection wheel perk guarantees upgraded badges on initial bonus grids and every refill",
+      "passed": true
+    },
+    {
+      "name": "Lucky Draw visibly discloses 50/25/25 odds and naturally selects dorm",
+      "passed": true
+    },
+    {
+      "name": "Lucky Draw visibly discloses 50/25/25 odds and naturally selects friday",
+      "passed": true
+    },
+    {
+      "name": "Lucky Draw visibly discloses 50/25/25 odds and naturally selects december",
+      "passed": true
+    },
+    {
+      "name": "Reload during a purchased bonus preserves its exact RNG, receipt and one debit/payout",
+      "passed": true
+    },
+    {
+      "name": "Centered Extra modal blurs/inerts the game, blocks paid spins and accepts one disclosed quote",
+      "passed": true
+    },
+    {
+      "name": "Declining an extra offer leaves balance, RNG and completed accounting untouched",
+      "passed": true
+    },
+    {
+      "name": "Autoplay stops at a mandatory Extra decision and takes no hidden subsequent debit",
+      "passed": true
+    },
+    {
+      "name": "Normal animation shows locked euro awards/current match counts; skipping changes no result",
+      "passed": true
+    },
+    {
+      "name": "Turbo keeps real reel stops, wins and cascades readable without changing RNG or settlement",
+      "passed": true
+    },
+    {
+      "name": "Autoplay is bounded and stopping completes only the currently running paid round",
+      "passed": true
+    },
+    {
+      "name": "Ten autoplay rounds create ten balanced receipts and stop automatically",
+      "passed": true
+    },
+    {
+      "name": "Low balance disables unaffordable buys/modes without taking a debit",
+      "passed": true
+    },
+    {
+      "name": "Prominent original Wild and invitation artwork appears on a naturally landed desktop board",
+      "passed": true
+    },
+    {
+      "name": "390 \u00d7 844 touch layout has no overflow and accessible 44px controls/bonus menus",
+      "passed": true
+    },
+    {
+      "name": "Mobile touch spin settles the same engine outcome and Bulgarian euro settings work",
+      "passed": true
+    },
+    {
+      "name": "Mobile invitation landing and two-pointer wheel preserve exact bonus awards and touch access",
+      "passed": true
+    },
+    {
+      "name": "Mobile English bonus remaining counter stays prominent while free spins are playing",
+      "passed": true
+    },
+    {
+      "name": "Mobile Wild and invitation artwork stays visible within the larger reel board",
+      "passed": true
+    },
+    {
+      "name": "No browser errors, broken local assets or external image downloads occur",
+      "passed": true
+    }
+  ],
+  "observedPresentation": {
+    "normalBeerCopy": {
+      "source": {
+        "reel": 0,
+        "row": 1
+      },
+      "revealReference": {
+        "reel": 3,
+        "row": 3
+      },
+      "recordedPaidTargets": [
+        {
+          "reel": 0,
+          "row": 1
+        }
+      ],
+      "actualBottles": 16,
+      "impactRadius": 12.278951973045267,
+      "actualCopies": 8
+    },
+    "beerThrows": {
+      "targets": [
+        {
+          "reel": 0,
+          "row": 0
+        },
+        {
+          "reel": 0,
+          "row": 1
+        },
+        {
+          "reel": 0,
+          "row": 3
+        },
+        {
+          "reel": 1,
+          "row": 1
+        },
+        {
+          "reel": 2,
+          "row": 0
+        },
+        {
+          "reel": 2,
+          "row": 4
+        },
+        {
+          "reel": 3,
+          "row": 0
+        },
+        {
+          "reel": 4,
+          "row": 1
+        },
+        {
+          "reel": 5,
+          "row": 0
+        }
+      ],
+      "actualBottles": 182,
+      "actualImpacts": 1458
+    },
+    "bonusRemainingCounter": {
+      "seed": 5,
+      "awarded": 7,
+      "firstConsumed": 6,
+      "shownAfterShot": 7,
+      "added": 1,
+      "final": 0
+    },
+    "normalReels": [
+      {
+        "phase": "spin",
+        "duration": 1385.5
+      },
+      {
+        "phase": "bomb",
+        "duration": 1585.300000011921
+      },
+      {
+        "phase": "clear",
+        "duration": 435.59999999403954
+      },
+      {
+        "phase": "cascade",
+        "duration": 738.2000000029802
+      },
+      {
+        "phase": "xways",
+        "duration": 920.7000000029802
+      },
+      {
+        "phase": "win",
+        "duration": 934.8999999910593
+      },
+      {
+        "phase": "clear",
+        "duration": 419.70000000298023
+      },
+      {
+        "phase": "cascade",
+        "duration": 729.2000000029802
+      }
+    ],
+    "turboReels": [
+      {
+        "phase": "spin",
+        "duration": 770.0999999940395
+      },
+      {
+        "phase": "bomb",
+        "duration": 886.7999999970198
+      },
+      {
+        "phase": "clear",
+        "duration": 234.90000000596046
+      },
+      {
+        "phase": "cascade",
+        "duration": 441.09999999403954
+      },
+      {
+        "phase": "xways",
+        "duration": 530.4000000059605
+      },
+      {
+        "phase": "win",
+        "duration": 405.29999999701977
+      },
+      {
+        "phase": "clear",
+        "duration": 240.09999999403954
+      },
+      {
+        "phase": "cascade",
+        "duration": 449.90000000596046
+      }
+    ]
+  },
+  "runtimeErrors": [],
+  "failedRequests": [],
+  "externalImages": [],
+  "productionSmoke": {
+    "generatedAt": "2026-10-07T23:46:13.154Z",
+    "packageVersion": "5.1.0",
+    "config": "studentski-duck-5",
+    "passed": true,
+    "sourceHashes": {
+      "src/engine/config.ts": "e139911399a038a1df509fbbe3c01b6577e5051ca9797b0ff0dac6658e70333d",
+      "src/engine/engine.ts": "c446e1b5c7416a6d3fbda4726cca1f96d3a9e96d2453ef386a967f93b2fc34b7",
+      "src/engine/evaluator.ts": "277a83a354275920f9f46caa50eee3f996f187cdea37657b91dbca61f82f1b86",
+      "src/engine/rng.ts": "029519d1be2b0a27acecf6f5c4f728685fd8e44db86abd782f7cd20ded45cbf4",
+      "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
+      "src/render/renderer.ts": "48344cc6fcd17b43273c01fd670326b652e3d34b8e821b9e26b2dce4e43f9a93",
+      "src/render/bonus-wheel.ts": "a064035444dfc2e7c7b0ec20972cdc8dc5e9fe034679bebeb16b19ba00b98cbd",
+      "src/main.ts": "6f9a292759f98a46423a31e4eb61c9b2b076d138457d84bd7bcda07d7ce034dc"
+    },
+    "devHooksAbsent": true,
+    "normal": {
+      "costCents": 20,
+      "payoutCents": 0
+    },
+    "dorm": {
+      "costCents": 1400,
+      "payoutCents": 1598,
+      "spins": 7
+    },
+    "reloadLedgerUnchanged": true,
+    "errors": []
+  }
+}

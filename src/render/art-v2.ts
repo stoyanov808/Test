@@ -17,10 +17,11 @@ export const SYMBOLS: SymbolId[] = ['book', 'coffee', 'noodles', 'doner', 'beer'
 export const ART_SYMBOL_IDS = [...SYMBOLS, 'bomb', 'xways', 'infectious', 'infectious-upgraded', 'shot', 'wild-tall'] as const;
 export type SceneName = 'base' | 'dorm' | 'friday' | 'december';
 const assetBase = `${import.meta.env.BASE_URL}art-v2/`;
-export function symbolAssetUrl(symbol: string): string { return `${assetBase}${symbol}.svg`; }
+export const ART_REVISION = '5.1';
+export function symbolAssetUrl(symbol: string): string { return `${assetBase}${symbol}.svg?v=${ART_REVISION}`; }
 export const SCENE_URLS: Record<SceneName, string> = {
-  base: `${assetBase}scene-base.svg`, dorm: `${assetBase}scene-dorm.svg`,
-  friday: `${assetBase}scene-friday.svg`, december: `${assetBase}scene-december.svg`,
+  base: symbolAssetUrl('scene-base'), dorm: symbolAssetUrl('scene-dorm'),
+  friday: symbolAssetUrl('scene-friday'), december: symbolAssetUrl('scene-december'),
 };
 
 const sceneImages = new Map<SceneName, HTMLImageElement>();

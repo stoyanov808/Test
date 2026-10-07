@@ -22,7 +22,7 @@ declare global {
       skip(): void;
       setTurbo(turbo: boolean): void;
       presentation(): SpinPresentation | null;
-      board(): {grid: Grid; positionMultipliers: number[][]; cascade: number; motion?: MotionView | null; modifier?: {kind: string; progress: number; source: {reel:number;row:number}; targets: {reel:number;row:number}[]} | null};
+      board(): {grid: Grid; positionMultipliers: number[][]; cascade: number; motion?: MotionView | null; modifier?: {kind: string; progress: number; source: {reel:number;row:number}; targets: {reel:number;row:number}[]; revealReference?: {reel:number;row:number}|null} | null};
       bonusPresentation(): {phase: string; tier: BonusTier; triggerScatters: number; awardedUpgrades: BonusUpgrade[]; startedAt: number; wheelStartedAt?: number; finishedAt?: number} | null;
     };
     __animationPhases?: string[];
@@ -35,8 +35,9 @@ declare global {
     __stopBonusObserver?: () => void;
     __motionTrace?: MotionFrame[];
     __paintedArt?: string[];
+    __paintedArtURLs?: string[];
     __restoreImageSpy?: () => void;
-    __beerTrace?: {kind: string; x:number; y:number; progress:number; source:string}[];
+    __beerTrace?: {kind: string; x:number; y:number; progress:number; source:string; radius?:number; alpha:number; symbol?:string}[];
     __restoreBeerSpy?: () => void;
   }
 }
@@ -211,11 +212,12 @@ async function phaseDurations(page: Page) {
 }
 async function observeArtworkAndDrops(page: Page) {
   await page.evaluate(() => {
-    window.__restoreImageSpy?.(); window.__motionTrace = []; window.__paintedArt = [];
+    window.__restoreImageSpy?.(); window.__motionTrace = []; window.__paintedArt = []; window.__paintedArtURLs = [];
     const original = CanvasRenderingContext2D.prototype.drawImage;
     window.__restoreImageSpy = () => { CanvasRenderingContext2D.prototype.drawImage = original; delete window.__restoreImageSpy; };
     CanvasRenderingContext2D.prototype.drawImage = function(image: CanvasImageSource, ...args: number[]) {
       if (this.canvas.id === 'reels' && image instanceof HTMLImageElement && /\/art-v2\//.test(image.src)) {
+        if (!window.__paintedArtURLs!.includes(image.src)) window.__paintedArtURLs!.push(image.src);
         const symbol = new URL(image.src).pathname.split('/').at(-1)!.replace(/\.svg$/, '');
         const matrix = this.getTransform();
         const paintedX = matrix.e / (this.canvas.width / 1040), paintedY = matrix.f / (this.canvas.height / 730);
@@ -238,6 +240,8 @@ async function observeArtworkAndDrops(page: Page) {
 }
 async function assertDrops(page: Page, view: SpinPresentation, label: string) {
   const trace = await page.evaluate(() => window.__motionTrace ?? []);
+  const renderedURLs = await page.evaluate(() => window.__paintedArtURLs ?? []);
+  assert.ok(renderedURLs.length > 0 && renderedURLs.every(url => new URL(url).searchParams.get('v') === '5.1'), 'the actual canvas loads the revised artwork through versioned asset URLs');
   const landing = trace.filter(frame => frame.kind === 'landing');
   assert.ok(landing.length >= (label === "turbo" ? 7 : 15), `real ${label} landing frames are observed`);
   assert.ok(landing[0].durationMs <= (label === 'turbo' ? 850 : 1500), 'configured fall completes faster than the prior version');
@@ -278,6 +282,60 @@ async function assertDrops(page: Page, view: SpinPresentation, label: string) {
   assert.ok(cascading.length >= (label === "turbo" ? 4 : 8), 'the same top-down motion is observed during a real refill');
   timingEvidence[`${label}-top-down-drops`] = {frames: trace.length, landingFrames: landing.length, cascadeFrames: cascading.length, durationMs: landing[0].durationMs, samples: [landing[0], landing[Math.floor(landing.length / 2)], landing.at(-1), cascading[0], cascading.at(-1)]};
   await page.evaluate(() => window.__restoreImageSpy?.());
+}
+async function observeBeerEffects(page: Page) {
+  await page.evaluate(() => {
+    window.__restoreBeerSpy?.(); window.__beerTrace = [];
+    const fillText = CanvasRenderingContext2D.prototype.fillText;
+    const arc = CanvasRenderingContext2D.prototype.arc;
+    const ellipse = CanvasRenderingContext2D.prototype.ellipse;
+    const drawImage = CanvasRenderingContext2D.prototype.drawImage;
+    const spy = {record(context: CanvasRenderingContext2D, kind: string, radius?: number, symbol?: string) {
+      const modifier = window.__slot.board().modifier;
+      if (context.canvas.id !== 'reels' || !modifier || !['xways', 'infectious'].includes(modifier.kind)) return;
+      const matrix = context.getTransform();
+      window.__beerTrace!.push({kind, x: matrix.e / (context.canvas.width / 1040), y: matrix.f / (context.canvas.height / 730), progress: modifier.progress, source: `${modifier.source.reel}:${modifier.source.row}`, alpha: context.globalAlpha, radius, symbol});
+    }};
+    CanvasRenderingContext2D.prototype.fillText = function(text, ...args) {
+      if (text === 'SG') spy.record(this, 'bottle');
+      return (fillText as (...args: unknown[]) => void).apply(this, [text, ...args]);
+    };
+    CanvasRenderingContext2D.prototype.arc = function(...args) {
+      if (this.fillStyle === '#fff0cb') spy.record(this, 'foam', args[2]);
+      if (this.fillStyle === '#d79a36') spy.record(this, 'spill', args[2]);
+      return arc.apply(this, args);
+    };
+    CanvasRenderingContext2D.prototype.ellipse = function(...args) {
+      if (this.fillStyle === '#d79a36') spy.record(this, 'spill', args[2]);
+      return ellipse.apply(this, args);
+    };
+    CanvasRenderingContext2D.prototype.drawImage = function(image: CanvasImageSource, ...args: number[]) {
+      const modifier = window.__slot.board().modifier;
+      if (modifier?.kind === 'xways' && modifier.revealReference && image instanceof HTMLImageElement && /\/art-v2\//.test(image.src)) {
+        const symbol = new URL(image.src).pathname.split('/').at(-1)!.replace(/\.svg$/, '');
+        const matrix = this.getTransform(), x = matrix.e / (this.canvas.width / 1040), y = matrix.f / (this.canvas.height / 730);
+        const isGridCenter = Array.from({length: 6}, (_, reel) => 34 + (reel + .5) * 162).some(cx => Math.abs(cx - x) < .01) && Array.from({length: 5}, (_, row) => 48 + (row + .5) * 130).some(cy => Math.abs(cy - y) < .01);
+        if (!isGridCenter && x >= 34 && x <= 1006 && y >= 48 && y <= 698) spy.record(this, 'copy', undefined, symbol);
+      }
+      return (drawImage as (...args: unknown[]) => void).apply(this, [image, ...args]);
+    };
+    window.__restoreBeerSpy = () => { CanvasRenderingContext2D.prototype.fillText = fillText; CanvasRenderingContext2D.prototype.arc = arc; CanvasRenderingContext2D.prototype.ellipse = ellipse; CanvasRenderingContext2D.prototype.drawImage = drawImage; delete window.__restoreBeerSpy; };
+  });
+}
+async function assertBonusCounter(page: Page, remaining: number, language: 'en' | 'bg', tier?: BonusTier) {
+  const counter = page.locator('#bonus-spin-counter');
+  await counter.waitFor({state: 'visible'});
+  assert.equal(await page.locator('#bonus-spins-count').textContent(), String(remaining), 'the prominent counter shows visually remaining bonus spins');
+  assert.equal(await counter.getAttribute('aria-label'), t('bonusSpinsCounter', {count: remaining}, language));
+  assert.equal(await counter.locator('[data-i18n="bonusSpinsRemaining"]').textContent(), t('bonusSpinsRemaining', {}, language));
+  if (tier) assert.equal(await counter.getAttribute('data-tier'), tier);
+  const bounds = await counter.boundingBox(), viewport = page.viewportSize()!;
+  assert.ok(bounds && bounds.width >= 100 && bounds.height >= 25 && bounds.x >= 0 && bounds.y >= 0 && bounds.x + bounds.width <= viewport.width + 1 && bounds.y + bounds.height <= viewport.height + 1, `bonus remaining counter is visible inside the viewport: ${JSON.stringify(bounds)}`);
+  const layering = await counter.evaluate(element => {
+    const box = element.getBoundingClientRect(), center = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+    return !!center && (center === element || element.contains(center));
+  });
+  assert.ok(layering, 'bonus counter stays visibly above the game and completion overlays');
 }
 async function observeBonusPresentation(page: Page) {
   await page.evaluate(() => {
@@ -577,18 +635,63 @@ try {
       assert.equal(staged.state?.triggerScatters, upgrades + 2);
       assert.deepEqual(staged.state?.awardedUpgrades.slice().sort(), p.upgrades.slice().sort());
       assert.deepEqual(await snapshot(desktop), first, 'purchased scatter staging changes no money, committed board or RNG');
+      await assertBonusCounter(desktop, spins, 'en', tier);
       await shot(desktop, `bonus-${tier}-landed-invitations`);
       await assertReadyWheel(desktop, tier, p.upgrades, turbo);
       assert.equal(await desktop.locator('.night-stage').getAttribute('data-scene'), tier);
       assert.equal(await desktop.locator('.upgrade-tag.unlocked').count(), upgrades);
       const intro = await desktop.evaluate(() => window.__slot.bonusPresentation());
       assert.equal(intro?.phase, 'result');
+      await assertBonusCounter(desktop, spins - 1, 'en', tier);
       await finish(desktop);
+      assert.ok(await desktop.locator('#bonus-spin-counter').isHidden(), 'remaining spins hide when the paid bonus is complete');
       const settled = await snapshot(desktop); paidRound(settled, 20 * price);
       assert.deepEqual(settled, playCompleteRound(createSession(seed), {kind: 'buy', bonus: tier}));
       assert.ok(settled.history[0].spins >= spins || settled.history[0].maxWin);
     });
   }
+
+  let counterSeed = 0;
+  for (let seed = 1; seed <= 10_000; seed++) {
+    const begun = startRound(createSession(seed), {kind: 'buy', bonus: 'dorm'});
+    if (!begun.presentation!.shotsAdded || begun.presentation!.maxWin) continue;
+    const complete = playCompleteRound(createSession(seed), {kind: 'buy', bonus: 'dorm'});
+    if (complete.history[0].spins <= 11 && !complete.history[0].maxWin) { counterSeed = seed; fixtures['bonus-counter-with-shot'] = seed; break; }
+  }
+  assert.ok(counterSeed, 'a bounded natural bonus with a shot supplies the remaining-counter fixture');
+  await check('Bonus remaining spins consume the first spin, add visible shots and show zero on the final spin', desktop, async () => {
+    await reset(desktop, counterSeed); await observeBonusPresentation(desktop); await buy(desktop, 'dorm');
+    const committed = await snapshot(desktop), first = committed.presentation!;
+    assert.ok(first.shotsAdded > 0);
+    await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.triggerPhase === 'landed');
+    await assertBonusCounter(desktop, CONFIG.bonuses.dorm.spins, 'en', 'dorm');
+    await assertReadyWheel(desktop, 'dorm', first.upgrades, true, 'counter');
+    const baseline = Math.max(0, committed.activeRound!.spinsRemaining - first.shotsAdded);
+    await assertBonusCounter(desktop, baseline, 'en', 'dorm');
+    await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.animation === 'shot' && !document.getElementById('bonus-spins-added')!.hidden);
+    const shotView = await desktop.evaluate(() => ({count: Number(document.getElementById('bonus-spins-count')!.textContent), added: Number(document.getElementById('bonus-spins-added')!.textContent!.replace('+', ''))}));
+    assert.ok(shotView.added > 0 && shotView.added <= first.shotsAdded);
+    assert.equal(shotView.count, baseline + shotView.added, 'remaining counter adds only the replayed shot award');
+    await assertBonusCounter(desktop, shotView.count, 'en', 'dorm');
+    await shot(desktop, 'desktop-bonus-spins-shot');
+    await desktop.evaluate(async () => {
+      const deadline = performance.now() + 25_000;
+      while (!window.__slot.snapshot().presentation?.roundComplete) {
+        if (performance.now() > deadline) throw new Error('The bounded counter fixture did not reach its final spin');
+        window.__slot.skip(); await new Promise(resolve => setTimeout(resolve, 20));
+      }
+    });
+    const final = await snapshot(desktop);
+    assert.equal(final.activeRound, null); assert.equal(final.presentation!.tier, 'dorm'); assert.equal(final.presentation!.roundComplete, true);
+    await assertBonusCounter(desktop, 0, 'en', 'dorm');
+    await desktop.waitForFunction(() => document.getElementById('round-overlay')?.hidden === false);
+    await assertBonusCounter(desktop, 0, 'en', 'dorm');
+    await shot(desktop, 'desktop-bonus-spins-complete');
+    await finish(desktop);
+    assert.ok(await desktop.locator('#bonus-spin-counter').isHidden(), 'base play has no stale bonus spins');
+    assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(counterSeed), {kind:'buy',bonus:'dorm'}), 'counter updates consume no extra RNG or money');
+    timingEvidence.bonusRemainingCounter = {seed: counterSeed, awarded: CONFIG.bonuses.dorm.spins, firstConsumed: baseline, shownAfterShot: shotView.count, added: shotView.added, final: 0};
+  });
 
   await check('Bonus Wild occurrences come from each random grid and are not a fixed allowance', desktop, async () => {
     const counts = new Set<number>();
@@ -629,10 +732,14 @@ try {
     });
   }
 
-  const sourceOnlySeed = naturalSeed('normal-source-only-emitter-with-visible-matches', {kind:'mode', mode:'standard'}, p => !p.bonusAwarded && p.initialGrid.flat().includes('xways') && p.payoutCents < 400 && p.cascadeSteps.length <= 3 && p.cascadeSteps[0].modifiers.some(event => event.kind === 'xways' && event.gridAfter!.flat().filter(symbol => symbol === event.symbol).length > 2));
-  await check('A normal badge reveals its symbol and multiplies only its own position despite other visible matches', desktop, async () => {
+  const sourceOnlySeed = naturalSeed('normal-source-only-emitter-with-visible-matches', {kind:'mode', mode:'standard'}, p => {
+    if (p.bonusAwarded || !p.initialGrid.flat().includes('xways') || p.payoutCents >= 400 || p.cascadeSteps.length > 3) return false;
+    const firstNormal = p.cascadeSteps[0].modifiers.find(event => event.kind === 'xways');
+    return !!firstNormal && firstNormal.gridAfter!.flat().filter(symbol => symbol === firstNormal.symbol).length > 2;
+  });
+  await check('A normal badge throws beer at a matching symbol, visibly copies it home and boosts only its source', desktop, async () => {
     await reset(desktop, sourceOnlySeed); await desktop.evaluate(() => window.__slot.setTurbo(false));
-    await observeArtworkAndDrops(desktop); await desktop.locator('#spin').click();
+    await observeArtworkAndDrops(desktop); await observeBeerEffects(desktop); await desktop.locator('#spin').click();
     const before = await snapshot(desktop), view = before.presentation!;
     assert.equal(view.tier, null); assert.equal(view.upgrades.includes('infectious'), false);
     const event = view.cascadeSteps[0].modifiers.find(event => event.kind === 'xways')!;
@@ -649,13 +756,28 @@ try {
     await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.animation === 'xways');
     assert.ok(await desktop.evaluate(() => window.__paintedArt?.includes('xways')), 'the actual board paints the normal speaker asset on its own destination');
 
+    const reference = await desktop.evaluate(() => window.__slot.board().modifier?.revealReference);
+    assert.ok(reference, 'normal xWays chooses a visible matching regular symbol as its cosmetic reveal reference');
+    assert.notDeepEqual(reference, event.source, 'the cosmetic beer throw reaches another symbol instead of looping onto the badge');
+    let preReveal = view.cascadeSteps[0].grid;
+    for (const previous of view.cascadeSteps[0].modifiers) { if (previous === event) break; preReveal = previous.gridAfter ?? preReveal; }
+    assert.equal(preReveal[reference.reel][reference.row], event.symbol, 'the reveal reference was already a regular symbol of the revealed type');
+    await desktop.waitForFunction(source => (window.__beerTrace ?? []).some(effect => effect.kind === 'foam' && effect.source === source), `${event.source.reel}:${event.source.row}`);
     await shot(desktop, 'desktop-source-only-emitter');
     await desktop.waitForFunction(expected => {
       const board = window.__slot.board();
       return JSON.stringify(board.grid) === JSON.stringify(expected.gridAfter) && JSON.stringify(board.positionMultipliers) === JSON.stringify(expected.positionMultipliersAfter);
     }, event, {timeout: 15_000});
     assert.deepEqual(await snapshot(desktop), before, 'opening the normal badge does not change committed RNG or awards');
-    await finish(desktop); await desktop.evaluate(() => window.__restoreImageSpy?.());
+    const trace = await desktop.evaluate(() => window.__beerTrace ?? []), source = `${event.source.reel}:${event.source.row}`;
+    const effects = trace.filter(effect => effect.source === source);
+    const center = {x: 34 + (reference.reel + .5) * 162, y: 48 + (reference.row + .5) * 130};
+    assert.ok(effects.some(effect => effect.kind === 'bottle' && Math.hypot(effect.x - (34 + (event.source.reel + .5) * 162), effect.y - (48 + (event.source.row + .5) * 130)) > 50), 'the actual canvas paints beer flying away from the badge');
+    assert.ok(effects.some(effect => effect.kind === 'foam' && (effect.radius ?? 0) >= 10 && effect.alpha >= .5 && Math.abs(effect.x - center.x) < .01 && Math.abs(effect.y - center.y) < .01), 'a large visible foam impact appears at the copied symbol');
+    assert.ok(effects.some(effect => effect.kind === 'spill' && Math.abs(effect.x - center.x) < .01 && Math.abs(effect.y - center.y) < .01), 'the hit includes amber beer spilling onto its matching symbol');
+    assert.ok(effects.some(effect => effect.kind === 'copy' && effect.symbol === event.symbol), 'the actual canvas paints a ghost of the matching symbol travelling back into the badge');
+    timingEvidence.normalBeerCopy = {source: event.source, revealReference: reference, recordedPaidTargets: event.targets, actualBottles: effects.filter(effect => effect.kind === 'bottle').length, impactRadius: Math.max(...effects.filter(effect => effect.kind === 'foam').map(effect => effect.radius ?? 0)), actualCopies: effects.filter(effect => effect.kind === 'copy').length};
+    await finish(desktop); await desktop.evaluate(() => {window.__restoreBeerSpy?.(); window.__restoreImageSpy?.();});
     assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(sourceOnlySeed), {kind:'mode',mode:'standard'}));
   });
 
@@ -685,22 +807,8 @@ try {
 
   const naturalInfectionSeed = naturalSeed('natural-upgraded-base-beer-throws', {kind:'mode',mode:'standard'}, p => !p.bonusAwarded && p.cascadeSteps.length <= 3 && p.cascadeSteps[0].modifiers.some(event => event.kind === 'infectious' && event.targets.length >= 3));
   await check('A rare base-game upgraded speaker throws beer to every recorded target without changing settlement', desktop, async () => {
-    await reset(desktop,naturalInfectionSeed); await desktop.evaluate(() => {
-      window.__slot.setTurbo(false); window.__beerTrace=[];
-      const fillText=CanvasRenderingContext2D.prototype.fillText, arc=CanvasRenderingContext2D.prototype.arc;
-      CanvasRenderingContext2D.prototype.fillText=function(text,...args){
-        const modifier=window.__slot.board().modifier;
-        if(text==='SG'&&this.canvas.id==='reels'&&modifier){const m=this.getTransform();window.__beerTrace!.push({kind:'bottle',x:m.e/(this.canvas.width/1040),y:m.f/(this.canvas.height/730),progress:modifier.progress,source:`${modifier.source.reel}:${modifier.source.row}`});}
-        return (fillText as (...args:unknown[])=>void).apply(this,[text,...args]);
-      };
-      CanvasRenderingContext2D.prototype.arc=function(...args){
-        const modifier=window.__slot.board().modifier;
-        if(this.fillStyle==='#fff0cb'&&this.canvas.id==='reels'&&modifier){const m=this.getTransform();window.__beerTrace!.push({kind:'foam',x:m.e/(this.canvas.width/1040),y:m.f/(this.canvas.height/730),progress:modifier.progress,source:`${modifier.source.reel}:${modifier.source.row}`});}
-        return arc.apply(this,args);
-      };
-      window.__restoreBeerSpy=()=>{CanvasRenderingContext2D.prototype.fillText=fillText;CanvasRenderingContext2D.prototype.arc=arc;};
-    });
-    await observeArtworkAndDrops(desktop);await desktop.locator('#spin').click();
+    await reset(desktop,naturalInfectionSeed); await desktop.evaluate(() => window.__slot.setTurbo(false));
+    await observeArtworkAndDrops(desktop); await observeBeerEffects(desktop);await desktop.locator('#spin').click();
     const committed=await snapshot(desktop),view=committed.presentation!;
     const event=view.cascadeSteps[0].modifiers.find(event=>event.kind==='infectious')!;
     assert.equal(view.tier,null);assert.equal(view.upgrades.includes('infectious'),false);
@@ -709,7 +817,12 @@ try {
     await desktop.waitForFunction(()=>!window.__slot.busy(),undefined,{timeout:25000});
     const trace=await desktop.evaluate(()=>window.__beerTrace??[]),source=`${event.source.reel}:${event.source.row}`;
     assert.ok(trace.some(p=>p.kind==='bottle'&&p.source===source),'actual canvas paints thrown beer bottles');
-    for(const target of event.targets)assert.ok(trace.some(p=>p.kind==='foam'&&p.source===source&&Math.abs(p.x-(34+(target.reel+.5)*162))<.01&&Math.abs(p.y-(48+(target.row+.5)*130))<.01),'every recorded target receives its visible beer impact');
+    for (const target of event.targets) {
+      const hits = trace.filter(p => p.kind === 'foam' && p.source === source && Math.abs(p.x - (34 + (target.reel + .5) * 162)) < .01 && Math.abs(p.y - (48 + (target.row + .5) * 130)) < .01);
+      assert.ok(hits.some(hit => (hit.radius ?? 0) >= 10 && hit.alpha >= .5), 'every recorded target receives a large, opaque foam impact');
+      assert.ok(hits.filter(hit => hit.alpha > .25).at(-1)!.progress - hits.filter(hit => hit.alpha > .25)[0].progress >= .10, 'each splash remains visible for a readable part of the modifier animation');
+      assert.ok(trace.some(p => p.kind === 'spill' && p.source === source && Math.abs(p.x - (34 + (target.reel + .5) * 162)) < .01 && Math.abs(p.y - (48 + (target.row + .5) * 130)) < .01), 'every multiplier target receives visible amber beer as well as foam');
+    }
     assert.deepEqual(await snapshot(desktop),playCompleteRound(createSession(naturalInfectionSeed),{kind:'mode',mode:'standard'}),'visual throws consume no RNG or extra money');
     timingEvidence.beerThrows={targets:event.targets,actualBottles:trace.filter(p=>p.kind==='bottle').length,actualImpacts:trace.filter(p=>p.kind==='foam').length};
     await desktop.evaluate(()=>{window.__restoreBeerSpy?.();window.__restoreImageSpy?.();});
@@ -999,8 +1112,24 @@ try {
     const before = await snapshot(mobile);
     await mobile.waitForFunction(() => document.getElementById('reels')?.dataset.triggerPhase === 'landed', undefined, {timeout: 12_000});
     assert.equal(await mobile.evaluate(() => window.__slot.board().grid.flat().filter(symbol => symbol === 'scatter').length), 4);
+    await assertBonusCounter(mobile, CONFIG.bonuses.friday.spins, 'bg', 'friday');
     await shot(mobile, 'mobile-landed-invitations');
     await assertReadyWheel(mobile, 'friday', before.presentation!.upgrades, true, 'mobile');
+    await assertBonusCounter(mobile, CONFIG.bonuses.friday.spins - 1, 'bg', 'friday');
+    await shot(mobile, 'mobile-bulgarian-bonus-spins');
+    await finish(mobile);
+    assert.deepEqual(await snapshot(mobile), playCompleteRound(createSession(fixtures['buy-friday']), {kind:'buy',bonus:'friday'}));
+    assert.ok(await mobile.locator('#bonus-spin-counter').isHidden());
+  });
+  await check('Mobile English bonus remaining counter stays prominent while free spins are playing', mobile, async () => {
+    await mobile.locator('#settings').tap(); await mobile.locator('[data-action="language-en"]').tap(); await mobile.locator('[data-action="close"]').tap();
+    await reset(mobile, fixtures['buy-friday']); await observeBonusPresentation(mobile); await buy(mobile, 'friday');
+    const first = (await snapshot(mobile)).presentation!;
+    await mobile.waitForFunction(() => document.getElementById('reels')?.dataset.triggerPhase === 'landed');
+    await assertBonusCounter(mobile, CONFIG.bonuses.friday.spins, 'en', 'friday');
+    await assertReadyWheel(mobile, 'friday', first.upgrades, true, 'mobile-english');
+    await assertBonusCounter(mobile, CONFIG.bonuses.friday.spins - 1, 'en', 'friday');
+    await noOverflow(mobile); await shot(mobile, 'mobile-english-bonus-spins');
     await finish(mobile);
     assert.deepEqual(await snapshot(mobile), playCompleteRound(createSession(fixtures['buy-friday']), {kind:'buy',bonus:'friday'}));
   });

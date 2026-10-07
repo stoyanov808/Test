@@ -31,4 +31,22 @@ Copyright 2026 Studentski Grad project contributors.
 Original artwork is licensed under CC0 1.0 Universal:
 https://creativecommons.org/publicdomain/zero/1.0/
 
-Version 5 uses more muted skin, cloth and neon material tones and finer ink contours while retaining the original student-party drawings. Bright Bonus/Wild outlines remain readable. Beer projectiles and foam are original canvas geometry, drawn only toward engine-recorded badge targets; no external image assets or extra paying copies are introduced.
+The presentation revision rebuilds all **nine paying symbols**, rather than only
+changing their palette. Adult portraits now have smaller heads and eyes, broader
+shoulders, asymmetric facial planes and narrower jaws. Creased overshirts, jacket
+lapels, phone glass, padded headphones, turntable grooves and articulated hands
+establish the student-party setting at reel size. Objects have different material
+construction: reflected green glass and condensation on the beer; a ceramic rim
+and saucer on the coffee; irregular grilled chicken, green salad and folded paper
+on the doner; bamboo grain and folded cardboard on the noodles; layered paper
+edges and spiral binding on the exam notebook.
+
+The four scenes retain their original architecture and party identity. Added
+surface-aligned glazing, weathered concrete seams, kitchen tile grout, perforated
+speaker grilles, uneven snow and broken wet-floor reflections add physical depth.
+The Bonus and Wild silhouettes remain bright and readable beside these more
+restrained paying symbols. All new contours and material marks are authored SVG
+paths; no raster images, commercial sprites or downloaded art are used.
+
+Beer projectiles and impact splashes belong to the renderer. They replay the
+recorded feature events and add no symbols, paying cells or gameplay randomness.

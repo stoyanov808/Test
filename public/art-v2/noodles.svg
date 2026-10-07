@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 240" role="img" aria-labelledby="title">
-<title id="title">Student takeaway noodles with curled noodles and chopsticks</title>
+<title id="title">Original hand-ink takeaway noodle carton with folded cardboard, loose noodles, bamboo grain and warm steam</title>
 <defs>
 <linearGradient id="skin" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#efd0b4"/><stop offset=".48" stop-color="#cd9c7c"/><stop offset="1" stop-color="#945f52"/></linearGradient>
 <linearGradient id="paper" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#fff9dd"/><stop offset=".7" stop-color="#e5ca97"/><stop offset="1" stop-color="#af815a"/></linearGradient>
@@ -15,6 +15,31 @@
 <filter id="shadow" x="-30%" y="-25%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#100f19" flood-opacity=".52"/></filter>
 <filter id="bloom" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3"/></filter>
 <pattern id="inkgrain" width="19" height="23" patternUnits="userSpaceOnUse"><path d="M2 4l3 1m8 12 2-1m-6 8 2 1" stroke="#fff4d4" stroke-width=".6" opacity=".15"/><path d="m9 8 2-1m6 14 2-1" stroke="#201b2a" stroke-width=".7" opacity=".2"/></pattern>
+
+<linearGradient id="face-light" x1="0" y1="0" x2="1" y2=".65"><stop stop-color="#edd2b6"/><stop offset=".38" stop-color="#d3a482"/><stop offset=".78" stop-color="#b47962"/><stop offset="1" stop-color="#805347"/></linearGradient>
+<linearGradient id="cotton" x1="0" y1="0" x2="1" y2=".7"><stop stop-color="#8bafa3"/><stop offset=".36" stop-color="#648d82"/><stop offset=".7" stop-color="#3c645e"/><stop offset="1" stop-color="#243f41"/></linearGradient>
+<linearGradient id="glass-light" x1="0" y1="0" x2="1" y2=".12"><stop stop-color="#102922"/><stop offset=".16" stop-color="#527341"/><stop offset=".3" stop-color="#b3ba70"/><stop offset=".4" stop-color="#607747"/><stop offset=".68" stop-color="#2c492f"/><stop offset=".91" stop-color="#142e25"/><stop offset="1" stop-color="#546640"/></linearGradient>
+<linearGradient id="leather" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#575565"/><stop offset=".42" stop-color="#343643"/><stop offset=".7" stop-color="#22242d"/><stop offset="1" stop-color="#11171d"/></linearGradient>
+<linearGradient id="chicken" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="#dbad78"/><stop offset=".45" stop-color="#a76b42"/><stop offset="1" stop-color="#58382b"/></linearGradient>
+<linearGradient id="lettuce" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#afb875"/><stop offset=".4" stop-color="#789452"/><stop offset="1" stop-color="#3e613b"/></linearGradient>
 </defs>
-<g stroke-linecap="round" stroke-linejoin="round"><ellipse cx="110" cy="215" rx="74" ry="11" fill="#100f19" stroke="none" stroke-width="0" opacity=".35"/><g transform="rotate(-4 110 130)" filter="url(#shadow)"><path d="M42 95Q104 64 176 85L171 190Q112 214 61 193Z" fill="url(#paper)" stroke="#211c2a" stroke-width="3.2" /><path d="M42 95Q87 105 107 109L113 203Q83 203 61 193Z" fill="#d7a77b" stroke="#211c2a" stroke-width="2" /><path d="M107 109Q142 113 176 85L171 190Q143 208 113 203Z" fill="url(#red)" stroke="#211c2a" stroke-width="2" /><path d="M45 95Q104 66 176 85Q146 119 107 110Z" fill="#5b3832" stroke="#211c2a" stroke-width="2.5" /><path d="M63 90C63 72 83 70 87 82S111 94 117 81S145 72 151 90M67 96C88 91 89 72 106 79S123 104 143 87M80 98C89 107 104 102 109 89S138 80 150 93" fill="none" stroke="#edc579" stroke-width="5" /><path d="M98 55C72 26 113 32 100 12M128 58C148 36 116 31 134 14" fill="none" stroke="#c8b6a2" stroke-width="2.5" opacity=".7"/><path d="M127 97L160 35M139 101L175 38" fill="none" stroke="#211c2a" stroke-width="6" /><path d="M127 97L160 35M139 101L175 38" fill="none" stroke="#bf8657" stroke-width="2.5" /><text x="141" y="159" font-family="Arial,sans-serif" font-size="21" font-weight="900" text-anchor="middle" fill="#fff0cf" transform="rotate(-8 141 159)">НОЩ</text><path d="M65 129q18 6 31 8M66 150q15 6 23 7M64 178q18 7 29 7" fill="none" stroke="#211c2a" stroke-width="1.5" opacity=".4"/><path d="M153 118q6-2 10-4M146 182q8-3 13-6" fill="none" stroke="#fff0cf" stroke-width="2" opacity=".7"/></g></g>
+<g stroke="#25232a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9">
+<ellipse cx="110" cy="226" rx="74" ry="8" fill="#0d1016" stroke="none" opacity=".45"/>
+<g transform="rotate(-4 110 127)" filter="url(#shadow)">
+<path d="M44 95L65 78L169 83L177 103L168 194Q121 217 61 197Z" fill="url(#paper)" stroke-width="2"/>
+<path d="M44 95L105 115L112 206L61 197Z" fill="#ca9d74" stroke-width="1.2"/><path d="M105 115L177 103L168 194Q142 206 112 206Z" fill="url(#red)" stroke-width="1.2"/>
+<path d="M44 95L65 78L95 91L85 111ZM151 91L169 83L182 101L167 108Z" fill="#e5cf9f" stroke-width="1.2"/>
+<path d="M53 96Q107 77 168 99Q142 123 104 114Z" fill="#49362b" stroke-width="1.5"/>
+<path d="M65 98C64 86 73 84 81 94S96 110 103 96S122 80 129 97S148 109 152 97M69 104C81 97 86 84 96 94S111 113 122 102S142 91 155 104M82 106C94 99 95 92 109 100S127 114 141 104" fill="none" stroke="#d8af6c" stroke-width="3.8"/>
+<path d="M69 96l8-6M106 93l6-1M135 107l7-2M86 104l5 1M119 104l7 2" stroke="#eed5a0" stroke-width="1.1"/>
+<path d="M81 100l6 1M122 97l7 1M142 100l4-2" stroke="#899253" stroke-width="3"/>
+<path d="M129 96L166 31M140 99L180 34" stroke="#3e2c23" stroke-width="5" fill="none"/><path d="M128 93L166 31M140 95L180 34" stroke="#be9567" stroke-width="2.4" fill="none"/>
+<path d="M135 87l3 3M145 89l3 3M162 44l3 2M174 46l3 2" stroke="#7d5839" stroke-width="1"/>
+<text x="142" y="159" font-family="Georgia,serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#eedabe" stroke="none" transform="rotate(-7 142 159)">НОЩ</text>
+<path d="M61 124l9 62M100 119l5 77M165 116l-4 58" fill="none" stroke="#a38165" stroke-width="1"/>
+<path d="M74 130l17 7M76 153l17 5M77 178l15 6M147 184l11-4" fill="none" stroke="#775d4b" stroke-width="1.1" opacity=".7"/>
+<path d="M103 67Q90 53 100 43Q111 32 99 22M123 67Q136 56 125 44Q117 35 130 25" stroke="#d7c8b1" fill="none" stroke-width="1.9" opacity=".5"/>
+</g>
+
+</g>
 </svg>

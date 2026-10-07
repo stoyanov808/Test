@@ -94,7 +94,7 @@ export class Dialogs {
   }
   private symbol(symbol: SymbolId | 'couple'): string {
     const id = symbol === 'vip' ? 'scatter' : symbol;
-    return `<img class="sg-symbol sg-symbol-${id}" src="${escape(import.meta.env.BASE_URL)}art-v2/${id}.svg" alt="${escape(this.tr(`symbol.${id}`))}" width="88" height="88" draggable="false">`;
+    return `<img class="sg-symbol sg-symbol-${id}" src="${escape(import.meta.env.BASE_URL)}art-v2/${id}.svg?v=5.1" alt="${escape(this.tr(`symbol.${id}`))}" width="88" height="88" draggable="false">`;
   }
   private get busy(): boolean {
     const session = this.options.getSession();
