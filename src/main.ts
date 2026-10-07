@@ -2,6 +2,7 @@ import './style.css';
 import './menus.css';
 import { CONFIG, PAYING_SYMBOLS, STORAGE_KEY, createSession, loadSession, commitSession, startRound, advanceRound, dismissPresentation, selectBet, setMode, refillDemo, declineExtraSpin, roundPriceCents, type Session, type RoundChoice, type SpinPresentation, type BonusTier, type Grid, type NumberGrid } from './engine';
 import { SlotRenderer } from './render';
+import { showBonusWheel, skipBonusWheel } from './render/bonus-wheel';
 import { AudioDirector } from './audio';
 import { createTranslator, formatEuro, type Language } from './i18n';
 import { Dialogs } from './menus';
@@ -19,6 +20,9 @@ let busy = false, autoplay = 0;
 let lastWin = session.presentation?.payoutCents ?? session.history[0]?.payoutCents ?? 0;
 let currentScene: BonusTier | null = null;
 let skipOverlay: (() => void) | null = null;
+let extraModalOpen = false;
+let extraReturnFocus: HTMLElement | null = null;
+let bonusPresentationState: {phase: string; tier: BonusTier; triggerScatters: number; awardedUpgrades: string[]; startedAt: number; wheelStartedAt?: number; finishedAt?: number} | null = null;
 let lastPresentation: SpinPresentation | null = session.presentation;
 const tr = (key: string, params?: Record<string, string | number>) => createTranslator(prefs.language)(key, params);
 const copy = (bg: string, en: string) => prefs.language === 'bg' ? bg : en;
@@ -53,10 +57,9 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class='mode-note'><small data-i18n='selectedMode'></small><strong id='mode-label'></strong><p id='mode-description'></p><button class='text-link' id='mode-open' data-i18n='exploreFeatures'></button></div>
         </aside>
         <section class='reel-section'>
-          <div class='reel-heading'><span class='edition'>VOL. 02 / <b>6 × 5</b></span><span class='ways-badge' id='board-counter'><strong id='ways'>8+</strong> <span data-i18n='scatterThreshold'></span></span></div>
+          <div class='reel-heading'><span class='edition'>VOL. 03 / <b>6 × 5</b></span><span class='ways-badge' id='board-counter'><strong id='ways'>8+</strong> <span data-i18n='scatterThreshold'></span></span></div>
           <div class='reel-bezel'><canvas id='reels' role='img' aria-label='Six reels, five rows. Eight matching symbols anywhere.'></canvas></div>
           <div class='event-strip' aria-live='polite'><span class='event-star'>✦</span><span id='event-message'></span><span id='cascade-counter'></span></div>
-          <div class='extra-offer' id='extra-offer' hidden><div><b id='extra-title'></b><span id='extra-description'></span></div><button id='extra-spin'></button><button id='extra-dismiss' aria-label='Close extra spin offer'>×</button></div>
         </section>
         <aside class='upgrade-rail'>
           <div class='multiplier-sign'><small data-i18n='highestMultiplier'></small><strong><span id='energy'>1</span>×</strong><span id='spins-left'></span><p id='energy-hint'></p></div>
@@ -76,7 +79,16 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     </section>
     <footer class='bottom-bar'><div class='footer-links'><button id='paytable'>${svg('cards')}<span data-i18n='paytable'></span></button><button id='rules'>${svg('info')}<span data-i18n='rules'></span></button><button id='history'>${svg('history')}<span data-i18n='history'></span></button></div><p data-i18n='demoNotice'></p><span class='edition'>30 000× MAX</span></footer>
     <div id='error-toast' class='error-toast' role='alert' hidden></div>
-  </main>`;
+  </main>
+  <div class='extra-offer' id='extra-offer' role='dialog' aria-modal='true' aria-labelledby='extra-title' aria-describedby='extra-description' hidden>
+    <div class='extra-dialog'>
+      <span class='extra-kicker' data-i18n='studentskiNights'></span>
+      <img class='extra-art' src='${import.meta.env.BASE_URL}art-v2/xways.svg' alt=''>
+      <h2 id='extra-title'></h2><p id='extra-description'></p>
+      <strong id='extra-price'></strong><small id='extra-quote-label'></small>
+      <div class='extra-actions'><button id='extra-dismiss'></button><button id='extra-spin'></button></div>
+    </div>
+  </div>`;
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const audio = new AudioDirector();
@@ -109,7 +121,7 @@ function setScene(tier: BonusTier | null) {
 }
 const dialogs = new Dialogs({
   getSession: () => session, getLanguage: () => prefs.language,
-  onSelectMode: mode => safe(() => { if (busy) return; mutate(setMode(session, mode)); announce(tr(`mode.${mode}`)); }),
+  onSelectMode: mode => safe(() => { if (busy || session.extraSpinOffer) return; mutate(setMode(session, mode)); announce(tr(`mode.${mode}`)); }),
   onBuy: bonus => play({kind: 'buy', bonus}), onGod: () => play({kind: 'mode', mode: 'god'}),
   onLucky: () => play({kind: 'lucky'}), onExtra: () => play({kind: 'extra'}),
   onLanguage: language => { prefs.language = language; savePreferences(); updateLanguage(); },
@@ -118,7 +130,7 @@ const dialogs = new Dialogs({
   onSpeed: speed => { prefs.turbo = speed === 'turbo'; savePreferences(); update(); },
   getAutoplay: () => autoplay, onAutoplay: count => { autoplay = Math.max(0, Math.min(CONFIG.autoplayLimit, Math.floor(count))); update(); if (!busy && autoplay) playAuto(); },
   onStopAutoplay: () => { autoplay = 0; update(); }, onRefill: () => safe(() => { if (!busy) { mutate(refillDemo(session)); announce(tr('refillDone')); audio.cue('win'); } }),
-  isBusy: () => busy || session.phase !== 'idle' || startupError !== null,
+  isBusy: () => busy || session.phase !== 'idle' || !!session.extraSpinOffer || startupError !== null,
 });
 function updateLanguage() {
   document.documentElement.lang = prefs.language;
@@ -141,6 +153,8 @@ function updateLanguage() {
 }
 function update() {
   const locked = busy || session.phase !== 'idle' || startupError !== null;
+  const offerOpen = !locked && !!session.extraSpinOffer;
+  const controlsLocked = locked || offerOpen;
   el('balance').textContent = money(session.balanceCents); el('win').textContent = money(lastWin);
   el<HTMLSelectElement>('bet').value = String(session.betCents);
   const paidChoice = session.activeRound?.choice ?? session.presentation?.choice;
@@ -155,25 +169,45 @@ function update() {
   el('energy').textContent = highest.toLocaleString(prefs.language === 'bg' ? 'bg-BG' : 'en-GB');
   el('spins-left').textContent = session.activeRound?.tier ? `${session.activeRound.spinsRemaining} ${tr('freeSpins')}` : copy('МНОЖИТЕЛ НА ПОЗИЦИЯ', 'POSITION MULTIPLIER');
   el('energy-hint').textContent = session.activeRound?.tier ? tr('persistentMultipliers') : copy('Печалба → ×2 → ×4 → ×8…', 'Win → ×2 → ×4 → ×8…');
-  const upgrades = session.activeRound?.upgrades ?? lastPresentation?.upgrades ?? [];
+  const selectionPending = !!(session.presentation?.intro || session.presentation?.bonusAwarded);
+  const upgrades = selectionPending && bonusPresentationState?.phase !== 'result' ? [] : session.activeRound?.upgrades ?? lastPresentation?.upgrades ?? [];
   el('upgrade-list').innerHTML = (['infectious', 'bomb', 'shots'] as const).map((kind, i) => `<div class='upgrade-tag ${upgrades.includes(kind) ? 'unlocked' : ''}' data-upgrade='${kind}'><b>${['×', '✦', '+2'][i]}</b><span>${tr(`upgrade.${kind}`)}</span><small>${upgrades.includes(kind) ? copy('АКТИВНО', 'ACTIVE') : copy('ПОДОБРЕНИЕ', 'UPGRADE')}</small></div>`).join('');
   const dominant = Math.max(0, ...PAYING_SYMBOLS.map(symbol => shownGrid.flat().filter(cell => cell === symbol || cell === 'wild').length));
   el('ways').textContent = `${dominant}/8`;
-  ['bet', 'bet-minus', 'bet-plus', 'refill', 'features', 'mode-open'].forEach(id => (el(id) as HTMLButtonElement).disabled = locked);
-  el<HTMLButtonElement>('spin').disabled = locked || session.balanceCents < roundPriceCents(session.betCents, {kind: 'mode', mode: session.selectedMode});
+  ['bet', 'bet-minus', 'bet-plus', 'refill', 'features', 'mode-open'].forEach(id => (el(id) as HTMLButtonElement).disabled = controlsLocked);
+  el<HTMLButtonElement>('spin').disabled = controlsLocked || session.balanceCents < roundPriceCents(session.betCents, {kind: 'mode', mode: session.selectedMode});
   el('spin').classList.toggle('spinning', locked); el('spin').setAttribute('aria-label', tr('spin'));
   el('turbo').classList.toggle('active', prefs.turbo); el('turbo').setAttribute('aria-pressed', String(prefs.turbo));
   el('sound').classList.toggle('muted', prefs.muted); el('sound').setAttribute('aria-pressed', String(prefs.muted));
   el('autoplay').classList.toggle('active', autoplay > 0);
   el('autoplay').innerHTML = `${svg(autoplay > 0 ? 'stop' : 'play')}<span id='auto-count'>${autoplay > 0 ? autoplay : 'AUTO'}</span>`;
   const offer = session.extraSpinOffer;
-  el('extra-offer').hidden = locked || !offer;
+  el('extra-offer').hidden = !offerOpen;
+  syncExtraModal(offerOpen);
   if (offer) {
     el('extra-title').textContent = tr('extraSpin');
     el('extra-description').textContent = `${tr('extraRetained')} · ${tr('baseBet')} ${money(offer.betCents)}`;
-    el('extra-spin').textContent = `${copy('КУПИ', 'BUY')} ${money(offer.costCents)}`;
+    el('extra-price').textContent = money(offer.costCents);
+    el('extra-quote-label').textContent = tr('extraQuote', {amount: money(offer.costCents)});
+    el('extra-spin').textContent = `${copy('КУПИ СПИН', 'BUY SPIN')} · ${money(offer.costCents)}`;
+    el('extra-dismiss').textContent = copy('НЕ, БЛАГОДАРЯ', 'NO, THANKS');
     el<HTMLButtonElement>('extra-spin').disabled = locked || session.balanceCents < offer.costCents;
-    el('extra-dismiss').setAttribute('aria-label', tr('close'));
+    el('extra-dismiss').setAttribute('aria-label', copy('Откажи допълнителния спин', 'Decline the extra spin'));
+  }
+}
+function syncExtraModal(show: boolean) {
+  if (show === extraModalOpen) return;
+  extraModalOpen = show;
+  document.body.classList.toggle('extra-modal-open', show);
+  document.querySelector<HTMLElement>('.game-shell')!.inert = show;
+  if (show) {
+    autoplay = 0;
+    extraReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    queueMicrotask(() => { if (extraModalOpen) el('extra-dismiss').focus(); });
+  } else {
+    const target = extraReturnFocus?.isConnected ? extraReturnFocus : el('spin');
+    extraReturnFocus = null;
+    queueMicrotask(() => { if (!extraModalOpen && !busy) target.focus(); });
   }
 }
 function overlay(title: string, detail: string, amount?: number, max = false, duration = 1600, artwork = ''): Promise<void> {
@@ -186,16 +220,12 @@ function overlay(title: string, detail: string, amount?: number, max = false, du
     skipOverlay = finish; box.querySelector('button')!.addEventListener('click', finish, {once: true});
     if (amount !== undefined) {
       const node = box.querySelector<HTMLElement>('.overlay-amount')!;
-      const started = performance.now(), countDuration = prefs.turbo ? 280 : Math.min(1800, duration * .6);
+      const started = performance.now(), countDuration = prefs.turbo ? 850 : Math.min(2600, duration * .7);
       const count = (now: number) => { if (done) return; const progress = Math.min(1, (now - started) / countDuration); node.textContent = money(Math.round(amount * (1 - (1 - progress) ** 3))); if (progress < 1) requestAnimationFrame(count); };
       requestAnimationFrame(count);
     }
-    setTimeout(finish, prefs.turbo ? Math.min(duration, 550) : duration);
+    setTimeout(finish, prefs.turbo ? Math.max(1200, Math.min(duration, 2000)) : Math.max(2400, duration));
   });
-}
-function bonusIllustration(p: SpinPresentation): string {
-  const assets = `${import.meta.env.BASE_URL}art-v2/`;
-  return `<div class='shuttle-arrival' aria-hidden='true'><img src='${assets}party-shuttle.svg' alt=''></div><div class='awarded-upgrades'>${p.upgrades.map((upgrade, index) => `<div style='--card-index:${index}'><img src='${assets}${({infectious:'infectious', bomb:'bomb', shots:'shot'})[upgrade]}.svg' alt=''><strong>${tr(`upgrade.${upgrade}`)}</strong></div>`).join('')}</div>`;
 }
 function winIllustration(): string {
   const assets = `${import.meta.env.BASE_URL}art-v2/`;
@@ -205,8 +235,20 @@ async function present(p: SpinPresentation) {
   lastPresentation = p;
   shownGrid = p.initialGrid; shownMultipliers = p.initialPositionMultipliers; update();
   if (p.intro && p.tier) {
-    setScene(p.tier); audio.cue('bonus');
-    await overlay(tr(`bonus.${p.tier}`), `${CONFIG.bonuses[p.tier].spins} ${tr('freeSpins')} · ${p.upgrades.length} ${tr('bonusUpgrades')}`, undefined, false, 1800, bonusIllustration(p));
+    const purchased = p.choice.kind === 'buy' || p.choice.kind === 'lucky';
+    bonusPresentationState = {phase: purchased ? 'scatter-landing' : 'wheel', tier: p.tier, triggerScatters: ({dorm: 3, friday: 4, december: 5})[p.tier], awardedUpgrades: p.upgrades.slice(), startedAt: performance.now()};
+    document.querySelector<HTMLElement>('.night-stage')!.dataset.bonusPhase = bonusPresentationState.phase;
+    if (purchased) {
+      announce(tr('bonusScattersLanding'));
+      await renderer.playBonusTrigger(p.tier, prefs.turbo);
+    }
+    bonusPresentationState.phase = 'wheel'; bonusPresentationState.wheelStartedAt = performance.now();
+    document.querySelector<HTMLElement>('.night-stage')!.dataset.bonusPhase = 'wheel';
+    audio.cue('bonus');
+    await showBonusWheel({tier: p.tier, upgrades: p.upgrades, spins: CONFIG.bonuses[p.tier].spins, language: prefs.language, translate: tr, turbo: prefs.turbo, onTick: () => audio.cue('upgrade')});
+    bonusPresentationState.phase = 'result'; bonusPresentationState.finishedAt = performance.now();
+    document.querySelector<HTMLElement>('.night-stage')!.dataset.bonusPhase = 'result';
+    setScene(p.tier); update();
   } else if (p.tier !== currentScene) setScene(p.tier);
   await renderer.animateSpin(p, prefs.turbo);
   shownGrid = p.finalGrid; shownMultipliers = p.finalPositionMultipliers;
@@ -235,14 +277,15 @@ async function pump() {
     }
   } catch (e) { autoplay = 0; error(e instanceof Error ? e.message : String(e)); }
   finally { busy = false; update(); }
-  if (autoplay > 0) setTimeout(playAuto, prefs.turbo ? 110 : 650);
+  if (session.extraSpinOffer) { autoplay = 0; update(); }
+  else if (autoplay > 0) setTimeout(playAuto, prefs.turbo ? 500 : 1100);
   else if (!session.activeRound && !session.presentation) setScene(null);
 }
 function play(choice: RoundChoice = {kind: 'mode', mode: session.selectedMode}) {
-  if (busy || session.activeRound || session.presentation || startupError) return;
-  safe(() => { void audio.unlock(); mutate(startRound(session, choice)); void pump(); });
+  if (busy || session.activeRound || session.presentation || startupError || session.extraSpinOffer && choice.kind !== 'extra') return;
+  safe(() => { void audio.unlock(); bonusPresentationState = null; mutate(startRound(session, choice)); void pump(); });
 }
-function playAuto() { if (busy || !autoplay) return; autoplay--; update(); play(); }
+function playAuto() { if (session.extraSpinOffer) { autoplay = 0; update(); return; } if (busy || !autoplay) return; autoplay--; update(); play(); }
 el('spin').addEventListener('click', () => play());
 el('features').addEventListener('click', () => dialogs.open('features')); el('mode-open').addEventListener('click', () => dialogs.open('features'));
 for (const name of ['paytable', 'rules', 'history', 'settings'] as const) el(name).addEventListener('click', () => dialogs.open(name));
@@ -261,10 +304,20 @@ el('extra-spin').addEventListener('click', () => play({kind: 'extra'}));
 el('extra-dismiss').addEventListener('click', () => safe(() => { if (!busy) mutate(declineExtraSpin(session)); }));
 document.addEventListener('pointerdown', () => { void audio.unlock(); }, {once: true});
 document.addEventListener('keydown', event => {
+  if (extraModalOpen) {
+    if (event.key === 'Escape') { event.preventDefault(); safe(() => mutate(declineExtraSpin(session))); }
+    if (event.key === 'Tab') {
+      const accept = el<HTMLButtonElement>('extra-spin'), decline = el('extra-dismiss');
+      if (event.shiftKey && document.activeElement === decline) { event.preventDefault(); (accept.disabled ? decline : accept).focus(); }
+      else if (!event.shiftKey && (document.activeElement === accept || accept.disabled)) { event.preventDefault(); decline.focus(); }
+    }
+    if (event.code === 'Space' && !(event.target instanceof HTMLButtonElement)) event.preventDefault();
+    return;
+  }
   if (event.code !== 'Space' || /INPUT|SELECT|TEXTAREA|BUTTON/.test((event.target as HTMLElement).tagName) || dialogs.isOpen) return;
-  event.preventDefault(); if (busy) { renderer.skip(); skipOverlay?.(); } else play();
+  event.preventDefault(); if (busy) { renderer.skip(); skipOverlay?.(); skipBonusWheel(); } else play();
 });
-el('reels').addEventListener('click', () => { if (busy) { renderer.skip(); skipOverlay?.(); } });
+el('reels').addEventListener('click', () => { if (busy) { renderer.skip(); skipOverlay?.(); skipBonusWheel(); } });
 window.addEventListener('beforeunload', () => audio.destroy());
 updateLanguage();
 if (startupError) {
@@ -286,8 +339,9 @@ if (import.meta.env.DEV) {
   (window as unknown as {__slot: unknown}).__slot = {
     snapshot: () => structuredClone(session), busy: () => busy,
     reset: (seed: number, balance?: number) => { if (busy) throw new Error('Busy'); mutate(createSession(seed, balance)); lastWin = 0; lastPresentation = null; shownGrid = initialGrid; shownMultipliers = initialMultipliers; renderer.render({grid: initialGrid, positionMultipliers: initialMultipliers}); update(); },
-    skip: () => { renderer.skip(); skipOverlay?.(); }, setTurbo: (value: boolean) => { prefs.turbo = value; update(); },
+    skip: () => { renderer.skip(); skipOverlay?.(); skipBonusWheel(); }, setTurbo: (value: boolean) => { prefs.turbo = value; update(); },
     presentation: () => lastPresentation,
+    bonusPresentation: () => bonusPresentationState ? structuredClone(bonusPresentationState) : null,
     board: () => renderer.snapshot(),
   };
 }

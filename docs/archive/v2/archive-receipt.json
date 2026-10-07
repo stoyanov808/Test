@@ -1,0 +1,15 @@
+{
+  "version": "studentski-duck-2",
+  "purpose": "Historical version2 before requested normal-badge spread and presentation revision. Archived metrics do not describe version3.",
+  "commit": "45f394b52fa04552256804ed5272bc51347f3e7c",
+  "archivedAt": "2026-10-07T11:49:02.297802+00:00",
+  "sourceSha256": {
+    "README.md": "e026f878a59abe90623f3508802773ed90c71ece7e54179a9ce58fae40e3f5a9",
+    "docs/RESEARCH.md": "5719099fcfeb5e83dac0762499ecc8dc619325faaa5f246b5bbfc554566d1eb1",
+    "docs/DUCK-HUNTERS-REDESIGN.md": "d097c5c059df85777339f1439f52efa634b6279c160fae454a853f64e4b4202d",
+    "docs/PRESENTATION.md": "fcb92f6c6b5369e822bfb6771a0beeae162b9936e42e58193a8848dab1d4f72b",
+    "docs/MATHEMATICS.md": "0ac3a720dbe0f7766c25406a33e3240283ece7b08f3c09b8db4565f31d62b45c",
+    "docs/simulation-results.json": "cfab0d365c47c7fde63b105071f6626d5d83f285cd3f258dd62e053144714dff",
+    "docs/duck-hunters-public-paytable.json": "dce79d12d59a279142aec6305383f30872a807bc9a21167ce43934063dfafe41"
+  }
+}

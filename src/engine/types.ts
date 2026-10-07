@@ -17,6 +17,7 @@ export interface Win {
   reels: number; weightedWays: number;
 }
 export interface ModifierEvent {
+  /** The landed badge is the cause. Reveal events include their source and eligible visible matches. */
   kind: 'xways' | 'infectious' | 'bomb' | 'shot'; source: CellPosition; targets: CellPosition[];
   factor: number; symbol?: PayingSymbol; radius?: number;
   gridAfter?: Grid; positionMultipliersAfter?: NumberGrid; shotsAdded?: number;

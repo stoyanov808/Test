@@ -296,7 +296,8 @@ function main(): void {
       publicParameterEvidenceSha256: provenance.publicParameterEvidenceHash,
       verifiedPublicParameters: 'Nine symbol pays at 8/10/12 physical matches and public mode/buy prices, including current 235× Lucky Draw, from the official public guest demo INIT.',
       originalParameters: ['Symbol weights', 'Modifier and Bonus occurrence probabilities', 'Extra Spin quote formula'],
-      commercialMatch: 'These measured outcomes belong to this Studentski Grad implementation. Nolimit City private reel/RNG parameters were unavailable; matching public rules and numerical pays does not establish identical commercial outcomes or RTP.',
+      requestedRuleVariation: 'Normal xWays boosts its revealed source and one other currently visible matching regular symbol, when eligible. Official normal xWays boosts its own position only; the source-plus-one behavior is the requested Studentski Grad variation. Upgraded Infectious xWays boosts every currently visible matching regular symbol, including its source.',
+      commercialMatch: 'These measured outcomes belong to this Studentski Grad implementation, including the requested normal xWays variation. Nolimit City private reel/RNG parameters were unavailable; matching the public numerical paytable and prices does not establish identical commercial outcomes or RTP.',
     },
     confidenceIntervalMethod: 'Approximate 95% normal interval of independent paid-round return ratios; very rare jackpots can make this interval optimistic. No commercial RTP claim is inferred from public rules.',
     definitions: {

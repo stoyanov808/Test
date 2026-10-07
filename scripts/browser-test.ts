@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
-import { CONFIG, PAYING_SYMBOLS, STORAGE_KEY, createSession, startRound, playCompleteRound, selectBet, setMode, type BonusTier, type Grid, type Mode, type RoundChoice, type Session, type SpinPresentation } from '../src/engine';
+import { CONFIG, PAYING_SYMBOLS, STORAGE_KEY, createSession, startRound, playCompleteRound, selectBet, setMode, type BonusTier, type BonusUpgrade, type Grid, type Mode, type RoundChoice, type Session, type SpinPresentation } from '../src/engine';
 import { t } from '../src/i18n';
 
 declare global {
@@ -19,11 +19,16 @@ declare global {
       setTurbo(turbo: boolean): void;
       presentation(): SpinPresentation | null;
       board(): {grid: Grid; positionMultipliers: number[][]; cascade: number};
+      bonusPresentation(): {phase: string; tier: BonusTier; triggerScatters: number; awardedUpgrades: BonusUpgrade[]; startedAt: number; wheelStartedAt?: number; finishedAt?: number} | null;
     };
     __animationPhases?: string[];
     __animationFormulas?: string[];
     __boardCounts?: {actual: string; expected: string; phase: string}[];
     __restoreCanvasSpy?: () => void;
+    __phaseTimings?: {phase: string; time: number}[];
+    __stopPhaseObserver?: () => void;
+    __bonusTrace?: {kind: 'trigger' | 'wheel'; phase: string; tier: string; time: number; spinning?: string}[];
+    __stopBonusObserver?: () => void;
   }
 }
 
@@ -41,6 +46,7 @@ const results: { name: string; passed: boolean; durationMs: number; error?: stri
 const runtimeErrors: string[] = [], failedRequests: string[] = [], externalImages: string[] = [], screenshots: string[] = [];
 const assets = new Set<string>();
 const fixtures: Record<string, number> = {};
+const timingEvidence: Record<string, unknown> = {};
 const desktopViewports = [{width:1280,height:720},{width:1440,height:720},{width:1440,height:800},{width:1440,height:1000},{width:1920,height:1080}];
 
 function watch(page: Page, name: string) {
@@ -58,8 +64,10 @@ function watch(page: Page, name: string) {
   });
 }
 async function shot(page: Page, name: string) {
-  const file = `v2-${name}.png`;
-  await page.screenshot({ path: resolve(output, file), fullPage: true, animations: 'disabled' });
+  const file = `v${CONFIG.schemaVersion}-${name}.png`;
+  // Capture the real presentation. Disabling animations can fast-forward a CSS
+  // wheel and fire its completion event, defeating both timing and staging checks.
+  await page.screenshot({ path: resolve(output, file), fullPage: true, animations: 'allow' });
   screenshots.push(file);
 }
 async function check(name: string, page: Page, action: () => Promise<void>) {
@@ -94,10 +102,17 @@ async function finish(page: Page) {
   });
   assert.equal(await page.locator('#error-toast:not([hidden])').count(), 0, 'settlement must not show an application error');
 }
+async function declineOffer(page: Page) {
+  if ((await snapshot(page)).extraSpinOffer) {
+    await page.locator('#extra-dismiss').click();
+    await page.waitForFunction(() => !window.__slot.snapshot().extraSpinOffer);
+  }
+}
 async function reset(page: Page, seed: number, balance: number = CONFIG.initialBalanceCents) {
   await page.keyboard.press('Escape');
   if (await page.locator('#autoplay.active').count()) await page.locator('#autoplay').click();
   await finish(page);
+  await declineOffer(page);
   await page.evaluate(({ seed, balance }) => { window.__slot.reset(seed, balance); window.__slot.setTurbo(true); }, { seed, balance });
 }
 async function close(page: Page) {
@@ -133,8 +148,9 @@ function amount(text: string | null, language: 'bg' | 'en' = 'en') {
   value = language === 'bg' ? value.replace(',', '.') : value.replaceAll(',', '');
   return Math.round(Number(value) * 100);
 }
-async function euro(page: Page, selector: string, cents: number, language: 'bg' | 'en' = 'en') {
-  assert.equal(amount(await page.locator(selector).textContent(), language), cents, `${selector} shows the accounted euro amount`);
+async function euro(page: Page, selector: string, cents: number, language?: 'bg' | 'en') {
+  const actualLanguage = language ?? (await page.locator('html').getAttribute('lang') === 'bg' ? 'bg' : 'en');
+  assert.equal(amount(await page.locator(selector).textContent(), actualLanguage), cents, `${selector} shows the accounted euro amount`);
 }
 function paidRound(session: Session, cost: number, initialBalance: number = CONFIG.initialBalanceCents) {
   assert.equal(session.roundSequence, 1, 'one action creates one paid round');
@@ -155,6 +171,123 @@ function naturalSeed(name: string, choice: RoundChoice, accepts: (view: SpinPres
     if (accepts(started.presentation!, started)) { fixtures[name] = seed; return seed; }
   }
   throw new Error(`No natural production-RNG fixture found for ${name}`);
+}
+function uninterruptedAutoplaySeed(rounds: number) {
+  for (let seed = 1; seed <= 5_000; seed++) {
+    let current = createSession(seed), uninterrupted = true;
+    for (let round = 0; round < rounds; round++) {
+      current = playCompleteRound(current, {kind: 'mode', mode: 'standard'});
+      if (current.extraSpinOffer || current.history[0].spins !== 1) { uninterrupted = false; break; }
+    }
+    if (uninterrupted) { fixtures[`autoplay-${rounds}-without-offer`] = seed; return seed; }
+  }
+  throw new Error(`No natural ${rounds}-round autoplay fixture without a required offer decision`);
+}
+async function observeVisualPhases(page: Page) {
+  await page.evaluate(() => {
+    window.__stopPhaseObserver?.();
+    window.__phaseTimings = [];
+    const canvas = document.getElementById('reels')!;
+    const observer = new MutationObserver(() => {
+      const phase = canvas.dataset.animation;
+      if (phase && window.__phaseTimings!.at(-1)?.phase !== phase) window.__phaseTimings!.push({phase, time: performance.now()});
+    });
+    observer.observe(canvas, {attributes: true, attributeFilter: ['data-animation']});
+    window.__stopPhaseObserver = () => observer.disconnect();
+  });
+}
+async function phaseDurations(page: Page) {
+  const trace = await page.evaluate(() => window.__phaseTimings ?? []);
+  return trace.slice(0, -1).map((event, index) => ({phase: event.phase, duration: trace[index + 1].time - event.time}));
+}
+async function observeBonusPresentation(page: Page) {
+  await page.evaluate(() => {
+    window.__stopBonusObserver?.(); window.__bonusTrace = [];
+    const observer = new MutationObserver(() => {
+      const canvas = document.getElementById('reels')!;
+      const wheel = document.getElementById('bonus-wheel');
+      for (const event of [
+        canvas.dataset.triggerPhase ? {kind: 'trigger' as const, phase: canvas.dataset.triggerPhase, tier: canvas.dataset.bonusTrigger!} : null,
+        wheel ? {kind: 'wheel' as const, phase: wheel.dataset.phase!, tier: wheel.dataset.tier!, spinning: wheel.dataset.spinning} : null,
+      ]) {
+        if (!event) continue;
+        const previous = window.__bonusTrace!.filter(old => old.kind === event.kind).at(-1);
+        if (!previous || previous.phase !== event.phase || previous.tier !== event.tier) window.__bonusTrace!.push({...event, time: performance.now()});
+      }
+    });
+    observer.observe(document.body, {subtree: true, childList: true, attributes: true, attributeFilter: ['data-trigger-phase','data-phase','data-spinning']});
+    window.__stopBonusObserver = () => observer.disconnect();
+  });
+}
+async function assertReadyWheel(page: Page, tier: BonusTier, upgrades: BonusUpgrade[], turbo: boolean, scenario = 'desktop') {
+  const wheel = page.locator('#bonus-wheel');
+  await wheel.waitFor({state: 'visible', timeout: 25_000});
+  assert.equal(await wheel.getAttribute('data-tier'), tier);
+  assert.equal(Number(await wheel.getAttribute('data-pointers')), upgrades.length);
+  assert.deepEqual((await wheel.getAttribute('data-awarded-upgrades'))!.split(',').sort(), upgrades.slice().sort());
+  const before = await snapshot(page);
+  assert.deepEqual(before.activeRound?.upgrades.slice().sort(), upgrades.slice().sort());
+  assert.ok(await page.locator('#spin').isDisabled(), 'the upgrade decision cannot start another paid round');
+  if (tier === 'december') {
+    assert.equal(await wheel.getAttribute('data-spinning'), 'false');
+    assert.equal(await wheel.getAttribute('data-phase'), 'ready');
+    assert.match(await wheel.getAttribute('class') ?? '', /sg-wheel-stationary/);
+    const still = await wheel.locator('.sg-wheel-dial').evaluate(element => ({animation: getComputedStyle(element).animationName, transition: getComputedStyle(element).transitionDuration, transform: getComputedStyle(element).transform}));
+    assert.equal(still.animation, 'none');
+    assert.ok(still.transition.split(',').every(duration => Number.parseFloat(duration) === 0), `December has no rotating transition: ${JSON.stringify(still)}`);
+  } else {
+    assert.equal(await wheel.getAttribute('data-spinning'), 'true');
+    assert.ok(await wheel.locator('.sg-wheel-continue').isDisabled());
+    assert.equal(await wheel.locator('.sg-wheel-awards').getAttribute('aria-hidden'), 'true', 'the awards are revealed after the actual stop');
+  }
+  await page.waitForFunction(() => document.getElementById('bonus-wheel')?.dataset.phase === 'ready', undefined, {timeout: 12_000});
+  assert.equal(await wheel.getAttribute('data-spinning'), 'false');
+  assert.ok(await wheel.locator('.sg-wheel-continue').isEnabled());
+  assert.equal(await wheel.locator('.sg-wheel-awards').getAttribute('aria-hidden'), 'false');
+  assert.deepEqual(await wheel.locator('.sg-wheel-pointer').evaluateAll(elements => elements.map(element => (element as HTMLElement).dataset.upgrade).sort()), upgrades.slice().sort());
+  assert.deepEqual(await wheel.locator('.sg-wheel-awards [data-award]').evaluateAll(elements => elements.map(element => (element as HTMLElement).dataset.award).sort()), upgrades.slice().sort());
+  // Check the actual final geometry, rather than trusting award labels alone.
+  const geometry = await wheel.evaluate(element => {
+    const dial = element.querySelector<HTMLElement>('.sg-wheel-dial')!;
+    const dialMatrix = new DOMMatrixReadOnly(getComputedStyle(dial).transform);
+    return {rotation: Math.atan2(dialMatrix.b, dialMatrix.a) * 180 / Math.PI, pointers: [...element.querySelectorAll<HTMLElement>('.sg-wheel-pointer')].map(pointer => {
+      const pointerMatrix = new DOMMatrixReadOnly(getComputedStyle(pointer).transform);
+      return {upgrade: pointer.dataset.upgrade!, angle: Math.atan2(pointerMatrix.b, pointerMatrix.a) * 180 / Math.PI};
+    })};
+  });
+  const sectorOrder: BonusUpgrade[] = ['infectious', 'bomb', 'shots'];
+  for (const pointer of geometry.pointers) {
+    const sector = sectorOrder.indexOf(pointer.upgrade as BonusUpgrade) * 120 + 60;
+    const difference = ((pointer.angle - geometry.rotation - sector) % 360 + 360) % 360;
+    const error = Math.min(difference, 360 - difference);
+    assert.ok(error < 2, `pointer ${pointer.upgrade} lands on its selected sector: ${JSON.stringify(geometry)}`);
+  }
+  assert.deepEqual(await snapshot(page), before, 'the visible wheel does not draw RNG, settle another spin or change the committed awards');
+  const trace = await page.evaluate(() => window.__bonusTrace ?? []);
+  timingEvidence[`${scenario}-wheel-${tier}-${turbo ? 'turbo' : 'normal'}`] = {trace, geometry};
+  const spinning = trace.find(event => event.kind === 'wheel' && event.tier === tier && event.phase === 'spinning');
+  const ready = trace.find(event => event.kind === 'wheel' && event.tier === tier && event.phase === 'ready');
+  if (tier === 'december') assert.equal(spinning, undefined, 'all three December awards are stationary');
+  else {
+    assert.ok(spinning && ready, `the real wheel transition was observed: ${JSON.stringify(trace)}`);
+    assert.ok(ready.time - spinning.time >= (turbo ? 2500 : 3600), 'wheel outcomes remain readable in normal and turbo play');
+  }
+  await noOverflow(page);
+  await shot(page, `${scenario}-${tier}-${turbo ? 'turbo' : 'normal'}-wheel-result`);
+  await wheel.locator('.sg-wheel-continue').click();
+  await wheel.waitFor({state: 'detached'});
+}
+async function browserSourceHashes() {
+  const files = ['index.html', 'scripts/browser-test.ts'];
+  async function visit(directory: string) {
+    for (const entry of await readdir(resolve(repositoryRoot, directory), {withFileTypes: true})) {
+      const file = `${directory}/${entry.name}`;
+      if (entry.isDirectory()) await visit(file);
+      else if (/\.(ts|css|svg)$/.test(entry.name)) files.push(file);
+    }
+  }
+  await visit('src'); await visit('public/art-v2');
+  return Object.fromEntries(await Promise.all(files.sort().map(async file => [file, createHash('sha256').update(await readFile(resolve(repositoryRoot, file))).digest('hex')])));
 }
 function matchingCount(grid: Grid) { return Math.max(...PAYING_SYMBOLS.map(symbol => grid.flat().filter(cell => cell === symbol || cell === 'wild').length)); }
 async function observeFormulaAndCount(page: Page) {
@@ -186,6 +319,7 @@ async function assertFormulasAndCount(page: Page, view: SpinPresentation, langua
   await page.evaluate(() => window.__restoreCanvasSpy?.());
 }
 
+const initialSourceHashes = await browserSourceHashes();
 try {
   if (!baseURL) {
     // Own the server directly, using an available port and its actual resolved URL.
@@ -214,7 +348,7 @@ try {
     });
     assert.ok(drawing.width > 300 && drawing.height > 200 && drawing.colors > 40, JSON.stringify(drawing));
     assert.equal(drawing.loadedFonts.length, 2, 'both local font faces loaded');
-    const artwork = [...PAYING_SYMBOLS, 'wild', 'scatter', 'xways', 'infectious', 'bomb', 'shot', 'couple', 'party-shuttle', 'scene-base', 'scene-dorm', 'scene-friday', 'scene-december'];
+    const artwork = [...PAYING_SYMBOLS, 'wild', 'scatter', 'xways', 'infectious', 'infectious-upgraded', 'bomb', 'shot', 'couple', 'party-shuttle', 'scene-base', 'scene-dorm', 'scene-friday', 'scene-december'];
     const decoded = await desktop.evaluate(async ids => Promise.all(ids.map(async id => {
       const image = new Image(); image.src = `/art-v2/${id}.svg`; await image.decode();
       return { id, width: image.naturalWidth, height: image.naturalHeight };
@@ -230,6 +364,8 @@ try {
         const box = await desktop.locator(`#${id}`).boundingBox();
         assert.ok(box && box.x >= 0 && box.y >= 0 && box.x + box.width <= viewport.width + 1 && box.y + box.height <= viewport.height + 1, `${id} fits ${viewport.width} × ${viewport.height}: ${JSON.stringify(box)}`);
       }
+      const board = await desktop.locator('#reels').boundingBox();
+      assert.ok(board && board.width >= 610, `the game board remains prominent even on short desktop screens: ${JSON.stringify(board)}`);
       if (viewport.width === 1440 && viewport.height === 720) await shot(desktop, 'desktop-720-controls');
     }
     await desktop.setViewportSize({width:1440,height:1000});
@@ -254,7 +390,7 @@ try {
       try { await new Promise(resolve => setTimeout(resolve, 200)); return texts; }
       finally { CanvasRenderingContext2D.prototype.fillText = original; }
     });
-    for (const key of ['render.scatterpay', 'render.position']) {
+    for (const key of ['render.scatterpay']) {
       const translated = t(key, {}, 'en');
       assert.notEqual(translated, key, `${key} has an English translation`);
       assert.ok(painted.includes(translated), `the canvas actually paints ${translated}`);
@@ -310,6 +446,7 @@ try {
     const settled = await snapshot(desktop); paidRound(settled, 20);
     assert.deepEqual(settled, playCompleteRound(createSession(anywhereSeed), {kind: 'mode', mode: 'standard'}));
     await euro(desktop, '#balance', settled.balanceCents);
+    await declineOffer(desktop);
     await desktop.locator('#history').click();
     assert.equal(await desktop.locator('.sg-history-table tbody tr').count(), 1);
     await euro(desktop, '.sg-history-table tbody td:nth-child(3)', 20); await close(desktop);
@@ -333,20 +470,31 @@ try {
   }
 
   for (const [tier, price, spins, upgrades] of [['dorm',70,7,1], ['friday',200,8,2], ['december',600,10,3]] as const) {
-    await check(`${tier} buy has ${spins} spins, ${upgrades} distinct random upgrades and one ${price}× debit`, desktop, async () => {
+    await check(`${tier} buy lands ${upgrades + 2} invitations, shows ${upgrades} exact wheel awards and charges one ${price}× debit`, desktop, async () => {
       const seed = naturalSeed(`buy-${tier}`, {kind: 'buy', bonus: tier}, p => !p.maxWin);
-      await reset(desktop, seed); await buy(desktop, tier);
+      await reset(desktop, seed);
+      const turbo = tier !== 'dorm';
+      await desktop.evaluate(value => window.__slot.setTurbo(value), turbo);
+      await observeBonusPresentation(desktop); await buy(desktop, tier);
       const first = await snapshot(desktop), p = first.presentation!;
       assert.equal(p.tier, tier); assert.equal(p.intro, true);
       assert.equal(p.upgrades.length, upgrades); assert.equal(new Set(p.upgrades).size, upgrades);
       assert.equal(p.roundCostCents, 20 * price);
       assert.equal(first.activeRound?.spinsRemaining, spins - 1 + p.shotsAdded);
       assert.ok(p.initialPositionMultipliers.every(column => column.every(value => value === 1)));
+      await desktop.waitForFunction(expected => document.getElementById('reels')?.dataset.triggerPhase === 'landed' && Number(document.getElementById('reels')?.dataset.triggerScatters) === expected, upgrades + 2, {timeout: 12_000});
+      const staged = await desktop.evaluate(() => ({board: window.__slot.board(), state: window.__slot.bonusPresentation()}));
+      assert.equal(staged.board.grid.length, 6); assert.ok(staged.board.grid.every(column => column.length === 5));
+      assert.equal(staged.board.grid.flat().filter(symbol => symbol === 'scatter').length, upgrades + 2, 'the purchased invitation receipt really lands on the canvas');
+      assert.equal(staged.state?.triggerScatters, upgrades + 2);
+      assert.deepEqual(staged.state?.awardedUpgrades.slice().sort(), p.upgrades.slice().sort());
+      assert.deepEqual(await snapshot(desktop), first, 'purchased scatter staging changes no money, committed board or RNG');
+      await shot(desktop, `bonus-${tier}-landed-invitations`);
+      await assertReadyWheel(desktop, tier, p.upgrades, turbo);
       assert.equal(await desktop.locator('.night-stage').getAttribute('data-scene'), tier);
       assert.equal(await desktop.locator('.upgrade-tag.unlocked').count(), upgrades);
-      assert.equal(await desktop.locator('.awarded-upgrades > div').count(), upgrades, 'the bonus intro presents each awarded upgrade');
-      assert.match(await desktop.locator('.shuttle-arrival img').getAttribute('src') ?? '', /\/art-v2\/party-shuttle\.svg$/);
-      await shot(desktop, `bonus-${tier}-intro`);
+      const intro = await desktop.evaluate(() => window.__slot.bonusPresentation());
+      assert.equal(intro?.phase, 'result');
       await finish(desktop);
       const settled = await snapshot(desktop); paidRound(settled, 20 * price);
       assert.deepEqual(settled, playCompleteRound(createSession(seed), {kind: 'buy', bonus: tier}));
@@ -368,11 +516,15 @@ try {
   });
 
   const scatterSeed = naturalSeed('natural-three-invitations', {kind: 'mode', mode: 'standard'}, p => p.scatters === 3 && p.bonusAwarded === 'dorm');
-  await check('Three naturally landed invitations start the seven-spin first-tier bonus', desktop, async () => {
-    await reset(desktop, scatterSeed); await desktop.locator('#spin').click();
+  await check('Three natural invitations show the same exact one-pointer wheel before the seven-spin bonus', desktop, async () => {
+    await reset(desktop, scatterSeed); await observeBonusPresentation(desktop); await desktop.locator('#spin').click();
     const first = await snapshot(desktop);
     assert.equal(first.presentation?.bonusAwarded, 'dorm'); assert.equal(first.presentation?.scatters, 3);
     assert.equal(first.activeRound?.spinsRemaining, 7); assert.equal(first.activeRound?.upgrades.length, 1);
+    await assertReadyWheel(desktop, 'dorm', first.activeRound!.upgrades, true);
+    const intro = await desktop.evaluate(() => window.__slot.bonusPresentation());
+    assert.equal(intro?.tier, 'dorm'); assert.equal(intro?.triggerScatters, 3);
+    assert.deepEqual(intro?.awardedUpgrades, first.activeRound!.upgrades);
     await finish(desktop); const settled = await snapshot(desktop); paidRound(settled, 20);
     assert.deepEqual(settled, playCompleteRound(createSession(scatterSeed), {kind: 'mode', mode: 'standard'}));
   });
@@ -410,13 +562,39 @@ try {
   });
 
   const extraSeed = naturalSeed('extra-offer', {kind: 'mode', mode: 'standard'}, (_p, s) => !!s.extraSpinOffer);
-  await check('Extra offer discloses its price, retains multipliers and charges once without triggering a bonus', desktop, async () => {
+  await check('Centered Extra modal blurs/inerts the game, blocks paid spins and accepts one disclosed quote', desktop, async () => {
     await reset(desktop, extraSeed); await desktop.locator('#spin').click(); await finish(desktop);
     const before = await snapshot(desktop), offer = before.extraSpinOffer!;
     assert.ok(offer && offer.costCents > 0);
     assert.ok(await desktop.locator('#extra-offer').isVisible());
+    assert.equal(await desktop.locator('#extra-offer').getAttribute('role'), 'dialog');
+    assert.equal(await desktop.locator('#extra-offer').getAttribute('aria-modal'), 'true');
+    const modal = await desktop.evaluate(() => {
+      const dialog = document.querySelector('.extra-dialog')!.getBoundingClientRect();
+      const shell = document.querySelector<HTMLElement>('.game-shell')!;
+      return {inert: shell.inert, blur: getComputedStyle(shell).filter, insideInertShell: !!document.getElementById('extra-offer')?.closest('[inert]'), x: dialog.x + dialog.width / 2, y: dialog.y + dialog.height / 2, viewportX: innerWidth / 2, viewportY: innerHeight / 2};
+    });
+    assert.ok(modal.inert && /blur\([1-9]/.test(modal.blur), `the board remains visible, blurred and inert: ${JSON.stringify(modal)}`);
+    assert.equal(modal.insideInertShell, false, 'the modal buttons remain outside the inert game');
+    assert.ok(Math.abs(modal.x - modal.viewportX) < 3 && Math.abs(modal.y - modal.viewportY) < 3, `Extra is centered in the viewport: ${JSON.stringify(modal)}`);
+    assert.ok(await desktop.locator('#spin').isDisabled());
+    assert.match(await desktop.locator('#extra-dismiss').innerText(), /DECLINE|NO, THANKS/i);
     await euro(desktop, '#extra-spin', offer.costCents);
+    await euro(desktop, '#extra-price', offer.costCents);
     assert.match(await desktop.locator('#extra-description').innerText(), /RETAINED MULTIPLIERS · NO NEW BONUS/);
+    await desktop.evaluate(() => {
+      for (let i = 0; i < 10; i++) {
+        document.getElementById('spin')!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+        document.dispatchEvent(new KeyboardEvent('keydown', {code: 'Space', bubbles: true}));
+        window.__slot.skip();
+      }
+    });
+    await desktop.waitForTimeout(250);
+    assert.deepEqual(await snapshot(desktop), before, 'paid-spin shortcuts and presentation skip cannot dismiss or charge through the offer');
+    for (let tab = 0; tab < 4; tab++) {
+      await desktop.keyboard.press('Tab');
+      assert.ok(await desktop.evaluate(() => !!document.activeElement?.closest('#extra-offer')), 'focus stays inside the mandatory offer');
+    }
     await shot(desktop, 'desktop-extra-offer'); await desktop.locator('#extra-spin').click();
     const begun = await snapshot(desktop), p = begun.presentation!;
     assert.equal(begun.roundSequence, 2); assert.equal(p.roundCostCents, offer.costCents);
@@ -438,9 +616,24 @@ try {
     await desktop.locator('#extra-dismiss').click(); const after = await snapshot(desktop);
     assert.deepEqual(after, {...before, extraSpinOffer: null});
     assert.ok(await desktop.locator('#extra-offer').isHidden());
+    assert.equal(await desktop.locator('.game-shell').evaluate(element => (element as HTMLElement).inert), false);
+    assert.ok(await desktop.locator('#spin').isEnabled(), 'the next paid spin is available only after declining');
   });
 
-  const animationSeed = naturalSeed('normal-animation', {kind: 'mode', mode: 'standard'}, p => !p.bonusAwarded && p.payoutCents < 400 && p.cascadeSteps.some(step => step.wins.length && step.refilledGrid) && p.cascadeSteps.some(step => step.modifiers.some(event => event.kind === 'bomb' || event.kind === 'xways')) && p.cascadeSteps.some(step => step.index > 0 && step.wins.length && matchingCount(step.resolvedGrid) !== matchingCount(p.initialGrid)));
+  await check('Autoplay stops at a mandatory Extra decision and takes no hidden subsequent debit', desktop, async () => {
+    await reset(desktop, extraSeed); await desktop.locator('#settings').click();
+    await desktop.locator('#sg-autoplay-count').selectOption('10'); await desktop.locator('[data-action="autoplay"]').click();
+    await finish(desktop);
+    const offered = await snapshot(desktop);
+    assert.ok(offered.extraSpinOffer); paidRound(offered, 20);
+    assert.ok(await desktop.locator('#extra-offer').isVisible());
+    await desktop.waitForTimeout(1200);
+    assert.deepEqual(await snapshot(desktop), offered, 'an unanswered offer freezes the next autoplay debit and RNG draw');
+    assert.equal(await desktop.locator('#autoplay.active').count(), 0);
+    await declineOffer(desktop);
+  });
+
+  const animationSeed = naturalSeed('normal-animation', {kind: 'mode', mode: 'standard'}, p => !p.bonusAwarded && p.payoutCents < 400 && p.cascadeSteps.length <= 4 && p.cascadeSteps.some(step => step.wins.length && step.refilledGrid) && p.cascadeSteps.some(step => step.modifiers.some(event => event.kind === 'bomb' || event.kind === 'xways')) && p.cascadeSteps.some(step => step.index > 0 && step.wins.length && matchingCount(step.resolvedGrid) !== matchingCount(p.initialGrid)));
   await check('Normal animation shows locked euro awards/current match counts; skipping changes no result', desktop, async () => {
     await reset(desktop, animationSeed); await desktop.evaluate(() => {
       window.__slot.setTurbo(false); window.__animationPhases = [];
@@ -448,6 +641,7 @@ try {
       new MutationObserver(() => { const phase = canvas.dataset.animation; if (phase) window.__animationPhases!.push(phase); }).observe(canvas, {attributes: true, attributeFilter: ['data-animation']});
     });
     await observeFormulaAndCount(desktop);
+    await observeVisualPhases(desktop);
     await desktop.locator('#spin').click();
     const animated = (await presentation(desktop))!;
     await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.animation === 'cascade');
@@ -457,11 +651,17 @@ try {
     for (const phase of ['spin', 'win', 'clear', 'cascade', 'idle']) assert.ok(phases.includes(phase), `${phase} appears in ${JSON.stringify(phases)}`);
     assert.ok(phases.includes('bomb') || phases.includes('xways'));
     await assertFormulasAndCount(desktop, animated, 'en');
+    const normalDurations = await phaseDurations(desktop);
+    timingEvidence.normalReels = normalDurations;
+    for (const [phase, minimum] of [['spin', 1400], ['win', 600], ['cascade', 600]] as const) {
+      const observed = normalDurations.filter(item => item.phase === phase);
+      assert.ok(observed.length && observed.every(item => item.duration >= minimum), `normal ${phase} remains readable: ${JSON.stringify(observed)}`);
+    }
     assert.deepEqual(await presentation(desktop), animated, 'animation leaves the recorded outcome immutable');
     const normal = await snapshot(desktop);
     await reset(desktop, animationSeed); await desktop.locator('#spin').click(); await finish(desktop);
     assert.deepEqual(await snapshot(desktop), normal);
-    const fractionalSeed = naturalSeed('fractional-base-award', {kind:'mode',mode:'standard'}, p => !p.bonusAwarded && p.payoutCents < 400 && p.wins.some(win => win.payMultiplier === .15 && win.positionMultiplier > 1) && p.cascadeSteps.some(step => step.index > 0 && step.wins.length && matchingCount(step.resolvedGrid) !== matchingCount(p.initialGrid)));
+    const fractionalSeed = naturalSeed('fractional-base-award', {kind:'mode',mode:'standard'}, p => !p.bonusAwarded && p.payoutCents < 400 && p.cascadeSteps.length <= 4 && p.wins.some(win => win.payMultiplier === .15 && win.positionMultiplier > 1) && p.cascadeSteps.some(step => step.index > 0 && step.wins.length && matchingCount(step.resolvedGrid) !== matchingCount(p.initialGrid)));
     await reset(desktop, fractionalSeed); await desktop.locator('#language').click();
     assert.equal(await desktop.locator('html').getAttribute('lang'), 'bg');
     await desktop.locator('#bet').selectOption('10'); await desktop.evaluate(() => window.__slot.setTurbo(false));
@@ -476,17 +676,31 @@ try {
     await desktop.locator('#language').click();
   });
 
+  await check('Turbo keeps real reel stops, wins and cascades readable without changing RNG or settlement', desktop, async () => {
+    await reset(desktop, animationSeed); await observeVisualPhases(desktop);
+    await desktop.locator('#spin').click();
+    await desktop.waitForFunction(() => !window.__slot.busy(), undefined, {timeout: 20_000});
+    const durations = await phaseDurations(desktop);
+    timingEvidence.turboReels = durations;
+    for (const [phase, minimum] of [['spin', 650], ['win', 250], ['cascade', 250]] as const) {
+      const observed = durations.filter(item => item.phase === phase);
+      assert.ok(observed.length && observed.every(item => item.duration >= minimum), `turbo ${phase} remains readable: ${JSON.stringify(observed)}`);
+    }
+    assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(animationSeed), {kind: 'mode', mode: 'standard'}));
+  });
+
   await check('Autoplay is bounded and stopping completes only the currently running paid round', desktop, async () => {
     await reset(desktop, 116292); await desktop.locator('#settings').click();
     assert.deepEqual(await desktop.locator('#sg-autoplay-count option').evaluateAll(options => options.map(option => (option as HTMLOptionElement).value)), ['10','25','50','100']);
     await desktop.locator('#sg-autoplay-count').selectOption('10'); await desktop.locator('[data-action="autoplay"]').click();
     await desktop.waitForFunction(() => window.__slot.snapshot().roundSequence === 1);
-    await desktop.locator('#autoplay').click(); await finish(desktop); await desktop.waitForTimeout(250);
+    if (await desktop.locator('#autoplay.active').count()) await desktop.locator('#autoplay').click();
+    await finish(desktop); await desktop.waitForTimeout(250);
     paidRound(await snapshot(desktop), 20); assert.equal(await desktop.locator('#autoplay.active').count(), 0);
   });
 
   await check('Ten autoplay rounds create ten balanced receipts and stop automatically', desktop, async () => {
-    await reset(desktop, 511389); await desktop.locator('#settings').click();
+    await reset(desktop, uninterruptedAutoplaySeed(10)); await desktop.locator('#settings').click();
     await desktop.locator('#sg-autoplay-count').selectOption('10'); await desktop.locator('[data-action="autoplay"]').click();
     await desktop.evaluate(async () => {
       const deadline = performance.now() + 30_000;
@@ -509,6 +723,18 @@ try {
     for (const tier of ['dorm','friday','december']) assert.ok(await desktop.locator(`[data-action="buy-${tier}"]`).isDisabled());
     assert.ok(await desktop.locator('[data-action="lucky"]').isDisabled());
     await close(desktop); assert.equal((await snapshot(desktop)).balanceCents, 100); assert.equal((await snapshot(desktop)).roundSequence, 0);
+  });
+
+  const specialArtSeed = naturalSeed('landed-wild-and-invitation', {kind:'mode',mode:'standard'}, p => !p.bonusAwarded && p.payoutCents === 0 && p.cascadeSteps.length === 1 && p.cascadeSteps[0].modifiers.length === 0 && p.initialGrid.flat().includes('wild') && p.initialGrid.flat().includes('scatter'));
+  await check('Prominent original Wild and invitation artwork appears on a naturally landed desktop board', desktop, async () => {
+    await reset(desktop, specialArtSeed); await desktop.evaluate(() => window.__slot.setTurbo(false));
+    await desktop.locator('#spin').click();
+    await desktop.waitForFunction(() => !window.__slot.busy(), undefined, {timeout: 12_000});
+    const view = (await presentation(desktop))!;
+    const board = await desktop.evaluate(() => window.__slot.board().grid);
+    assert.deepEqual(board, view.initialGrid); assert.ok(board.flat().includes('wild') && board.flat().includes('scatter'));
+    assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(specialArtSeed), {kind:'mode',mode:'standard'}));
+    await shot(desktop, 'desktop-wild-invitation-artwork');
   });
 
   const mobileContext = await browser.newContext({viewport: {width: 390, height: 844}, deviceScaleFactor: 2, isMobile: true, hasTouch: true});
@@ -544,18 +770,36 @@ try {
     await reset(mobile, anywhereSeed); await mobile.locator('#spin').tap(); await finish(mobile);
     const complete = await snapshot(mobile); paidRound(complete, 20);
     assert.deepEqual(complete, playCompleteRound(createSession(anywhereSeed), {kind: 'mode', mode: 'standard'}));
-    await euro(mobile, '#balance', complete.balanceCents); await mobile.locator('#settings').tap();
+    await euro(mobile, '#balance', complete.balanceCents); await declineOffer(mobile); await mobile.locator('#settings').tap();
     await mobile.locator('[data-action="language-bg"]').tap(); assert.equal(await mobile.locator('html').getAttribute('lang'), 'bg');
     await mobile.locator('[data-action="close"]').tap(); await euro(mobile, '#balance', complete.balanceCents, 'bg');
     assert.match(await mobile.locator('h1').innerText(), /СТУДЕНТСКИ\s*ГРАД/); await shot(mobile, 'mobile-bulgarian');
+  });
+  await check('Mobile invitation landing and two-pointer wheel preserve exact bonus awards and touch access', mobile, async () => {
+    await reset(mobile, fixtures['buy-friday']); await observeBonusPresentation(mobile); await buy(mobile, 'friday');
+    const before = await snapshot(mobile);
+    await mobile.waitForFunction(() => document.getElementById('reels')?.dataset.triggerPhase === 'landed', undefined, {timeout: 12_000});
+    assert.equal(await mobile.evaluate(() => window.__slot.board().grid.flat().filter(symbol => symbol === 'scatter').length), 4);
+    await shot(mobile, 'mobile-landed-invitations');
+    await assertReadyWheel(mobile, 'friday', before.presentation!.upgrades, true, 'mobile');
+    await finish(mobile);
+    assert.deepEqual(await snapshot(mobile), playCompleteRound(createSession(fixtures['buy-friday']), {kind:'buy',bonus:'friday'}));
+  });
+  await check('Mobile Wild and invitation artwork stays visible within the larger reel board', mobile, async () => {
+    await reset(mobile, specialArtSeed); await mobile.locator('#spin').tap();
+    await mobile.waitForFunction(() => !window.__slot.busy(), undefined, {timeout: 12_000});
+    const board = await mobile.evaluate(() => window.__slot.board().grid);
+    assert.ok(board.flat().includes('wild') && board.flat().includes('scatter'));
+    assert.deepEqual(await snapshot(mobile), playCompleteRound(createSession(specialArtSeed), {kind:'mode',mode:'standard'}));
+    await noOverflow(mobile); await shot(mobile, 'mobile-wild-invitation-artwork');
   });
   await check('No browser errors, broken local assets or external image downloads occur', desktop, async () => {
     assert.deepEqual(runtimeErrors, []); assert.deepEqual(failedRequests, []); assert.deepEqual(externalImages, []);
   });
 
-  const sourceFiles = ['src/engine/config.ts','src/engine/engine.ts','src/engine/evaluator.ts','src/engine/persistence.ts','src/main.ts','src/render/renderer.ts','src/style.css','scripts/browser-test.ts'];
-  const sourceHashes = Object.fromEntries(await Promise.all(sourceFiles.map(async file => [file, createHash('sha256').update(await readFile(resolve(repositoryRoot, file))).digest('hex')])));
-  await writeFile(resolve(output, 'browser-results.json'), JSON.stringify({generatedAt: new Date().toISOString(), configVersion: CONFIG.version, mathematics: {payingSymbols: PAYING_SYMBOLS, paytable: CONFIG.paytable, payoutDenominator: CONFIG.payoutDenominator, modePrices: CONFIG.prices, buyPrices: CONFIG.buyPrices, luckyDrawPrice: CONFIG.luckyDrawPrice, luckyDrawProbabilities: CONFIG.luckyDrawProbabilities, symbolWeights: CONFIG.symbolWeights, modes: CONFIG.modes, bonuses: CONFIG.bonuses, initialPositionMultipliers: CONFIG.initialPositionMultipliers, payThresholds: CONFIG.payThresholds, capMultiplier: CONFIG.capMultiplier, positionMultiplierLimit: CONFIG.positionMultiplierLimit, extraQuoteDenominator: CONFIG.extraQuoteDenominator}, sourceHashes, baseURL, browser: browserDescription, viewports: [...desktopViewports.map(({width,height}) => `${width}×${height} desktop`),'390×844 touch mobile'], fixtures, passed: results.filter(result => result.passed).length, failed: results.filter(result => !result.passed).length, results, runtimeErrors, failedRequests, externalImages, assets: [...assets], screenshots}, null, 2));
+  const sourceHashes = await browserSourceHashes();
+  assert.deepEqual(sourceHashes, initialSourceHashes, 'UI, rules and SVG artwork must stay frozen throughout the browser validation');
+  await writeFile(resolve(output, 'browser-results.json'), JSON.stringify({generatedAt: new Date().toISOString(), configVersion: CONFIG.version, configurationParameters: CONFIG, mathematics: {payingSymbols: PAYING_SYMBOLS, paytable: CONFIG.paytable, payoutDenominator: CONFIG.payoutDenominator, modePrices: CONFIG.prices, buyPrices: CONFIG.buyPrices, luckyDrawPrice: CONFIG.luckyDrawPrice, luckyDrawProbabilities: CONFIG.luckyDrawProbabilities, symbolWeights: CONFIG.symbolWeights, modes: CONFIG.modes, bonuses: CONFIG.bonuses, initialPositionMultipliers: CONFIG.initialPositionMultipliers, payThresholds: CONFIG.payThresholds, capMultiplier: CONFIG.capMultiplier, positionMultiplierLimit: CONFIG.positionMultiplierLimit, extraQuoteDenominator: CONFIG.extraQuoteDenominator}, sourceHashes, timingEvidence, baseURL, browser: browserDescription, viewports: [...desktopViewports.map(({width,height}) => `${width}×${height} desktop`),'390×844 touch mobile'], fixtures, passed: results.filter(result => result.passed).length, failed: results.filter(result => !result.passed).length, results, runtimeErrors, failedRequests, externalImages, assets: [...assets], screenshots}, null, 2));
   process.stdout.write(`${results.filter(result => result.passed).length}/${results.length} browser checks passed. Results and screenshots: ${output}\n`);
   if (results.some(result => !result.passed)) process.exitCode = 1;
 } finally {

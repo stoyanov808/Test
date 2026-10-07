@@ -14,7 +14,7 @@ export const SYMBOL_LABELS: Record<string, string> = {
 };
 
 export const SYMBOLS: SymbolId[] = ['book', 'coffee', 'noodles', 'doner', 'beer', 'female', 'male', 'dj', 'bouncer', 'wild', 'scatter', 'vip'];
-export const ART_SYMBOL_IDS = [...SYMBOLS, 'bomb', 'xways', 'infectious', 'shot', 'wild-tall'] as const;
+export const ART_SYMBOL_IDS = [...SYMBOLS, 'bomb', 'xways', 'infectious', 'infectious-upgraded', 'shot', 'wild-tall'] as const;
 export type SceneName = 'base' | 'dorm' | 'friday' | 'december';
 const assetBase = `${import.meta.env.BASE_URL}art-v2/`;
 export function symbolAssetUrl(symbol: string): string { return `${assetBase}${symbol}.svg`; }
@@ -45,7 +45,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, tier: string | null, x:
 /** A shared cache avoids decoding individual vector files for every reel. */
 const symbolImages = new Map<string, HTMLImageElement>();
 function imageFor(symbol: string): HTMLImageElement {
-  const name = symbol in SYMBOL_LABELS || symbol === 'wild-tall' ? symbol : 'book';
+  const name = symbol in SYMBOL_LABELS || symbol === 'wild-tall' || symbol === 'infectious-upgraded' ? symbol : 'book';
   let image = symbolImages.get(name);
   if (!image) {
     image = new Image(); image.decoding = 'async'; image.src = symbolAssetUrl(name);
