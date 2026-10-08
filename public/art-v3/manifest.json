@@ -1,0 +1,96 @@
+{
+  "image": "symbol-atlas.png",
+  "width": 1254,
+  "height": 1254,
+  "columns": 3,
+  "rows": 3,
+  "cells": {
+    "book": {
+      "x": 0,
+      "y": 0,
+      "width": 418,
+      "height": 418
+    },
+    "coffee": {
+      "x": 418,
+      "y": 0,
+      "width": 418,
+      "height": 418
+    },
+    "noodles": {
+      "x": 836,
+      "y": 0,
+      "width": 418,
+      "height": 418
+    },
+    "doner": {
+      "x": 0,
+      "y": 418,
+      "width": 418,
+      "height": 418
+    },
+    "beer": {
+      "x": 418,
+      "y": 418,
+      "width": 418,
+      "height": 418
+    },
+    "female": {
+      "x": 836,
+      "y": 418,
+      "width": 418,
+      "height": 418
+    },
+    "male": {
+      "x": 0,
+      "y": 836,
+      "width": 418,
+      "height": 418
+    },
+    "dj": {
+      "x": 418,
+      "y": 836,
+      "width": 418,
+      "height": 418
+    },
+    "bouncer": {
+      "x": 836,
+      "y": 836,
+      "width": 418,
+      "height": 418
+    }
+  },
+  "scenes": {
+    "image": "scene-atlas.png",
+    "width": 1254,
+    "height": 1254,
+    "columns": 2,
+    "rows": 2,
+    "cells": {
+      "base": {
+        "x": 0,
+        "y": 0,
+        "width": 627,
+        "height": 627
+      },
+      "dorm": {
+        "x": 627,
+        "y": 0,
+        "width": 627,
+        "height": 627
+      },
+      "friday": {
+        "x": 0,
+        "y": 627,
+        "width": 627,
+        "height": 627
+      },
+      "december": {
+        "x": 627,
+        "y": 627,
+        "width": 627,
+        "height": 627
+      }
+    }
+  }
+}

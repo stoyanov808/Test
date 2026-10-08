@@ -1,5 +1,6 @@
 import type { BonusTier, BonusUpgrade } from '../engine/types';
 import type { Language } from '../i18n';
+import { symbolAssetUrl } from './art-v2';
 
 const UPGRADES: BonusUpgrade[] = ['infectious', 'bomb', 'shots'];
 const ICONS: Record<BonusUpgrade, string> = { infectious: 'infectious-upgraded', bomb: 'bomb', shots: 'shot' };
@@ -32,7 +33,6 @@ export function showBonusWheel(options: BonusWheelOptions): Promise<void> {
   const selected = [...options.upgrades];
   if (selected.length !== ({ dorm: 1, friday: 2, december: 3 })[options.tier] || new Set(selected).size !== selected.length) return Promise.reject(new Error('Invalid bonus wheel awards'));
   const tr = options.translate, copy = (bg: string, en: string) => options.language === 'bg' ? bg : en;
-  const assetBase = `${import.meta.env.BASE_URL}art-v2/`;
   const firstIndex = UPGRADES.indexOf(selected[0]);
   const topAngle = -90;
   const finalAngle = options.tier === 'december' ? 0 : ((topAngle - (firstIndex * 120 + 60)) % 360 + 360) % 360 + 360 * 5;
@@ -50,11 +50,11 @@ export function showBonusWheel(options: BonusWheelOptions): Promise<void> {
     <div class="sg-wheel-stage"><div class="sg-wheel-dial" style="--wheel-end:${finalAngle}deg"><svg viewBox="0 0 480 480" role="img" aria-label="${escape(copy('Колело с три различни надграждания', 'Wheel with three distinct upgrades'))}"><circle cx="240" cy="240" r="232" fill="#b18346" stroke="#201c28" stroke-width="10"/>${UPGRADES.map((upgrade, index) => {
       const icon = at(index * 120 + 60, 137);
       const label = upgrade === 'shots' ? `<tspan x="${icon.x}" y="${icon.y + 73}">${copy('ДВОЕН', 'DOUBLE')}</tspan><tspan x="${icon.x}" dy="20">${copy('ДОП. СПИН', 'EXTRA SPIN')}</tspan>` : escape(tr(`upgrade.${upgrade}`));
-      return `${sector(index)}<g class="sg-wheel-sector-content" style="transform-origin:${icon.x}px ${icon.y}px"><image href="${assetBase}${ICONS[upgrade]}.svg?v=5.1" x="${icon.x - 57}" y="${icon.y - 62}" width="114" height="124"/><text x="${icon.x}" y="${icon.y + 77}" text-anchor="middle" fill="#fff1cf" stroke="#201c28" stroke-width="4" paint-order="stroke" font-family="Grad Display,Arial,sans-serif" font-size="17" font-weight="800">${label}</text></g>`;
+      return `${sector(index)}<g class="sg-wheel-sector-content" style="transform-origin:${icon.x}px ${icon.y}px"><image href="${symbolAssetUrl(ICONS[upgrade])}" x="${icon.x - 57}" y="${icon.y - 62}" width="114" height="124"/><text x="${icon.x}" y="${icon.y + 77}" text-anchor="middle" fill="#fff1cf" stroke="#201c28" stroke-width="4" paint-order="stroke" font-family="Grad Display,Arial,sans-serif" font-size="17" font-weight="800">${label}</text></g>`;
     }).join('')}<circle cx="240" cy="240" r="225" fill="none" stroke="#fff1cf" stroke-width="3"/><g class="sg-wheel-sector-content" style="transform-origin:240px 240px"><circle cx="240" cy="240" r="38" fill="#e4a442" stroke="#201c28" stroke-width="7"/><text x="240" y="249" text-anchor="middle" fill="#201c28" font-family="Grad Display,Arial,sans-serif" font-size="29" font-weight="900">SG</text></g></svg></div>
     ${selected.map((upgrade, index) => `<span class="sg-wheel-pointer" data-upgrade="${upgrade}" style="--pointer-angle:${pointerAngles[index]}deg" aria-label="${escape(tr(`upgrade.${upgrade}`))}"><i></i></span>`).join('')}
     </div>
-    <div class="sg-wheel-awards" aria-live="polite" aria-hidden="${options.tier !== 'december'}">${selected.map(upgrade => `<div data-award="${upgrade}"><img src="${assetBase}${ICONS[upgrade]}.svg?v=5.1" alt=""><b>${escape(tr(`upgrade.${upgrade}`))}</b><span>${copy('АКТИВНО', 'ACTIVE')}</span></div>`).join('')}</div>
+    <div class="sg-wheel-awards" aria-live="polite" aria-hidden="${options.tier !== 'december'}">${selected.map(upgrade => `<div data-award="${upgrade}"><img src="${symbolAssetUrl(ICONS[upgrade])}" alt=""><b>${escape(tr(`upgrade.${upgrade}`))}</b><span>${copy('АКТИВНО', 'ACTIVE')}</span></div>`).join('')}</div>
     <p class="sg-wheel-message">${options.tier === 'december' ? copy('Всички три надграждания са твои. Няма нужда от завъртане.', 'All three upgrades are yours. The wheel stays still.') : selected.length === 2 ? copy('Две стрелки. Две различни надграждания.', 'Two pointers. Two distinct upgrades.') : copy('Една стрелка. Едно гарантирано надграждане.', 'One pointer. One guaranteed upgrade.')}</p>
     <button class="sg-wheel-continue" ${options.tier === 'december' ? '' : 'disabled'}>${escape(tr('continue'))} <span aria-hidden="true">→</span></button>
   </section>`;

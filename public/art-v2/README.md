@@ -1,5 +1,9 @@
 # Studentski Grad: original illustrated artwork
 
+Presentation 5.2 uses the [painted art set](../art-v3/README.md) for regular
+symbols and scenes. This folder retains the authored feature signs and earlier
+vector illustrations; its provenance describes these SVG files specifically.
+
 The 24 SVG illustrations in this folder are original, directly authored curved
 vector paths. They contain no photographs, downloaded illustrations, commercial
 game assets, embedded raster data or image-generation output.

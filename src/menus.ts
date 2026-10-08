@@ -1,4 +1,5 @@
 import './menus.css';
+import { symbolArtworkMarkup } from './render/art-v2';
 import { CONFIG, PAYING_SYMBOLS, roundPriceCents } from './engine/config';
 import type { BonusTier, Mode, RoundChoice, Session, SymbolId } from './engine/types';
 import { formatEuroCents, t, type Language } from './i18n';
@@ -94,7 +95,7 @@ export class Dialogs {
   }
   private symbol(symbol: SymbolId | 'couple'): string {
     const id = symbol === 'vip' ? 'scatter' : symbol;
-    return `<img class="sg-symbol sg-symbol-${id}" src="${escape(import.meta.env.BASE_URL)}art-v2/${id}.svg?v=5.1" alt="${escape(this.tr(`symbol.${id}`))}" width="88" height="88" draggable="false">`;
+    return symbolArtworkMarkup(id, this.tr(`symbol.${id}`), `sg-symbol sg-symbol-${id}`);
   }
   private get busy(): boolean {
     const session = this.options.getSession();

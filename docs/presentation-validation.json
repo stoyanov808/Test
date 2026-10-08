@@ -1,9 +1,9 @@
 {
-  "presentationVersion": "5.1.0",
+  "presentationVersion": "5.2.0",
   "mathematicsVersion": "studentski-duck-5",
-  "browserGeneratedAt": "2026-10-07T23:50:23.681Z",
+  "browserGeneratedAt": "2026-10-08T00:18:16.574Z",
   "engineTestsPassed": 62,
-  "browserChecksPassed": 40,
+  "browserChecksPassed": 41,
   "browserChecksFailed": 0,
   "browserSourceHashes": {
     "index.html": "ff0fd82334ea51b0e79a9b6702d7ff6cf59a381c482e2f1f30561b1895af64e4",
@@ -31,7 +31,10 @@
     "public/art-v2/wild-tall.svg": "1587854007ca373cdd64390cfcd7cd11ddc033dda4cf405cdb512f0dea004825",
     "public/art-v2/wild.svg": "58f952541e3440618968b94be492d8b5145715751290eba8d06a57485c83e4ce",
     "public/art-v2/xways.svg": "2051a68d44d5f25ebc324e4829b6eb27f73662a52472bbe02f3dbed6dc7b66b8",
-    "scripts/browser-test.ts": "46be8059b5769f41f89c83c76045f22f67f5a0b2253bb01ee1a7cbd375003a0e",
+    "public/art-v3/manifest.json": "3973d935cfecadc611b7d5bb04fe5f390a8cef5e756360e25fc2ce3e276d6291",
+    "public/art-v3/scene-atlas.png": "a7c6ca6ca22e8424a13fc9054932a9214f83b0c3785b5a88fa5377f5896d90a7",
+    "public/art-v3/symbol-atlas.png": "beae7ea7016c46a56553b408f00e73836188afcede2ea492519cd6bb14559e2a",
+    "scripts/browser-test.ts": "e7ae27dda9039f9eb83e0306aa81ef009b240698b2410ba55fe98b92c3357153",
     "src/audio.ts": "29807275831a3e06f70536b401861ea1cb282de3ee263a0faf949f7b74bc796f",
     "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
     "src/engine/config.ts": "e139911399a038a1df509fbbe3c01b6577e5051ca9797b0ff0dac6658e70333d",
@@ -41,20 +44,20 @@
     "src/engine/persistence.ts": "cf373b37712efe3418c4ceb3fd4667f6ec0777b5d8a6a1a68b1ceb8bed231c91",
     "src/engine/rng.ts": "029519d1be2b0a27acecf6f5c4f728685fd8e44db86abd782f7cd20ded45cbf4",
     "src/engine/types.ts": "e79766a2a6c5e0192175a2e631408130e5078ef7e0179cb8f758c792ff675e9c",
-    "src/i18n.ts": "0dc38fc46fc6b3e0ee18032fb7f0812f01feb2047805404c870a7695c40a679b",
-    "src/main.ts": "6f9a292759f98a46423a31e4eb61c9b2b076d138457d84bd7bcda07d7ce034dc",
+    "src/i18n.ts": "d365ab1da8cad874787761ddb6d87d95c860ab6bad440483bbc7971415c6f920",
+    "src/main.ts": "d4fe1cac58eb48bcae3bf838df5ff7daec52f889b7067cf7afee3838868c3a6b",
     "src/menus.css": "54b7022b626a166a98b2977325f6dcee44a7e9f505eb7411947830a570cacf83",
-    "src/menus.ts": "39a56216ea5186e6b059f6b98a0154a42a9241d7d0dee5e9bdba4e48422ddffc",
-    "src/render/art-v2.ts": "8e37bf6d72d726667c22330a96529f95e06a5a8f9d5cfacabce039ffcefa065b",
-    "src/render/bonus-wheel.ts": "a064035444dfc2e7c7b0ec20972cdc8dc5e9fe034679bebeb16b19ba00b98cbd",
+    "src/menus.ts": "9d3b57f350c9a79565172815fd77bd4944470cf7fab45e9407262a37be926062",
+    "src/render/art-v2.ts": "ae0a957e7b1cafa3a525a25ea56f989531fc1c427b3ac637b3a24dad02cc1a5a",
+    "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
     "src/render/index.ts": "cf8c66a896a83e46bf1eb429df69a363a7f317c4deb69125f0fc52652618b0ec",
-    "src/render/renderer.ts": "48344cc6fcd17b43273c01fd670326b652e3d34b8e821b9e26b2dce4e43f9a93",
-    "src/style.css": "97c43c5de56ebdf2d9bdc0bc33d8f3aaa77fd9d9ed5957924850da6f451309f1",
+    "src/render/renderer.ts": "01c51042d5fc413f493b3662e05f31e0a45c35ceb6570b346c88438fa4c4552f",
+    "src/style.css": "4f7d5d834b98ed7df9ed6ad581c571750e71dbbc6b686af7f7b28bcb1f701e4c",
     "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
   },
   "browserChecks": [
     {
-      "name": "Desktop renders the original 6 \u00d7 5 SVG board, 9 paying symbols and local fonts",
+      "name": "Desktop renders the original 6 \u00d7 5 illustrated board, 9 distinct atlas symbols and local fonts",
       "passed": true
     },
     {
@@ -122,7 +125,11 @@
       "passed": true
     },
     {
-      "name": "A normal badge throws beer at a matching symbol, visibly copies it home and boosts only its source",
+      "name": "Normal xWays uses one-way beer throws to visible matches, with no return animation and only its source boosted",
+      "passed": true
+    },
+    {
+      "name": "Normal xWays with no visible match reveals locally without inventing a beer recipient or return flight",
       "passed": true
     },
     {
@@ -215,24 +222,177 @@
     }
   ],
   "observedPresentation": {
-    "normalBeerCopy": {
+    "illustratedAtlas": {
+      "width": 1254,
+      "height": 1254,
+      "cells": [
+        {
+          "symbol": "book",
+          "colors": 2790,
+          "opaquePixels": 2853,
+          "pixelHash": 1301219781
+        },
+        {
+          "symbol": "coffee",
+          "colors": 2014,
+          "opaquePixels": 2070,
+          "pixelHash": 189294112
+        },
+        {
+          "symbol": "noodles",
+          "colors": 2165,
+          "opaquePixels": 2231,
+          "pixelHash": 1481646619
+        },
+        {
+          "symbol": "doner",
+          "colors": 2370,
+          "opaquePixels": 2376,
+          "pixelHash": 3908621248
+        },
+        {
+          "symbol": "beer",
+          "colors": 1959,
+          "opaquePixels": 2021,
+          "pixelHash": 4208653721
+        },
+        {
+          "symbol": "female",
+          "colors": 3196,
+          "opaquePixels": 3475,
+          "pixelHash": 2052784956
+        },
+        {
+          "symbol": "male",
+          "colors": 3183,
+          "opaquePixels": 3302,
+          "pixelHash": 741082611
+        },
+        {
+          "symbol": "dj",
+          "colors": 3340,
+          "opaquePixels": 3634,
+          "pixelHash": 296765941
+        },
+        {
+          "symbol": "bouncer",
+          "colors": 2846,
+          "opaquePixels": 3207,
+          "pixelHash": 609535082
+        }
+      ]
+    },
+    "sceneAtlas": {
+      "width": 1254,
+      "height": 1254,
+      "cells": [
+        {
+          "symbol": "base",
+          "colors": 6535,
+          "opaquePixels": 10000,
+          "pixelHash": 1874239199
+        },
+        {
+          "symbol": "dorm",
+          "colors": 5951,
+          "opaquePixels": 10000,
+          "pixelHash": 112326949
+        },
+        {
+          "symbol": "friday",
+          "colors": 5339,
+          "opaquePixels": 10000,
+          "pixelHash": 2461251467
+        },
+        {
+          "symbol": "december",
+          "colors": 6714,
+          "opaquePixels": 10000,
+          "pixelHash": 1630838589
+        }
+      ]
+    },
+    "normalOneWayBeer": {
       "source": {
         "reel": 0,
         "row": 1
       },
-      "revealReference": {
-        "reel": 3,
-        "row": 3
-      },
+      "visualTargets": [
+        {
+          "reel": 3,
+          "row": 3
+        },
+        {
+          "reel": 4,
+          "row": 3
+        }
+      ],
       "recordedPaidTargets": [
         {
           "reel": 0,
           "row": 1
         }
       ],
-      "actualBottles": 16,
-      "impactRadius": 12.278951973045267,
-      "actualCopies": 8
+      "actualBottles": 37,
+      "recipientFlights": [
+        {
+          "target": {
+            "reel": 3,
+            "row": 3
+          },
+          "observedFrames": 19,
+          "first": {
+            "kind": "bottle",
+            "x": 103.80698227924738,
+            "y": 247.04156847536416,
+            "progress": 0.1814444444510688,
+            "source": "0:1",
+            "alpha": 1
+          },
+          "last": {
+            "kind": "bottle",
+            "x": 593.1675930049832,
+            "y": 491.59796845814645,
+            "progress": 0.5146666666732926,
+            "source": "0:1",
+            "alpha": 1
+          }
+        },
+        {
+          "target": {
+            "reel": 4,
+            "row": 3
+          },
+          "observedFrames": 18,
+          "first": {
+            "kind": "bottle",
+            "x": 94.72571411466521,
+            "y": 252.0949285330046,
+            "progress": 0.2740000000066195,
+            "source": "0:1",
+            "alpha": 1
+          },
+          "last": {
+            "kind": "bottle",
+            "x": 702.6965219085694,
+            "y": 439.6025453510647,
+            "progress": 0.5887777777844005,
+            "source": "0:1",
+            "alpha": 1
+          }
+        }
+      ],
+      "impactRadius": 12.534402823953208,
+      "returningSymbols": 0
+    },
+    "normalNoMatchBeer": {
+      "source": {
+        "reel": 0,
+        "row": 1
+      },
+      "visualTargets": [],
+      "actualBottles": 0,
+      "sourceImpactRadius": 12.45149894054665
     },
     "beerThrows": {
       "targets": [
@@ -273,8 +433,8 @@
           "row": 0
         }
       ],
-      "actualBottles": 182,
-      "actualImpacts": 1458
+      "actualBottles": 280,
+      "actualImpacts": 2322
     },
     "bonusRemainingCounter": {
       "seed": 5,
@@ -287,69 +447,69 @@
     "normalReels": [
       {
         "phase": "spin",
-        "duration": 1385.5
+        "duration": 1378.0999999940395
       },
       {
         "phase": "bomb",
-        "duration": 1585.300000011921
+        "duration": 1586.5
       },
       {
         "phase": "clear",
-        "duration": 435.59999999403954
+        "duration": 427.09999999403954
       },
       {
         "phase": "cascade",
-        "duration": 738.2000000029802
+        "duration": 717.8000000119209
       },
       {
         "phase": "xways",
-        "duration": 920.7000000029802
+        "duration": 916.8999999910593
       },
       {
         "phase": "win",
-        "duration": 934.8999999910593
+        "duration": 931.4000000059605
       },
       {
         "phase": "clear",
-        "duration": 419.70000000298023
+        "duration": 434.8999999910593
       },
       {
         "phase": "cascade",
-        "duration": 729.2000000029802
+        "duration": 717.9000000059605
       }
     ],
     "turboReels": [
       {
         "phase": "spin",
-        "duration": 770.0999999940395
+        "duration": 758.5
       },
       {
         "phase": "bomb",
-        "duration": 886.7999999970198
+        "duration": 866.3000000119209
       },
       {
         "phase": "clear",
-        "duration": 234.90000000596046
+        "duration": 249.09999999403954
       },
       {
         "phase": "cascade",
-        "duration": 441.09999999403954
+        "duration": 435.09999999403954
       },
       {
         "phase": "xways",
-        "duration": 530.4000000059605
+        "duration": 499.20000000298023
       },
       {
         "phase": "win",
-        "duration": 405.29999999701977
+        "duration": 382.40000000596046
       },
       {
         "phase": "clear",
-        "duration": 240.09999999403954
+        "duration": 249.29999999701977
       },
       {
         "phase": "cascade",
-        "duration": 449.90000000596046
+        "duration": 441
       }
     ]
   },
@@ -357,8 +517,8 @@
   "failedRequests": [],
   "externalImages": [],
   "productionSmoke": {
-    "generatedAt": "2026-10-07T23:46:13.154Z",
-    "packageVersion": "5.1.0",
+    "generatedAt": "2026-10-08T00:16:10.520Z",
+    "packageVersion": "5.2.0",
     "config": "studentski-duck-5",
     "passed": true,
     "sourceHashes": {
@@ -367,9 +527,9 @@
       "src/engine/evaluator.ts": "277a83a354275920f9f46caa50eee3f996f187cdea37657b91dbca61f82f1b86",
       "src/engine/rng.ts": "029519d1be2b0a27acecf6f5c4f728685fd8e44db86abd782f7cd20ded45cbf4",
       "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
-      "src/render/renderer.ts": "48344cc6fcd17b43273c01fd670326b652e3d34b8e821b9e26b2dce4e43f9a93",
-      "src/render/bonus-wheel.ts": "a064035444dfc2e7c7b0ec20972cdc8dc5e9fe034679bebeb16b19ba00b98cbd",
-      "src/main.ts": "6f9a292759f98a46423a31e4eb61c9b2b076d138457d84bd7bcda07d7ce034dc"
+      "src/render/renderer.ts": "01c51042d5fc413f493b3662e05f31e0a45c35ceb6570b346c88438fa4c4552f",
+      "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
+      "src/main.ts": "d4fe1cac58eb48bcae3bf838df5ff7daec52f889b7067cf7afee3838868c3a6b"
     },
     "devHooksAbsent": true,
     "normal": {

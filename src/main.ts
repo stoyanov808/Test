@@ -2,6 +2,7 @@ import './style.css';
 import './menus.css';
 import { CONFIG, PAYING_SYMBOLS, STORAGE_KEY, createSession, loadSession, commitSession, startRound, advanceRound, dismissPresentation, selectBet, setMode, refillDemo, declineExtraSpin, roundPriceCents, type Session, type RoundChoice, type SpinPresentation, type BonusTier, type Grid, type NumberGrid } from './engine';
 import { SlotRenderer } from './render';
+import { sceneBackdropMarkup, symbolArtworkMarkup, symbolAssetUrl } from './render/art-v2';
 import { showBonusWheel, skipBonusWheel } from './render/bonus-wheel';
 import { AudioDirector } from './audio';
 import { createTranslator, formatEuro, type Language } from './i18n';
@@ -51,7 +52,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class='header-actions'><span class='demo-badge' data-i18n='demo'>ВИРТУАЛНО ДЕМО</span><button class='language-button' id='language' aria-label='Change language'>BG / EN</button><button class='icon-button' id='sound'>${svg('sound')}</button><button class='icon-button' id='settings'>${svg('gear')}</button></div>
     </header>
     <section class='night-stage' data-scene='base' aria-label='Slot game'>
-      <div class='scene-layer' aria-hidden='true'></div><div class='scene-shade' aria-hidden='true'></div>
+      <div class='scene-layer' aria-hidden='true'>${sceneBackdropMarkup('base')}</div><div class='scene-shade' aria-hidden='true'></div>
       <div class='stage-inner'>
         <aside class='story-rail'>
           <div class='game-logo'><span class='logo-tag' data-i18n='location'>СОФИЯ · СЛЕД ПОЛУНОЩ</span><h1><span id="title-top">СТУДЕНТСКИ</span><strong id="title-bottom">ГРАД</strong></h1><p data-i18n='subtitle'>„Утре съм на лекции.“</p><i aria-hidden='true'>★</i></div>
@@ -86,7 +87,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class='extra-offer' id='extra-offer' role='dialog' aria-modal='true' aria-labelledby='extra-title' aria-describedby='extra-description' hidden>
     <div class='extra-dialog'>
       <span class='extra-kicker' data-i18n='studentskiNights'></span>
-      <img class='extra-art' src='${import.meta.env.BASE_URL}art-v2/xways.svg?v=5.1' alt=''>
+      <img class='extra-art' src='${symbolAssetUrl('xways')}' alt=''>
       <h2 id='extra-title'></h2><p id='extra-description'></p>
       <strong id='extra-price'></strong><small id='extra-quote-label'></small>
       <div class='extra-actions'><button id='extra-dismiss'></button><button id='extra-spin'></button></div>
@@ -126,6 +127,7 @@ function safe(action: () => void) { try { action(); } catch (e) { autoplay = 0; 
 function setScene(tier: BonusTier | null) {
   currentScene = tier; renderer.setScene(tier); audio.setTier(tier ?? 'base');
   document.querySelector('.night-stage')!.setAttribute('data-scene', tier ?? 'base');
+  document.querySelector('.scene-layer')!.innerHTML = sceneBackdropMarkup(tier);
   el('scene-label').textContent = tier ? tr(`bonus.${tier}`) : tr('subtitle').replace(/[„“]/g, '');
 }
 const dialogs = new Dialogs({
@@ -259,8 +261,7 @@ function overlay(title: string, detail: string, amount?: number, max = false, du
   });
 }
 function winIllustration(): string {
-  const assets = `${import.meta.env.BASE_URL}art-v2/`;
-  return `<div class='night-celebration' aria-hidden='true'><span></span><img class='win-friends' src='${assets}couple.svg?v=5.1' alt=''><img class='win-toast' src='${assets}beer.svg?v=5.1' alt=''></div>`;
+  return `<div class='night-celebration' aria-hidden='true'><span></span>${symbolArtworkMarkup('male', '', 'win-friends win-friends-male', true)}${symbolArtworkMarkup('female', '', 'win-friends win-friends-female', true)}${symbolArtworkMarkup('beer', '', 'win-toast', true)}</div>`;
 }
 async function present(p: SpinPresentation) {
   lastPresentation = p;

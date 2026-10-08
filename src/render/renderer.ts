@@ -115,7 +115,7 @@ export class SlotRenderer {
       kind: 'cascade' as const, elapsedMs: this.tumble.progress * this.tumble.duration,
       durationMs: this.tumble.duration, cells: this.tumbleCells(),
     } : null;
-    return { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), cascade: this.cascadeIndex, motion, modifier: this.effect ? {kind: this.effect.event.kind, progress: this.effect.progress, source: {...this.effect.event.source}, targets: this.effect.event.targets.map(target => ({...target})), revealReference: this.normalRevealReference(this.effect.event)} : null };
+    return { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), cascade: this.cascadeIndex, motion, modifier: this.effect ? {kind: this.effect.event.kind, progress: this.effect.progress, source: {...this.effect.event.source}, targets: this.effect.event.targets.map(target => ({...target})), visualTargets: this.beerVisualTargets(this.effect.event)} : null };
   }
   private publishStep(payoutCents = 0) { this.options.onStep?.({ ...this.snapshot(), payoutCents }); }
   private label(symbol: SymbolId) { const name = `symbol.${symbol}`, value = this.options.translate?.(name); return value && value !== name ? value : SYMBOL_LABELS[symbol] ?? symbol; }
@@ -374,8 +374,8 @@ export class SlotRenderer {
               // The badge opens before it sends a multiplier. A receiving cell
               // changes only when that visible transmission reaches it.
               const targetIndex = event!.targets.findIndex(target => key(target) === cellKey);
-              const impact = event!.kind === 'xways' && this.normalRevealReference(event!) ? .70 : .52 + Math.max(0, targetIndex) * .10 / Math.max(1, event!.targets.length - 1);
-              const revealAt = event!.kind === 'xways' && this.normalRevealReference(event!) ? .70 : .30;
+              const impact = .52 + Math.max(0, targetIndex) * .10 / Math.max(1, event!.targets.length - 1);
+              const revealAt = .30;
               if (source && p >= revealAt || !source && p >= impact) {
                 this.drawSymbol(event!.gridAfter[reel][row], pos.x, pos.y, time, .97 + Math.sin(p * Math.PI) * .08, alpha, source ? .018 * Math.sin(p * 24) : 0);
                 this.drawMultiplier(p >= impact ? event!.positionMultipliersAfter?.[reel]?.[row] ?? mult : mult, pos.x, pos.y, false); continue;
@@ -480,41 +480,24 @@ export class SlotRenderer {
     if (event.kind === 'shot' && p > .45) outlinedText(ctx, `+${event.shotsAdded ?? 1} ${this.translate('render.extrashot', 'ЗАВЪРТАНЕ')}`, source.x, source.y - 44 - p * 30, 28, '#f8e2a0', INK, 5);
     if (event.kind === 'infectious') for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5 + time * .001; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(source.x + Math.cos(a) * 43, source.y + Math.sin(a) * 43, 4, 0, Math.PI * 2); ctx.fill(); }
   }
-  /** A normal badge copies a type into its own cell. The reference is cosmetic. */
-  private normalRevealReference(event: ModifierEvent): CellPosition | null {
-    if (event.kind !== 'xways' || !event.symbol || !this.effect) return null;
-    const matches = this.effect.before.grid.flatMap((column, reel) => column.flatMap((symbol, row) =>
+  /** Cosmetic recipients never become paid targets or consume gameplay RNG. */
+  private beerVisualTargets(event: ModifierEvent): CellPosition[] {
+    if (event.kind === 'infectious') return event.targets.map(target => ({...target}));
+    if (event.kind !== 'xways' || !event.symbol || !this.effect) return [];
+    return this.effect.before.grid.flatMap((column, reel) => column.flatMap((symbol, row) =>
       symbol === event.symbol && (reel !== event.source.reel || row !== event.source.row) ? [{reel, row}] : []));
-    matches.sort((a, b) => (Math.abs(a.reel-event.source.reel)+Math.abs(a.row-event.source.row))-(Math.abs(b.reel-event.source.reel)+Math.abs(b.row-event.source.row)));
-    return matches[0] ? {...matches[0]} : null;
   }
   private drawBeerThrows(event: ModifierEvent, progress: number) {
-    const reference = this.normalRevealReference(event);
-    if (reference) {
-      // Beer marks the sampled symbol, then its image travels back to the badge.
-      // Only the recorded source receives a multiplier; the reference never does.
-      this.drawBeerFlight(event.source, reference, clamp((progress-.14)/.34));
-      if (progress >= .48) {
-        this.drawBeerSplash(reference, (progress-.48)/.52, `reference:${key(reference)}`);
-        const point=centre(reference), ctx=this.ctx;
-        ctx.save();ctx.globalAlpha=Math.min(1,(1-progress)*7);
-        outlinedText(ctx,this.translate('render.copyCue','COPIES SYMBOL'),point.x,point.y-48,15,'#fff0cb',INK,4);ctx.restore();
-      }
-      if (progress>.48 && progress<.70 && event.symbol) {
-        const t=clamp((progress-.48)/.22), from=centre(reference), to=centre(event.source);
-        const x=from.x+(to.x-from.x)*ease(t),y=from.y+(to.y-from.y)*ease(t)-Math.sin(t*Math.PI)*38;
-        this.drawSymbol(event.symbol,x,y,performance.now(),.60,.88,-Math.sin(t*Math.PI)*.10);
-      }
-      if(progress>=.70)this.drawBeerSplash(event.source,(progress-.70)/.30,`source:${key(event.source)}`);
-      return;
-    }
-    // Infectious badges visit every committed award target. A normal badge with
-    // no existing reference reveals locally; it never invents a matching cell.
-    event.targets.forEach((target,index)=>{
-      const start=.17+index*.10/Math.max(1,event.targets.length-1),impact=start+.35;
-      this.drawBeerFlight(event.source,target,clamp((progress-start)/.35));
-      if(progress>=impact)this.drawBeerSplash(target,(progress-impact)/(1-impact),`target:${key(target)}`);
+    // Both badges use the same one-way bottles and impacts. Normal throws only
+    // illustrate matching types: its recorded multiplier stays at the source.
+    const targets = this.beerVisualTargets(event);
+    targets.forEach((target, index) => {
+      const start = .17 + index * .10 / Math.max(1, targets.length - 1), impact = start + .35;
+      this.drawBeerFlight(event.source, target, clamp((progress - start) / .35));
+      if (progress >= impact) this.drawBeerSplash(target, (progress - impact) / (1 - impact), `target:${key(target)}`);
     });
+    // The source reveals in place. No bottle or symbol flies back into it.
+    if (event.kind === 'xways' && progress >= .52) this.drawBeerSplash(event.source, (progress - .52) / .48, `source:${key(event.source)}`);
   }
   private drawBeerFlight(sourceCell: CellPosition, target: CellPosition, t: number) {
     if(t<=0||t>=1)return;
@@ -523,11 +506,13 @@ export class SlotRenderer {
     const mid={x:(start.x+end.x)/2+(same?48:0),y:Math.min(start.y,end.y)-Math.min(130,55+Math.abs(end.x-start.x)*.18)};
     const x=(1-t)**2*start.x+2*(1-t)*t*mid.x+t*t*end.x,y=(1-t)**2*start.y+2*(1-t)*t*mid.y+t*t*end.y;
     ctx.save();ctx.translate(x,y);ctx.rotate(-.45+t*Math.PI*2);
-    ctx.fillStyle='#384b32';ctx.strokeStyle=INK;ctx.lineWidth=2;
+    const glass = ctx.createLinearGradient(-12, 0, 12, 0);
+    glass.addColorStop(0, '#3c2113'); glass.addColorStop(.28, '#a65319'); glass.addColorStop(.55, '#d78b33'); glass.addColorStop(1, '#492516');
+    ctx.fillStyle=glass;ctx.strokeStyle=INK;ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(-5,-25);ctx.lineTo(5,-25);ctx.lineTo(5,-12);ctx.quadraticCurveTo(12,-7,12,0);ctx.lineTo(11,25);ctx.quadraticCurveTo(0,30,-11,25);ctx.lineTo(-12,0);ctx.quadraticCurveTo(-12,-7,-5,-12);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.fillStyle='#be974a';ctx.fillRect(-5,-25,10,5);ctx.fillStyle='#eee0b7';ctx.fillRect(-9,0,18,15);
     ctx.fillStyle='#a6573b';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('SG',0,11);
-    ctx.strokeStyle='#b7c58c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(-7,22);ctx.stroke();ctx.restore();
+    ctx.strokeStyle='#f8d29a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(-7,22);ctx.stroke();ctx.restore();
   }
   /** Filled beer, a foam crown and hanging droplets make the impact readable. */
   private drawBeerSplash(target: CellPosition, rawLife: number, identity: string) {

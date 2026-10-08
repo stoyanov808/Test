@@ -101,7 +101,7 @@ const messages: Record<string, readonly [string, string]> = {
   'render.maxwin': ['СТУДЕНТСКИ Е ТВОЙ!', 'STUDENTSKI IS YOURS!'], 'render.god': ['ДЕН 1024', 'DAY 1024'],
   'render.scatterpay': ['8+ ЕДНАКВИ НАВСЯКЪДЕ', '8+ MATCHING ANYWHERE'],
   'render.position': ['ПОЗИЦИИ', 'POSITIONS'], 'render.cascade': ['КАСКАДА', 'CASCADE'],
-  'render.copyCue': ['КОПИРА СИМВОЛА', 'COPIES SYMBOL'], 'render.remaining': ['ОСТАВАЩИ СПИНОВЕ', 'SPINS REMAINING'],
+  'render.remaining': ['ОСТАВАЩИ СПИНОВЕ', 'SPINS REMAINING'],
   'render.matching': ['ЕДНАКВИ СИМВОЛА', 'MATCHING SYMBOLS'], 'render.extrashot': ['СПИН', 'SPIN'],
   'render.bigwin': ['ГОЛЯМА ВЕЧЕР!', 'A BIG NIGHT!'], 'render.win': ['НАЗДРАВЕ!', 'CHEERS!'],
   'event.lecture': ['Лекция: 08:00. Купон: сега.', 'Lecture: 08:00. Party: now.'], 'event.doner': ['Последният дюнер е най-сладък.', 'The last döner tastes the best.'],

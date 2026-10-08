@@ -12,6 +12,8 @@ import { t } from '../src/i18n';
 interface MotionCell { reel: number; row: number; symbol: string; startY: number; y: number; targetY: number; progress: number; rotation: number; sourceRow?: number }
 interface MotionView { kind: 'landing' | 'cascade'; elapsedMs: number; durationMs: number; previousAlpha?: number; cells: MotionCell[] }
 interface MotionFrame extends MotionView { cascade: number; paints: {symbol: string; x: number; y: number; rotation: number}[] }
+interface AtlasCell { x: number; y: number; width: number; height: number }
+interface AtlasManifest { image: string; width: number; height: number; cells: Record<string, AtlasCell>; scenes?: AtlasManifest }
 
 declare global {
   interface Window {
@@ -22,7 +24,7 @@ declare global {
       skip(): void;
       setTurbo(turbo: boolean): void;
       presentation(): SpinPresentation | null;
-      board(): {grid: Grid; positionMultipliers: number[][]; cascade: number; motion?: MotionView | null; modifier?: {kind: string; progress: number; source: {reel:number;row:number}; targets: {reel:number;row:number}[]; revealReference?: {reel:number;row:number}|null} | null};
+      board(): {grid: Grid; positionMultipliers: number[][]; cascade: number; motion?: MotionView | null; modifier?: {kind: string; progress: number; source: {reel:number;row:number}; targets: {reel:number;row:number}[]; visualTargets: {reel:number;row:number}[]} | null};
       bonusPresentation(): {phase: string; tier: BonusTier; triggerScatters: number; awardedUpgrades: BonusUpgrade[]; startedAt: number; wheelStartedAt?: number; finishedAt?: number} | null;
     };
     __animationPhases?: string[];
@@ -37,12 +39,14 @@ declare global {
     __paintedArt?: string[];
     __paintedArtURLs?: string[];
     __restoreImageSpy?: () => void;
+    __atlasCells?: Record<string, AtlasCell>;
     __beerTrace?: {kind: string; x:number; y:number; progress:number; source:string; radius?:number; alpha:number; symbol?:string}[];
     __restoreBeerSpy?: () => void;
   }
 }
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
+const atlasManifest: AtlasManifest = JSON.parse(await readFile(resolve(repositoryRoot, 'public/art-v3/manifest.json'), 'utf8'));
 const output = resolve(repositoryRoot, 'test-results');
 await mkdir(output, { recursive: true });
 let baseURL = process.env.SLOT_BASE_URL ?? '';
@@ -67,7 +71,7 @@ function watch(page: Page, name: string) {
   });
   page.on('response', response => {
     if (response.url().startsWith(baseURL) && response.status() >= 400) failedRequests.push(`${response.status()} ${response.url()}`);
-    if (/\/(art-v2|fonts)\//.test(response.url()) && response.ok()) assets.add(new URL(response.url()).pathname);
+    if (/\/(art-v2|art-v3|fonts)\//.test(response.url()) && response.ok()) assets.add(new URL(response.url()).pathname);
   });
   page.on('requestfailed', request => {
     if (request.url().startsWith(baseURL) && !request.failure()?.errorText.includes('ERR_ABORTED')) failedRequests.push(`${request.failure()?.errorText}: ${request.url()}`);
@@ -94,9 +98,11 @@ async function check(name: string, page: Page, action: () => Promise<void>) {
   }
 }
 async function load(page: Page) {
+  await page.addInitScript(cells => {window.__atlasCells = cells;}, atlasManifest.cells);
   await page.goto(baseURL, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => !!window.__slot);
   await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(cells => {window.__atlasCells = cells;}, atlasManifest.cells);
 }
 async function snapshot(page: Page): Promise<Session> { return page.evaluate(() => window.__slot.snapshot()); }
 async function presentation(page: Page): Promise<SpinPresentation | null> { return page.evaluate(() => window.__slot.presentation()); }
@@ -216,9 +222,9 @@ async function observeArtworkAndDrops(page: Page) {
     const original = CanvasRenderingContext2D.prototype.drawImage;
     window.__restoreImageSpy = () => { CanvasRenderingContext2D.prototype.drawImage = original; delete window.__restoreImageSpy; };
     CanvasRenderingContext2D.prototype.drawImage = function(image: CanvasImageSource, ...args: number[]) {
-      if (this.canvas.id === 'reels' && image instanceof HTMLImageElement && /\/art-v2\//.test(image.src)) {
+      if (this.canvas.id === 'reels' && image instanceof HTMLImageElement && /\/art-v[23]\//.test(image.src)) {
         if (!window.__paintedArtURLs!.includes(image.src)) window.__paintedArtURLs!.push(image.src);
-        const symbol = new URL(image.src).pathname.split('/').at(-1)!.replace(/\.svg$/, '');
+        const symbol = /\/art-v3\/symbol-atlas\.png/.test(image.src) ? Object.entries(window.__atlasCells ?? {}).find(([, cell]) => args.length === 8 && Math.abs(args[0] - cell.x) < .01 && Math.abs(args[1] - cell.y) < .01 && Math.abs(args[2] - cell.width) < .01 && Math.abs(args[3] - cell.height) < .01)?.[0] ?? 'unknown-atlas-crop' : new URL(image.src).pathname.split('/').at(-1)!.replace(/\.(svg|png)$/, '');
         const matrix = this.getTransform();
         const paintedX = matrix.e / (this.canvas.width / 1040), paintedY = matrix.f / (this.canvas.height / 730);
         if (paintedX >= 34 && paintedX <= 1006 && paintedY >= 48 && paintedY <= 698 && !window.__paintedArt!.includes(symbol)) window.__paintedArt!.push(symbol);
@@ -229,7 +235,7 @@ async function observeArtworkAndDrops(page: Page) {
             frame = {...motion, cells: motion.cells.map(cell => ({...cell})), cascade: board.cascade, paints: []};
             window.__motionTrace!.push(frame);
           }
-          // Every symbol SVG is centered at the renderer's translated origin.
+          // Every paying-symbol atlas crop and feature SVG shares the translated origin.
           // Read the actual canvas transform to independently verify the motion diagnostics.
           frame.paints.push({symbol, x: paintedX, y: paintedY, rotation: Math.atan2(matrix.b / (this.canvas.height / 730), matrix.a / (this.canvas.width / 1040))});
         }
@@ -241,7 +247,7 @@ async function observeArtworkAndDrops(page: Page) {
 async function assertDrops(page: Page, view: SpinPresentation, label: string) {
   const trace = await page.evaluate(() => window.__motionTrace ?? []);
   const renderedURLs = await page.evaluate(() => window.__paintedArtURLs ?? []);
-  assert.ok(renderedURLs.length > 0 && renderedURLs.every(url => new URL(url).searchParams.get('v') === '5.1'), 'the actual canvas loads the revised artwork through versioned asset URLs');
+  assert.ok(renderedURLs.length > 0 && renderedURLs.every(url => new URL(url).searchParams.get('v') === '5.2'), 'the actual canvas loads the revised artwork through versioned asset URLs');
   const landing = trace.filter(frame => frame.kind === 'landing');
   assert.ok(landing.length >= (label === "turbo" ? 7 : 15), `real ${label} landing frames are observed`);
   assert.ok(landing[0].durationMs <= (label === 'turbo' ? 850 : 1500), 'configured fall completes faster than the prior version');
@@ -311,11 +317,11 @@ async function observeBeerEffects(page: Page) {
     };
     CanvasRenderingContext2D.prototype.drawImage = function(image: CanvasImageSource, ...args: number[]) {
       const modifier = window.__slot.board().modifier;
-      if (modifier?.kind === 'xways' && modifier.revealReference && image instanceof HTMLImageElement && /\/art-v2\//.test(image.src)) {
-        const symbol = new URL(image.src).pathname.split('/').at(-1)!.replace(/\.svg$/, '');
+      if (modifier?.kind === 'xways' && image instanceof HTMLImageElement && /\/art-v[23]\//.test(image.src)) {
+        const symbol = /\/art-v3\/symbol-atlas\.png/.test(image.src) ? Object.entries(window.__atlasCells ?? {}).find(([, cell]) => args.length === 8 && Math.abs(args[0] - cell.x) < .01 && Math.abs(args[1] - cell.y) < .01 && Math.abs(args[2] - cell.width) < .01 && Math.abs(args[3] - cell.height) < .01)?.[0] ?? 'unknown-atlas-crop' : new URL(image.src).pathname.split('/').at(-1)!.replace(/\.(svg|png)$/, '');
         const matrix = this.getTransform(), x = matrix.e / (this.canvas.width / 1040), y = matrix.f / (this.canvas.height / 730);
         const isGridCenter = Array.from({length: 6}, (_, reel) => 34 + (reel + .5) * 162).some(cx => Math.abs(cx - x) < .01) && Array.from({length: 5}, (_, row) => 48 + (row + .5) * 130).some(cy => Math.abs(cy - y) < .01);
-        if (!isGridCenter && x >= 34 && x <= 1006 && y >= 48 && y <= 698) spy.record(this, 'copy', undefined, symbol);
+        if (!isGridCenter && x >= 34 && x <= 1006 && y >= 48 && y <= 698) spy.record(this, 'moving-symbol', undefined, symbol);
       }
       return (drawImage as (...args: unknown[]) => void).apply(this, [image, ...args]);
     };
@@ -420,10 +426,11 @@ async function browserSourceHashes() {
     for (const entry of await readdir(resolve(repositoryRoot, directory), {withFileTypes: true})) {
       const file = `${directory}/${entry.name}`;
       if (entry.isDirectory()) await visit(file);
-      else if (/\.(ts|css|svg)$/.test(entry.name)) files.push(file);
+      else if (/\.(ts|css|svg|png|json)$/.test(entry.name)) files.push(file);
     }
   }
   await visit('src'); await visit('public/art-v2');
+  if (existsSync(resolve(repositoryRoot, 'public/art-v3'))) await visit('public/art-v3');
   return Object.fromEntries(await Promise.all(files.sort().map(async file => [file, createHash('sha256').update(await readFile(resolve(repositoryRoot, file))).digest('hex')])));
 }
 function matchingCount(grid: Grid) { return Math.max(...PAYING_SYMBOLS.map(symbol => grid.flat().filter(cell => cell === symbol || cell === 'wild').length)); }
@@ -473,7 +480,7 @@ try {
   watch(desktop, 'desktop');
   await load(desktop);
 
-  await check(`Desktop renders the original 6 × 5 SVG board, ${PAYING_SYMBOLS.length} paying symbols and local fonts`, desktop, async () => {
+  await check(`Desktop renders the original 6 × 5 illustrated board, ${PAYING_SYMBOLS.length} distinct atlas symbols and local fonts`, desktop, async () => {
     assert.equal(await desktop.locator('html').getAttribute('lang'), 'bg');
     assert.match(await desktop.locator('#reels').getAttribute('aria-label') ?? '', /Шест барабана, пет реда/);
     assert.match(await desktop.locator('#board-counter').innerText(), /8\+/);
@@ -485,13 +492,39 @@ try {
     });
     assert.ok(drawing.width > 300 && drawing.height > 200 && drawing.colors > 40, JSON.stringify(drawing));
     assert.equal(drawing.loadedFonts.length, 2, 'both local font faces loaded');
-    const artwork = [...PAYING_SYMBOLS, 'wild', 'scatter', 'xways', 'infectious', 'infectious-upgraded', 'bomb', 'shot', 'couple', 'party-shuttle', 'scene-base', 'scene-dorm', 'scene-friday', 'scene-december'];
+    const artwork = ['wild', 'scatter', 'xways', 'infectious', 'infectious-upgraded', 'bomb', 'shot', 'couple', 'party-shuttle'];
     const decoded = await desktop.evaluate(async ids => Promise.all(ids.map(async id => {
       const image = new Image(); image.src = `/art-v2/${id}.svg`; await image.decode();
       return { id, width: image.naturalWidth, height: image.naturalHeight };
     })), artwork);
     assert.ok(decoded.every(image => image.width > 100 && image.height > 100), JSON.stringify(decoded));
-    for (const id of PAYING_SYMBOLS) assert.ok(assets.has(`/art-v2/${id}.svg`), `${id} served successfully`);
+    assert.deepEqual(Object.keys(atlasManifest.cells).sort(), [...PAYING_SYMBOLS].sort(), 'the atlas manifest maps every regular paying symbol exactly once');
+    const illustrations = await desktop.evaluate(async manifests => Promise.all(manifests.map(async manifest => {
+      const image = new Image(); image.src = `/art-v3/${manifest.image}?v=5.2`; await image.decode();
+      const canvas = document.createElement('canvas'); canvas.width = 100; canvas.height = 100;
+      const ctx = canvas.getContext('2d')!;
+      const cells = Object.entries(manifest.cells).map(([symbol, cell]) => {
+        ctx.clearRect(0, 0, 100, 100); ctx.drawImage(image, cell.x, cell.y, cell.width, cell.height, 0, 0, 100, 100);
+        const pixels = ctx.getImageData(0, 0, 100, 100).data, colors = new Set<string>(); let opaque = 0, pixelHash = 2166136261;
+        for (let index = 0; index < pixels.length; index += 4) {
+          for (let channel = 0; channel < 4; channel++) pixelHash = Math.imul(pixelHash ^ pixels[index + channel], 16777619) >>> 0;
+          if (pixels[index + 3] > 128) { opaque++; colors.add(`${pixels[index]}:${pixels[index + 1]}:${pixels[index + 2]}`); }
+        }
+        return {symbol, colors: colors.size, opaquePixels: opaque, pixelHash};
+      });
+      return {width: image.naturalWidth, height: image.naturalHeight, cells};
+    })), [atlasManifest, atlasManifest.scenes!]);
+    const illustrated = illustrations[0], scenes = illustrations[1];
+    assert.equal(illustrated.width, atlasManifest.width); assert.equal(illustrated.height, atlasManifest.height);
+    assert.ok(illustrated.cells.every(cell => cell.colors > 40 && cell.opaquePixels > 500), `each paying-symbol crop contains distinct detailed visible artwork: ${JSON.stringify(illustrated)}`);
+    assert.equal(new Set(illustrated.cells.map(cell => cell.pixelHash)).size, PAYING_SYMBOLS.length, 'every regular symbol has different actual atlas pixels');
+    assert.ok(assets.has(`/art-v3/${atlasManifest.image}`), 'the real original symbol atlas is served locally');
+    assert.equal(scenes.width, atlasManifest.scenes!.width); assert.equal(scenes.height, atlasManifest.scenes!.height);
+    assert.deepEqual(Object.keys(atlasManifest.scenes!.cells).sort(), ['base', 'december', 'dorm', 'friday']);
+    assert.ok(scenes.cells.every(cell => cell.colors > 100 && cell.opaquePixels > 9000), 'each original painted Studentski Grad scene is fully visible and detailed');
+    assert.equal(new Set(scenes.cells.map(cell => cell.pixelHash)).size, 4, 'all four scene tiles contain different real artwork');
+    assert.ok(assets.has(`/art-v3/${atlasManifest.scenes!.image}`), 'the real original scene atlas is served locally');
+    timingEvidence.illustratedAtlas = illustrated; timingEvidence.sceneAtlas = scenes;
     for (const font of ['Manrope', 'Oswald']) assert.ok(assets.has(`/fonts/${font}.ttf`));
     await euro(desktop, '#balance', CONFIG.initialBalanceCents, 'bg');
     for (const viewport of desktopViewports) {
@@ -549,8 +582,16 @@ try {
     assert.equal(await desktop.locator('.sg-paytable tbody td').count(), PAYING_SYMBOLS.length * CONFIG.payThresholds.length);
     assert.deepEqual(await desktop.locator('.sg-paytable thead th').allTextContents(), ['SYMBOL', '8–9', '10–11', '12+']);
     for (let i = 0; i < PAYING_SYMBOLS.length; i++) {
-      const values = await desktop.locator('.sg-paytable tbody tr').nth(i).locator('td').allTextContents();
-      assert.deepEqual(values.map(value => Number(value.replace('×', '').replaceAll(',', ''))), CONFIG.paytable[PAYING_SYMBOLS[i]].map(value => value / CONFIG.payoutDenominator));
+      const row = desktop.locator('.sg-paytable tbody tr').nth(i), symbol = PAYING_SYMBOLS[i];
+      const values = await row.locator('td').allTextContents();
+      assert.deepEqual(values.map(value => Number(value.replace('×', '').replaceAll(',', ''))), CONFIG.paytable[symbol].map(value => value / CONFIG.payoutDenominator));
+      const painted = row.locator(`svg[data-art-symbol="${symbol}"]`), cell = atlasManifest.cells[symbol];
+      assert.equal(await painted.getAttribute('viewBox'), `0 0 ${cell.width} ${cell.height}`, 'paytable art clips exactly one regular atlas cell');
+      const displayScale = Number(await painted.locator('image').getAttribute('width')) / atlasManifest.width;
+      assert.ok(displayScale >= 1 && displayScale <= 1.3, 'paytable zoom uses the transparent margins while preserving one selected cell');
+      assert.ok(Math.abs(Number(await painted.locator('image').getAttribute('x')) - (-cell.x * displayScale - (displayScale - 1) * cell.width / 2)) < .01);
+      assert.ok(Math.abs(Number(await painted.locator('image').getAttribute('y')) - (-cell.y * displayScale - (displayScale - 1) * cell.height / 2)) < .01);
+      assert.equal(await painted.locator('image').getAttribute('href'), `/art-v3/${atlasManifest.image}?v=5.2`, 'paytable art matches the actual reel illustration');
     }
     assert.equal(await desktop.locator('.sg-special-symbols article').count(), 6);
     await shot(desktop, 'desktop-paytable');
@@ -639,6 +680,11 @@ try {
       await shot(desktop, `bonus-${tier}-landed-invitations`);
       await assertReadyWheel(desktop, tier, p.upgrades, turbo);
       assert.equal(await desktop.locator('.night-stage').getAttribute('data-scene'), tier);
+      const sceneArt = desktop.locator(`.scene-layer svg[data-art-scene="${tier}"]`), sceneCell = atlasManifest.scenes!.cells[tier];
+      assert.equal(await sceneArt.getAttribute('viewBox'), `0 0 ${sceneCell.width} ${sceneCell.height}`, 'each bonus displays exactly its original painted scene tile');
+      assert.equal(await sceneArt.locator('image').getAttribute('x'), String(-sceneCell.x));
+      assert.equal(await sceneArt.locator('image').getAttribute('y'), String(-sceneCell.y));
+      assert.equal(await sceneArt.locator('image').getAttribute('href'), `/art-v3/${atlasManifest.scenes!.image}?v=5.2`);
       assert.equal(await desktop.locator('.upgrade-tag.unlocked').count(), upgrades);
       const intro = await desktop.evaluate(() => window.__slot.bonusPresentation());
       assert.equal(intro?.phase, 'result');
@@ -737,7 +783,7 @@ try {
     const firstNormal = p.cascadeSteps[0].modifiers.find(event => event.kind === 'xways');
     return !!firstNormal && firstNormal.gridAfter!.flat().filter(symbol => symbol === firstNormal.symbol).length > 2;
   });
-  await check('A normal badge throws beer at a matching symbol, visibly copies it home and boosts only its source', desktop, async () => {
+  await check('Normal xWays uses one-way beer throws to visible matches, with no return animation and only its source boosted', desktop, async () => {
     await reset(desktop, sourceOnlySeed); await desktop.evaluate(() => window.__slot.setTurbo(false));
     await observeArtworkAndDrops(desktop); await observeBeerEffects(desktop); await desktop.locator('#spin').click();
     const before = await snapshot(desktop), view = before.presentation!;
@@ -745,40 +791,91 @@ try {
     const event = view.cascadeSteps[0].modifiers.find(event => event.kind === 'xways')!;
     assert.equal(view.initialGrid[event.source.reel][event.source.row], 'xways');
     assert.deepEqual(event.targets, [event.source], 'a normal badge boosts only its own position');
-    assert.ok(event.gridAfter!.flat().filter(symbol => symbol === event.symbol).length > 2, 'the source-only rule is exercised with several eligible-looking regular symbols present');
+    assert.ok(event.gridAfter!.flat().filter(symbol => symbol === event.symbol).length > 2, 'source-only payouts are exercised with several matching regular symbols present');
     for (let reel = 0; reel < CONFIG.reels; reel++) for (let row = 0; row < CONFIG.rows; row++) {
       const previous = view.cascadeSteps[0].positionMultipliers[reel][row];
       assert.equal(event.positionMultipliersAfter![reel][row], reel === event.source.reel && row === event.source.row ? Math.min(CONFIG.positionMultiplierLimit, previous * event.factor) : previous);
     }
-    for (const step of view.cascadeSteps) {
-      assert.ok(step.modifiers.every(event => event.kind !== 'infectious' || event.targets.length >= 1));
-    }
     await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.animation === 'xways');
     assert.ok(await desktop.evaluate(() => window.__paintedArt?.includes('xways')), 'the actual board paints the normal speaker asset on its own destination');
-
-    const reference = await desktop.evaluate(() => window.__slot.board().modifier?.revealReference);
-    assert.ok(reference, 'normal xWays chooses a visible matching regular symbol as its cosmetic reveal reference');
-    assert.notDeepEqual(reference, event.source, 'the cosmetic beer throw reaches another symbol instead of looping onto the badge');
     let preReveal = view.cascadeSteps[0].grid;
     for (const previous of view.cascadeSteps[0].modifiers) { if (previous === event) break; preReveal = previous.gridAfter ?? preReveal; }
-    assert.equal(preReveal[reference.reel][reference.row], event.symbol, 'the reveal reference was already a regular symbol of the revealed type');
-    await desktop.waitForFunction(source => (window.__beerTrace ?? []).some(effect => effect.kind === 'foam' && effect.source === source), `${event.source.reel}:${event.source.row}`);
+    const expectedRecipients = preReveal.flatMap((column, reel) => column.flatMap((symbol, row) => symbol === event.symbol && (reel !== event.source.reel || row !== event.source.row) ? [{reel, row}] : []));
+    const recipients = await desktop.evaluate(() => window.__slot.board().modifier?.visualTargets);
+    assert.deepEqual(recipients, expectedRecipients, 'every currently visible matching regular symbol is a cosmetic beer recipient, without exposing unrevealed badges');
+    assert.ok(recipients && recipients.length >= 2, 'multiple external matches receive the upgraded-style fan-out animation');
+    const source = `${event.source.reel}:${event.source.row}`;
+    await desktop.waitForFunction(source => (window.__beerTrace ?? []).some(effect => effect.kind === 'foam' && effect.source === source), source);
     await shot(desktop, 'desktop-source-only-emitter');
     await desktop.waitForFunction(expected => {
       const board = window.__slot.board();
       return JSON.stringify(board.grid) === JSON.stringify(expected.gridAfter) && JSON.stringify(board.positionMultipliers) === JSON.stringify(expected.positionMultipliersAfter);
     }, event, {timeout: 15_000});
     assert.deepEqual(await snapshot(desktop), before, 'opening the normal badge does not change committed RNG or awards');
-    const trace = await desktop.evaluate(() => window.__beerTrace ?? []), source = `${event.source.reel}:${event.source.row}`;
-    const effects = trace.filter(effect => effect.source === source);
-    const center = {x: 34 + (reference.reel + .5) * 162, y: 48 + (reference.row + .5) * 130};
-    assert.ok(effects.some(effect => effect.kind === 'bottle' && Math.hypot(effect.x - (34 + (event.source.reel + .5) * 162), effect.y - (48 + (event.source.row + .5) * 130)) > 50), 'the actual canvas paints beer flying away from the badge');
-    assert.ok(effects.some(effect => effect.kind === 'foam' && (effect.radius ?? 0) >= 10 && effect.alpha >= .5 && Math.abs(effect.x - center.x) < .01 && Math.abs(effect.y - center.y) < .01), 'a large visible foam impact appears at the copied symbol');
-    assert.ok(effects.some(effect => effect.kind === 'spill' && Math.abs(effect.x - center.x) < .01 && Math.abs(effect.y - center.y) < .01), 'the hit includes amber beer spilling onto its matching symbol');
-    assert.ok(effects.some(effect => effect.kind === 'copy' && effect.symbol === event.symbol), 'the actual canvas paints a ghost of the matching symbol travelling back into the badge');
-    timingEvidence.normalBeerCopy = {source: event.source, revealReference: reference, recordedPaidTargets: event.targets, actualBottles: effects.filter(effect => effect.kind === 'bottle').length, impactRadius: Math.max(...effects.filter(effect => effect.kind === 'foam').map(effect => effect.radius ?? 0)), actualCopies: effects.filter(effect => effect.kind === 'copy').length};
+    const effects = (await desktop.evaluate(() => window.__beerTrace ?? [])).filter(effect => effect.source === source);
+    const bottles = effects.filter(effect => effect.kind === 'bottle');
+    assert.ok(bottles.length >= recipients.length * 5, 'the actual canvas paints multiple outward bottle frames for each visible recipient');
+    const sourceCenter = {x: 34 + (event.source.reel + .5) * 162, y: 48 + (event.source.row + .5) * 130};
+    const startPoint = {x: sourceCenter.x - 28, y: sourceCenter.y + 12};
+    const flights = recipients.map((target, index) => ({target, start: .17 + index * .10 / Math.max(1, recipients.length - 1), frames: [] as {progress:number;x:number;y:number}[]}));
+    for (const bottle of bottles) {
+      const candidates = flights.flatMap(flight => {
+        const t = (bottle.progress - flight.start) / .35;
+        if (t <= 0 || t >= 1) return [];
+        const end = {x: 34 + (flight.target.reel + .5) * 162, y: 48 + (flight.target.row + .5) * 130};
+        const mid = {x: (startPoint.x + end.x) / 2, y: Math.min(startPoint.y, end.y) - Math.min(130, 55 + Math.abs(end.x - startPoint.x) * .18)};
+        const expected = {x: (1-t)**2*startPoint.x + 2*(1-t)*t*mid.x + t*t*end.x, y: (1-t)**2*startPoint.y + 2*(1-t)*t*mid.y + t*t*end.y};
+        return Math.hypot(bottle.x - expected.x, bottle.y - expected.y) < .02 ? [flight] : [];
+      });
+      assert.ok(candidates.length >= 1, `each actual bottle follows an outward source-to-match arc, never a return or source loop: ${JSON.stringify(bottle)}`);
+      candidates[0].frames.push(bottle);
+    }
+    for (const flight of flights) {
+      assert.ok(flight.frames.length >= 5, `recipient ${flight.target.reel}:${flight.target.row} receives an actual observed one-way bottle`);
+      const end = {x: 34 + (flight.target.reel + .5) * 162, y: 48 + (flight.target.row + .5) * 130};
+      const dx = end.x - startPoint.x;
+      // Horizontal displacement is monotonic along this outward Bézier. For
+      // vertical throws progress/time plus the exact painted arc identifies it.
+      if (Math.abs(dx) > .01) for (let frame = 1; frame < flight.frames.length; frame++) assert.ok((flight.frames[frame].x - flight.frames[frame - 1].x) * Math.sign(dx) >= -.01, 'observed bottles travel toward the recipient without reversing');
+      assert.ok(Math.hypot(flight.frames.at(-1)!.x - end.x, flight.frames.at(-1)!.y - end.y) < Math.hypot(flight.frames[0].x - end.x, flight.frames[0].y - end.y), 'each observed bottle finishes closer to its recipient');
+      const hits = effects.filter(effect => effect.kind === 'foam' && Math.abs(effect.x - end.x) < .01 && Math.abs(effect.y - end.y) < .01);
+      assert.ok(hits.some(hit => (hit.radius ?? 0) >= 10 && hit.alpha >= .5), 'every cosmetic recipient receives the same large foam impact as upgraded xWays');
+      assert.ok(effects.some(effect => effect.kind === 'spill' && Math.abs(effect.x - end.x) < .01 && Math.abs(effect.y - end.y) < .01), 'every cosmetic hit includes amber beer');
+      assert.equal(event.positionMultipliersAfter![flight.target.reel][flight.target.row], view.cascadeSteps[0].positionMultipliers[flight.target.reel][flight.target.row], 'cosmetic beer never awards a multiplier to its recipient');
+    }
+    assert.equal(effects.filter(effect => effect.kind === 'moving-symbol').length, 0, 'no symbol ghost is painted travelling back to the normal badge');
+    assert.ok(bottles.every(bottle => bottle.progress < .62), 'no beer returns after the outward impacts');
+    timingEvidence.normalOneWayBeer = {source: event.source, visualTargets: recipients, recordedPaidTargets: event.targets, actualBottles: bottles.length, recipientFlights: flights.map(({target, frames}) => ({target, observedFrames: frames.length, first: frames[0], last: frames.at(-1)})), impactRadius: Math.max(...effects.filter(effect => effect.kind === 'foam').map(effect => effect.radius ?? 0)), returningSymbols: effects.filter(effect => effect.kind === 'moving-symbol').length};
     await finish(desktop); await desktop.evaluate(() => {window.__restoreBeerSpy?.(); window.__restoreImageSpy?.();});
     assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(sourceOnlySeed), {kind:'mode',mode:'standard'}));
+  });
+
+  const isolatedSeed = naturalSeed('normal-local-reveal-with-no-external-match', {kind:'mode', mode:'standard'}, p => {
+    if (p.bonusAwarded || p.payoutCents >= 400 || p.cascadeSteps.length > 3) return false;
+    const first = p.cascadeSteps[0].modifiers[0];
+    return first?.kind === 'xways' && !p.cascadeSteps[0].grid.flat().includes(first.symbol!);
+  });
+  await check('Normal xWays with no visible match reveals locally without inventing a beer recipient or return flight', desktop, async () => {
+    await reset(desktop, isolatedSeed); await desktop.evaluate(() => window.__slot.setTurbo(false));
+    await observeBeerEffects(desktop); await desktop.locator('#spin').click();
+    const before = await snapshot(desktop), event = before.presentation!.cascadeSteps[0].modifiers[0];
+    await desktop.waitForFunction(source => {
+      const modifier = window.__slot.board().modifier;
+      return modifier?.kind === 'xways' && `${modifier.source.reel}:${modifier.source.row}` === source && modifier.progress >= .85;
+    }, `${event.source.reel}:${event.source.row}`);
+    const modifier = await desktop.evaluate(() => window.__slot.board().modifier!);
+    assert.deepEqual(modifier.visualTargets, [], 'no outward cell is invented when the revealed type has no visible match');
+    assert.deepEqual(modifier.targets, [event.source], 'only the normal source is a recorded award target');
+    const effects = (await desktop.evaluate(() => window.__beerTrace ?? [])).filter(effect => effect.source === `${event.source.reel}:${event.source.row}`);
+    assert.equal(effects.filter(effect => effect.kind === 'bottle').length, 0, 'a no-match reveal has no source loop or outward/return bottle');
+    assert.equal(effects.filter(effect => effect.kind === 'moving-symbol').length, 0, 'a no-match reveal has no returning symbol ghost');
+    const foam = effects.filter(effect => effect.kind === 'foam');
+    assert.ok(foam.some(effect => (effect.radius ?? 0) >= 10 && effect.alpha >= .5), 'the local reveal still has a substantial readable splash');
+    assert.ok(foam.every(effect => Math.abs(effect.x - (34 + (event.source.reel + .5) * 162)) < .01 && Math.abs(effect.y - (48 + (event.source.row + .5) * 130)) < .01), 'all local impact art stays at the one normal award cell');
+    assert.deepEqual(await snapshot(desktop), before, 'local reveal and splash leave RNG and committed awards unchanged');
+    timingEvidence.normalNoMatchBeer = {source: event.source, visualTargets: modifier.visualTargets, actualBottles: 0, sourceImpactRadius: Math.max(...foam.map(effect => effect.radius ?? 0))};
+    await finish(desktop); await desktop.evaluate(() => window.__restoreBeerSpy?.());
+    assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(isolatedSeed), {kind:'mode',mode:'standard'}));
   });
 
   const sharedSeed = naturalSeed('shared-badge-reveal-on-one-drop', {kind:'mode',mode:'standard'}, p => !p.bonusAwarded && p.cascadeSteps.length <= 3 && p.payoutCents < 400 && p.cascadeSteps[0].modifiers.filter(event => event.kind === 'xways').length >= 2 && new Set(p.cascadeSteps[0].modifiers.filter(event => event.kind === 'xways').map(event => event.factor)).size >= 2);
@@ -791,6 +888,13 @@ try {
     let revealed = view.initialGrid.map(column => [...column]);
     for (const event of events) {
       assert.equal(revealed[event.source.reel][event.source.row], event.kind === 'infectious' ? 'infectious' : 'xways', 'later badges remain concealed until their own reveal');
+      await desktop.waitForFunction(expected => {
+        const modifier = window.__slot.board().modifier;
+        return modifier?.kind === expected.kind && modifier.source.reel === expected.source.reel && modifier.source.row === expected.source.row;
+      }, event, {timeout: 15_000});
+      const visualTargets = await desktop.evaluate(() => window.__slot.board().modifier!.visualTargets);
+      const visibleMatches = revealed.flatMap((column, reel) => column.flatMap((symbol, row) => symbol === event.symbol && (reel !== event.source.reel || row !== event.source.row) ? [{reel, row}] : []));
+      assert.deepEqual(visualTargets, event.kind === 'xways' ? visibleMatches : event.targets, 'beer recipients only use symbols already visible at this badge reveal; later badges never leak into earlier animations');
       revealed[event.source.reel][event.source.row] = event.symbol!;
       assert.deepEqual(event.gridAfter, revealed, 'each event reveals only its own badge using the shared symbol');
       assert.ok(event.targets.every(target => revealed[target.reel][target.row] === event.symbol), 'a badge never multiplies a different revealed symbol');
@@ -1146,7 +1250,7 @@ try {
   });
 
   const sourceHashes = await browserSourceHashes();
-  assert.deepEqual(sourceHashes, initialSourceHashes, 'UI, rules and SVG artwork must stay frozen throughout the browser validation');
+  assert.deepEqual(sourceHashes, initialSourceHashes, 'UI, rules and original artwork must stay frozen throughout the browser validation');
   await writeFile(resolve(output, 'browser-results.json'), JSON.stringify({generatedAt: new Date().toISOString(), configVersion: CONFIG.version, configurationParameters: CONFIG, mathematics: {payingSymbols: PAYING_SYMBOLS, paytable: CONFIG.paytable, payoutDenominator: CONFIG.payoutDenominator, modePrices: CONFIG.prices, buyPrices: CONFIG.buyPrices, luckyDrawPrice: CONFIG.luckyDrawPrice, luckyDrawProbabilities: CONFIG.luckyDrawProbabilities, symbolWeights: CONFIG.symbolWeights, modes: CONFIG.modes, bonuses: CONFIG.bonuses, initialPositionMultipliers: CONFIG.initialPositionMultipliers, payThresholds: CONFIG.payThresholds, capMultiplier: CONFIG.capMultiplier, positionMultiplierLimit: CONFIG.positionMultiplierLimit, extraQuoteDenominator: CONFIG.extraQuoteDenominator}, sourceHashes, timingEvidence, baseURL, browser: browserDescription, viewports: [...desktopViewports.map(({width,height}) => `${width}×${height} desktop`),'390×844 touch mobile'], fixtures, passed: results.filter(result => result.passed).length, failed: results.filter(result => !result.passed).length, results, runtimeErrors, failedRequests, externalImages, assets: [...assets], screenshots}, null, 2));
   process.stdout.write(`${results.filter(result => result.passed).length}/${results.length} browser checks passed. Results and screenshots: ${output}\n`);
   if (results.some(result => !result.passed)) process.exitCode = 1;
