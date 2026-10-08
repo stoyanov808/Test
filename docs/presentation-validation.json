@@ -1,9 +1,9 @@
 {
-  "presentationVersion": "5.2.0",
+  "presentationVersion": "5.3.0",
   "mathematicsVersion": "studentski-duck-5",
-  "browserGeneratedAt": "2026-10-08T00:18:16.574Z",
+  "browserGeneratedAt": "2026-10-08T06:59:22.706Z",
   "engineTestsPassed": 62,
-  "browserChecksPassed": 41,
+  "browserChecksPassed": 43,
   "browserChecksFailed": 0,
   "browserSourceHashes": {
     "index.html": "ff0fd82334ea51b0e79a9b6702d7ff6cf59a381c482e2f1f30561b1895af64e4",
@@ -34,7 +34,7 @@
     "public/art-v3/manifest.json": "3973d935cfecadc611b7d5bb04fe5f390a8cef5e756360e25fc2ce3e276d6291",
     "public/art-v3/scene-atlas.png": "a7c6ca6ca22e8424a13fc9054932a9214f83b0c3785b5a88fa5377f5896d90a7",
     "public/art-v3/symbol-atlas.png": "beae7ea7016c46a56553b408f00e73836188afcede2ea492519cd6bb14559e2a",
-    "scripts/browser-test.ts": "e7ae27dda9039f9eb83e0306aa81ef009b240698b2410ba55fe98b92c3357153",
+    "scripts/browser-test.ts": "fa7607eb2b9a71f1eb772e0941e0c8110cf631dbcc44f4ff7a7b3c85e61efa51",
     "src/audio.ts": "29807275831a3e06f70536b401861ea1cb282de3ee263a0faf949f7b74bc796f",
     "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
     "src/engine/config.ts": "e139911399a038a1df509fbbe3c01b6577e5051ca9797b0ff0dac6658e70333d",
@@ -45,19 +45,20 @@
     "src/engine/rng.ts": "029519d1be2b0a27acecf6f5c4f728685fd8e44db86abd782f7cd20ded45cbf4",
     "src/engine/types.ts": "e79766a2a6c5e0192175a2e631408130e5078ef7e0179cb8f758c792ff675e9c",
     "src/i18n.ts": "d365ab1da8cad874787761ddb6d87d95c860ab6bad440483bbc7971415c6f920",
-    "src/main.ts": "d4fe1cac58eb48bcae3bf838df5ff7daec52f889b7067cf7afee3838868c3a6b",
+    "src/main.ts": "38d5eec804e93c5a5e31c44093c282e7963d9582ec593b9ea4cdb5492b7590f0",
     "src/menus.css": "54b7022b626a166a98b2977325f6dcee44a7e9f505eb7411947830a570cacf83",
     "src/menus.ts": "9d3b57f350c9a79565172815fd77bd4944470cf7fab45e9407262a37be926062",
-    "src/render/art-v2.ts": "ae0a957e7b1cafa3a525a25ea56f989531fc1c427b3ac637b3a24dad02cc1a5a",
+    "src/render/art-v2.ts": "4a42222213eff7374bdda71df12a402e0b19ee8559ff8dc8fb102155e40879b6",
+    "src/render/bonus-trigger.ts": "a75a11ed2b79cc7624fbeeedb83b2acc32eab69d019f27c872eb608f5c82fab6",
     "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
     "src/render/index.ts": "cf8c66a896a83e46bf1eb429df69a363a7f317c4deb69125f0fc52652618b0ec",
-    "src/render/renderer.ts": "01c51042d5fc413f493b3662e05f31e0a45c35ceb6570b346c88438fa4c4552f",
+    "src/render/renderer.ts": "d821f2ef0f60988202517915bbac1a0344f5e5851bbad93acc3a7eae3e805911",
     "src/style.css": "4f7d5d834b98ed7df9ed6ad581c571750e71dbbc6b686af7f7b28bcb1f701e4c",
     "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
   },
   "browserChecks": [
     {
-      "name": "Desktop renders the original 6 \u00d7 5 illustrated board, 9 distinct atlas symbols and local fonts",
+      "name": "Desktop renders the original 6 × 5 illustrated board, 9 distinct atlas symbols and local fonts",
       "passed": true
     },
     {
@@ -73,35 +74,39 @@
       "passed": true
     },
     {
-      "name": "standard charges 1\u00d7 and starts every position at 1\u00d7",
+      "name": "standard charges 1× and starts every position at 1×",
       "passed": true
     },
     {
-      "name": "hunt charges 2\u00d7 and starts every position at 1\u00d7",
+      "name": "hunt charges 2× and starts every position at 1×",
       "passed": true
     },
     {
-      "name": "frames charges 2.8\u00d7 and starts every position at 2\u00d7",
+      "name": "frames charges 2.8× and starts every position at 2×",
       "passed": true
     },
     {
-      "name": "wild charges 90\u00d7 and starts every position at 64\u00d7",
+      "name": "wild charges 90× and starts every position at 64×",
       "passed": true
     },
     {
-      "name": "god charges 3000\u00d7 and starts every position at 1024\u00d7",
+      "name": "god charges 3000× and starts every position at 1024×",
       "passed": true
     },
     {
-      "name": "dorm buy lands 3 invitations, shows 1 exact wheel awards and charges one 70\u00d7 debit",
+      "name": "dorm buy lands 3 invitations, shows 1 exact wheel awards and charges one 70× debit",
       "passed": true
     },
     {
-      "name": "friday buy lands 4 invitations, shows 2 exact wheel awards and charges one 200\u00d7 debit",
+      "name": "friday buy lands 4 invitations, shows 2 exact wheel awards and charges one 200× debit",
       "passed": true
     },
     {
-      "name": "december buy lands 5 invitations, shows 3 exact wheel awards and charges one 600\u00d7 debit",
+      "name": "december buy lands 5 invitations, shows 3 exact wheel awards and charges one 600× debit",
+      "passed": true
+    },
+    {
+      "name": "Bought invitations vary across receipt IDs on distinct reels, and a pending receipt reload keeps its exact landing and accounting",
       "passed": true
     },
     {
@@ -125,11 +130,15 @@
       "passed": true
     },
     {
-      "name": "Normal xWays uses one-way beer throws to visible matches, with no return animation and only its source boosted",
+      "name": "Normal xWays reveals and boosts its own position even with visible matches, without upgraded throws or return flights",
       "passed": true
     },
     {
       "name": "Normal xWays with no visible match reveals locally without inventing a beer recipient or return flight",
+      "passed": true
+    },
+    {
+      "name": "Normal xWays on an already boosted source shows its actual new position multiplier at the local reveal",
       "passed": true
     },
     {
@@ -197,7 +206,7 @@
       "passed": true
     },
     {
-      "name": "390 \u00d7 844 touch layout has no overflow and accessible 44px controls/bonus menus",
+      "name": "390 × 844 touch layout has no overflow and accessible 44px controls/bonus menus",
       "passed": true
     },
     {
@@ -312,12 +321,493 @@
         }
       ]
     },
-    "normalOneWayBeer": {
+    "boughtInvitationLayouts": [
+      {
+        "tier": "dorm",
+        "layouts": [
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 1,
+                "row": 2
+              },
+              {
+                "reel": 2,
+                "row": 1
+              },
+              {
+                "reel": 5,
+                "row": 1
+              }
+            ]
+          },
+          {
+            "id": "round-2:1",
+            "cells": [
+              {
+                "reel": 1,
+                "row": 1
+              },
+              {
+                "reel": 2,
+                "row": 0
+              },
+              {
+                "reel": 5,
+                "row": 0
+              }
+            ]
+          },
+          {
+            "id": "round-3:1",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 1
+              },
+              {
+                "reel": 1,
+                "row": 3
+              },
+              {
+                "reel": 4,
+                "row": 0
+              }
+            ]
+          },
+          {
+            "id": "round-4:1",
+            "cells": [
+              {
+                "reel": 2,
+                "row": 1
+              },
+              {
+                "reel": 3,
+                "row": 0
+              },
+              {
+                "reel": 4,
+                "row": 1
+              }
+            ]
+          }
+        ],
+        "freshSessionLayouts": [
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 1,
+                "row": 2
+              },
+              {
+                "reel": 2,
+                "row": 1
+              },
+              {
+                "reel": 5,
+                "row": 1
+              }
+            ]
+          },
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 2,
+                "row": 1
+              },
+              {
+                "reel": 3,
+                "row": 2
+              },
+              {
+                "reel": 4,
+                "row": 3
+              }
+            ]
+          },
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 1,
+                "row": 0
+              },
+              {
+                "reel": 2,
+                "row": 2
+              },
+              {
+                "reel": 3,
+                "row": 2
+              }
+            ]
+          }
+        ],
+        "reloaded": {
+          "id": "round-1:1",
+          "cells": [
+            {
+              "reel": 1,
+              "row": 2
+            },
+            {
+              "reel": 2,
+              "row": 1
+            },
+            {
+              "reel": 5,
+              "row": 1
+            }
+          ]
+        }
+      },
+      {
+        "tier": "friday",
+        "layouts": [
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 1,
+                "row": 2
+              },
+              {
+                "reel": 3,
+                "row": 0
+              },
+              {
+                "reel": 4,
+                "row": 4
+              },
+              {
+                "reel": 5,
+                "row": 1
+              }
+            ]
+          },
+          {
+            "id": "round-2:1",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 2
+              },
+              {
+                "reel": 2,
+                "row": 3
+              },
+              {
+                "reel": 4,
+                "row": 3
+              },
+              {
+                "reel": 5,
+                "row": 4
+              }
+            ]
+          },
+          {
+            "id": "round-3:1",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 0
+              },
+              {
+                "reel": 1,
+                "row": 0
+              },
+              {
+                "reel": 4,
+                "row": 4
+              },
+              {
+                "reel": 5,
+                "row": 3
+              }
+            ]
+          },
+          {
+            "id": "round-4:1",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 4
+              },
+              {
+                "reel": 1,
+                "row": 4
+              },
+              {
+                "reel": 3,
+                "row": 3
+              },
+              {
+                "reel": 5,
+                "row": 0
+              }
+            ]
+          }
+        ],
+        "freshSessionLayouts": [
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 1,
+                "row": 2
+              },
+              {
+                "reel": 3,
+                "row": 0
+              },
+              {
+                "reel": 4,
+                "row": 4
+              },
+              {
+                "reel": 5,
+                "row": 1
+              }
+            ]
+          },
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 2,
+                "row": 2
+              },
+              {
+                "reel": 3,
+                "row": 3
+              },
+              {
+                "reel": 4,
+                "row": 2
+              },
+              {
+                "reel": 5,
+                "row": 0
+              }
+            ]
+          },
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 1
+              },
+              {
+                "reel": 1,
+                "row": 4
+              },
+              {
+                "reel": 2,
+                "row": 4
+              },
+              {
+                "reel": 4,
+                "row": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tier": "december",
+        "layouts": [
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 1,
+                "row": 2
+              },
+              {
+                "reel": 2,
+                "row": 0
+              },
+              {
+                "reel": 3,
+                "row": 0
+              },
+              {
+                "reel": 4,
+                "row": 1
+              },
+              {
+                "reel": 5,
+                "row": 0
+              }
+            ]
+          },
+          {
+            "id": "round-2:1",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 1
+              },
+              {
+                "reel": 1,
+                "row": 2
+              },
+              {
+                "reel": 2,
+                "row": 4
+              },
+              {
+                "reel": 4,
+                "row": 2
+              },
+              {
+                "reel": 5,
+                "row": 1
+              }
+            ]
+          },
+          {
+            "id": "round-3:1",
+            "cells": [
+              {
+                "reel": 1,
+                "row": 4
+              },
+              {
+                "reel": 2,
+                "row": 4
+              },
+              {
+                "reel": 3,
+                "row": 3
+              },
+              {
+                "reel": 4,
+                "row": 4
+              },
+              {
+                "reel": 5,
+                "row": 4
+              }
+            ]
+          },
+          {
+            "id": "round-4:1",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 2
+              },
+              {
+                "reel": 1,
+                "row": 3
+              },
+              {
+                "reel": 3,
+                "row": 2
+              },
+              {
+                "reel": 4,
+                "row": 3
+              },
+              {
+                "reel": 5,
+                "row": 1
+              }
+            ]
+          }
+        ],
+        "freshSessionLayouts": [
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 1,
+                "row": 2
+              },
+              {
+                "reel": 2,
+                "row": 0
+              },
+              {
+                "reel": 3,
+                "row": 0
+              },
+              {
+                "reel": 4,
+                "row": 1
+              },
+              {
+                "reel": 5,
+                "row": 0
+              }
+            ]
+          },
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 3
+              },
+              {
+                "reel": 1,
+                "row": 2
+              },
+              {
+                "reel": 3,
+                "row": 4
+              },
+              {
+                "reel": 4,
+                "row": 0
+              },
+              {
+                "reel": 5,
+                "row": 2
+              }
+            ]
+          },
+          {
+            "id": "round-1:1",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 0
+              },
+              {
+                "reel": 1,
+                "row": 4
+              },
+              {
+                "reel": 2,
+                "row": 0
+              },
+              {
+                "reel": 3,
+                "row": 2
+              },
+              {
+                "reel": 5,
+                "row": 0
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "normalLocalReveal": {
       "source": {
         "reel": 0,
         "row": 1
       },
-      "visualTargets": [
+      "visibleMatches": [
         {
           "reel": 3,
           "row": 3
@@ -327,63 +817,18 @@
           "row": 3
         }
       ],
+      "visualTargets": [],
       "recordedPaidTargets": [
         {
           "reel": 0,
           "row": 1
         }
       ],
-      "actualBottles": 37,
-      "recipientFlights": [
-        {
-          "target": {
-            "reel": 3,
-            "row": 3
-          },
-          "observedFrames": 19,
-          "first": {
-            "kind": "bottle",
-            "x": 103.80698227924738,
-            "y": 247.04156847536416,
-            "progress": 0.1814444444510688,
-            "source": "0:1",
-            "alpha": 1
-          },
-          "last": {
-            "kind": "bottle",
-            "x": 593.1675930049832,
-            "y": 491.59796845814645,
-            "progress": 0.5146666666732926,
-            "source": "0:1",
-            "alpha": 1
-          }
-        },
-        {
-          "target": {
-            "reel": 4,
-            "row": 3
-          },
-          "observedFrames": 18,
-          "first": {
-            "kind": "bottle",
-            "x": 94.72571411466521,
-            "y": 252.0949285330046,
-            "progress": 0.2740000000066195,
-            "source": "0:1",
-            "alpha": 1
-          },
-          "last": {
-            "kind": "bottle",
-            "x": 702.6965219085694,
-            "y": 439.6025453510647,
-            "progress": 0.5887777777844005,
-            "source": "0:1",
-            "alpha": 1
-          }
-        }
-      ],
-      "impactRadius": 12.534402823953208,
-      "returningSymbols": 0
+      "actualBottles": 0,
+      "sourceImpactRadius": 12.588444189437421,
+      "returningSymbols": 0,
+      "sourceBadgeProgress": 0,
+      "sourceRevealProgress": 0.2246666666600423
     },
     "normalNoMatchBeer": {
       "source": {
@@ -392,7 +837,17 @@
       },
       "visualTargets": [],
       "actualBottles": 0,
-      "sourceImpactRadius": 12.45149894054665
+      "sourceImpactRadius": 12.509149451645957
+    },
+    "normalBoostedSource": {
+      "source": {
+        "reel": 0,
+        "row": 1
+      },
+      "oldMultiplier": 2,
+      "factor": 8,
+      "newMultiplier": 16,
+      "actualLabelFrames": 30
     },
     "beerThrows": {
       "targets": [
@@ -433,8 +888,8 @@
           "row": 0
         }
       ],
-      "actualBottles": 280,
-      "actualImpacts": 2322
+      "actualBottles": 210,
+      "actualImpacts": 2016
     },
     "bonusRemainingCounter": {
       "seed": 5,
@@ -447,49 +902,49 @@
     "normalReels": [
       {
         "phase": "spin",
-        "duration": 1378.0999999940395
+        "duration": 1372.4000000059605
       },
       {
         "phase": "bomb",
-        "duration": 1586.5
+        "duration": 1565.5999999940395
       },
       {
         "phase": "clear",
-        "duration": 427.09999999403954
+        "duration": 432.40000000596046
       },
       {
         "phase": "cascade",
-        "duration": 717.8000000119209
+        "duration": 718.5
       },
       {
         "phase": "xways",
-        "duration": 916.8999999910593
+        "duration": 919.5
       },
       {
         "phase": "win",
-        "duration": 931.4000000059605
+        "duration": 912.4000000059605
       },
       {
         "phase": "clear",
-        "duration": 434.8999999910593
+        "duration": 432.69999998807907
       },
       {
         "phase": "cascade",
-        "duration": 717.9000000059605
+        "duration": 719.9000000059605
       }
     ],
     "turboReels": [
       {
         "phase": "spin",
-        "duration": 758.5
+        "duration": 748.7000000029802
       },
       {
         "phase": "bomb",
-        "duration": 866.3000000119209
+        "duration": 865.9000000059605
       },
       {
         "phase": "clear",
-        "duration": 249.09999999403954
+        "duration": 248.70000000298023
       },
       {
         "phase": "cascade",
@@ -497,7 +952,7 @@
       },
       {
         "phase": "xways",
-        "duration": 499.20000000298023
+        "duration": 499.5
       },
       {
         "phase": "win",
@@ -505,11 +960,11 @@
       },
       {
         "phase": "clear",
-        "duration": 249.29999999701977
+        "duration": 249.5
       },
       {
         "phase": "cascade",
-        "duration": 441
+        "duration": 437.19999998807907
       }
     ]
   },
@@ -517,8 +972,8 @@
   "failedRequests": [],
   "externalImages": [],
   "productionSmoke": {
-    "generatedAt": "2026-10-08T00:16:10.520Z",
-    "packageVersion": "5.2.0",
+    "generatedAt": "2026-10-08T06:56:57.971Z",
+    "packageVersion": "5.3.0",
     "config": "studentski-duck-5",
     "passed": true,
     "sourceHashes": {
@@ -527,9 +982,11 @@
       "src/engine/evaluator.ts": "277a83a354275920f9f46caa50eee3f996f187cdea37657b91dbca61f82f1b86",
       "src/engine/rng.ts": "029519d1be2b0a27acecf6f5c4f728685fd8e44db86abd782f7cd20ded45cbf4",
       "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
-      "src/render/renderer.ts": "01c51042d5fc413f493b3662e05f31e0a45c35ceb6570b346c88438fa4c4552f",
+      "src/render/renderer.ts": "d821f2ef0f60988202517915bbac1a0344f5e5851bbad93acc3a7eae3e805911",
+      "src/render/bonus-trigger.ts": "a75a11ed2b79cc7624fbeeedb83b2acc32eab69d019f27c872eb608f5c82fab6",
+      "src/render/art-v2.ts": "4a42222213eff7374bdda71df12a402e0b19ee8559ff8dc8fb102155e40879b6",
       "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
-      "src/main.ts": "d4fe1cac58eb48bcae3bf838df5ff7daec52f889b7067cf7afee3838868c3a6b"
+      "src/main.ts": "38d5eec804e93c5a5e31c44093c282e7963d9582ec593b9ea4cdb5492b7590f0"
     },
     "devHooksAbsent": true,
     "normal": {

@@ -1,5 +1,6 @@
 import type { BonusTier, CellPosition, Grid, ModifierEvent, SpinPresentation, SymbolId, Win } from '../engine/types';
 import { SymbolArtwork, SYMBOL_LABELS, SYMBOLS } from './art-v2';
+import { boughtBonusTriggerGrid } from './bonus-trigger';
 export { drawSymbolPreview, SYMBOL_LABELS } from './art-v2';
 
 export type RendererEvent = 'reel-stop' | 'xways' | 'infectious' | 'bomb' | 'shot' | 'cascade' | 'win' | 'scatter' | 'upgrade';
@@ -21,6 +22,7 @@ interface EffectView { event: ModifierEvent; progress: number; before: BoardView
 interface Particle { x: number; y: number; vx: number; vy: number; spin: number; size: number; color: string; born: number; lifetime: number; fluid?: boolean }
 
 const REELS = 6, ROWS = 5, WIDTH = 1040, HEIGHT = 730;
+const NORMAL_REVEAL_AT = .22;
 const AREA = { x: 34, y: 48, w: 972, h: 650 };
 const CELL_W = AREA.w / REELS, CELL_H = AREA.h / ROWS, INK = '#201c28';
 const SCENES: Record<string, { wood: string; shade: string; tint: string; accent: string }> = {
@@ -174,11 +176,11 @@ export class SlotRenderer {
   }
   async play(presentation: SpinPresentation, turbo = false) { return this.animateSpin(presentation, turbo); }
   /** Bought invitations are a receipt animation, never another paid spin or RNG draw. */
-  async playBonusTrigger(tier: BonusTier, turbo = false): Promise<void> {
+  async playBonusTrigger(presentation: SpinPresentation, turbo = false): Promise<void> {
+    const tier = presentation.tier;
+    if (!tier) throw new Error('BONUS_TRIGGER_REQUIRES_TIER');
     const scatterCount = ({ dorm: 3, friday: 4, december: 5 })[tier];
-    const invitationPositions = [{ reel: 0, row: 3 }, { reel: 2, row: 1 }, { reel: 4, row: 2 }, { reel: 1, row: 4 }, { reel: 5, row: 0 }].slice(0, scatterCount);
-    const grid = copyGrid(this.current.grid).map(column => column.map(symbol => symbol === 'scatter' ? 'coffee' : symbol)) as Grid;
-    for (const cell of invitationPositions) grid[cell.reel][cell.row] = 'scatter';
+    const grid = boughtBonusTriggerGrid(presentation);
     const target = { grid, positionMultipliers: matrix(1), wins: [] };
     this.active = true; this.skipRequested = false; this.stagedBonus = { tier, scatters: scatterCount };
     this.current.wins = []; this.effect = null; this.tumble = null; this.removal = null;
@@ -272,7 +274,19 @@ export class SlotRenderer {
     if (event.kind === 'bomb') for (const target of event.targets) { const pos = centre(target); this.emit(pos.x, pos.y, 14, '#eaa756', 750); }
     if (event.kind === 'shot') this.emit(source.x, source.y, 12, '#f8e9ac', 600);
     const duration = event.kind === 'infectious' ? 1120 : event.kind === 'bomb' ? 780 : event.kind === 'shot' ? 740 : 900;
-    await this.animate(turbo ? Math.round(duration * .55) : duration, p => { if (this.effect) this.effect.progress = p; });
+    let revealed = false;
+    await this.animate(turbo ? Math.round(duration * .55) : duration, p => {
+      if (!this.effect) return;
+      this.effect.progress = p;
+      if (event.kind === 'xways' && !revealed && p >= NORMAL_REVEAL_AT) {
+        // Publish the already settled source reveal and boost at the same hit,
+        // so the symbol, local number and highest-multiplier panel agree.
+        revealed = true;
+        if (event.gridAfter) this.current.grid = copyGrid(event.gridAfter);
+        if (event.positionMultipliersAfter) this.current.positionMultipliers = copyMatrix(event.positionMultipliersAfter);
+        this.publishStep();
+      }
+    });
     if (event.gridAfter) this.current.grid = copyGrid(event.gridAfter);
     if (event.positionMultipliersAfter) this.current.positionMultipliers = copyMatrix(event.positionMultipliersAfter);
     this.effect = null; this.publishStep();
@@ -374,8 +388,8 @@ export class SlotRenderer {
               // The badge opens before it sends a multiplier. A receiving cell
               // changes only when that visible transmission reaches it.
               const targetIndex = event!.targets.findIndex(target => key(target) === cellKey);
-              const impact = .52 + Math.max(0, targetIndex) * .10 / Math.max(1, event!.targets.length - 1);
-              const revealAt = .30;
+              const impact = event!.kind === 'xways' ? NORMAL_REVEAL_AT : .52 + Math.max(0, targetIndex) * .10 / Math.max(1, event!.targets.length - 1);
+              const revealAt = event!.kind === 'xways' ? NORMAL_REVEAL_AT : .30;
               if (source && p >= revealAt || !source && p >= impact) {
                 this.drawSymbol(event!.gridAfter[reel][row], pos.x, pos.y, time, .97 + Math.sin(p * Math.PI) * .08, alpha, source ? .018 * Math.sin(p * 24) : 0);
                 this.drawMultiplier(p >= impact ? event!.positionMultipliersAfter?.[reel]?.[row] ?? mult : mult, pos.x, pos.y, false); continue;
@@ -472,32 +486,32 @@ export class SlotRenderer {
       const points: number[] = []; for (let i = 0; i < 12; i++) { const angle = i * Math.PI / 6, r = radius * (i % 2 ? .61 : 1); points.push(source.x + Math.cos(angle) * r, source.y + Math.sin(angle) * r); }
       polygon(ctx, points, '#f3c471', '#8c463b', 5); ctx.restore();
     } else { const radius = CELL_H * (.35 + Math.sin(p * Math.PI) * .25); ctx.save(); ctx.globalAlpha = Math.sin(p * Math.PI); ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(source.x, source.y, radius, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-    if ((event.kind === 'xways' || event.kind === 'infectious') && p > .2) {
+    if ((event.kind === 'xways' && p >= NORMAL_REVEAL_AT) || (event.kind === 'infectious' && p > .2)) {
       ctx.save(); ctx.translate(source.x, source.y); ctx.rotate(Math.sin(p * 15) * .018);
       if (p < .3 && event.symbol) outlinedText(ctx, this.label(event.symbol), 0, event.source.row === ROWS - 1 ? 43 : 61, 21, color, INK, 5);
-      outlinedText(ctx, `×${event.factor ?? 2}`, 0, (event.source.row === 0 ? -35 : -53) - Math.sin(p * Math.PI) * 8, 42, color, INK, 7); ctx.restore();
+      const multiplier = event.kind === 'xways' ? event.positionMultipliersAfter?.[event.source.reel]?.[event.source.row] ?? event.factor ?? 2 : event.factor ?? 2;
+      outlinedText(ctx, `×${multiplier}`, 0, (event.source.row === 0 ? -35 : -53) - Math.sin(p * Math.PI) * 8, 42, color, INK, 7); ctx.restore();
     }
     if (event.kind === 'shot' && p > .45) outlinedText(ctx, `+${event.shotsAdded ?? 1} ${this.translate('render.extrashot', 'ЗАВЪРТАНЕ')}`, source.x, source.y - 44 - p * 30, 28, '#f8e2a0', INK, 5);
     if (event.kind === 'infectious') for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5 + time * .001; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(source.x + Math.cos(a) * 43, source.y + Math.sin(a) * 43, 4, 0, Math.PI * 2); ctx.fill(); }
   }
-  /** Cosmetic recipients never become paid targets or consume gameplay RNG. */
+  /** Only upgraded infection sends beer to other recorded positions. */
   private beerVisualTargets(event: ModifierEvent): CellPosition[] {
-    if (event.kind === 'infectious') return event.targets.map(target => ({...target}));
-    if (event.kind !== 'xways' || !event.symbol || !this.effect) return [];
-    return this.effect.before.grid.flatMap((column, reel) => column.flatMap((symbol, row) =>
-      symbol === event.symbol && (reel !== event.source.reel || row !== event.source.row) ? [{reel, row}] : []));
+    return event.kind === 'infectious' ? event.targets.map(target => ({...target})) : [];
   }
   private drawBeerThrows(event: ModifierEvent, progress: number) {
-    // Both badges use the same one-way bottles and impacts. Normal throws only
-    // illustrate matching types: its recorded multiplier stays at the source.
+    if (event.kind === 'xways') {
+      // Duck Hunters normal xWays opens and boosts its own cell. One local
+      // beer/foam hit marks that reveal; no unpaid matching cell is splashed.
+      if (progress >= NORMAL_REVEAL_AT) this.drawBeerSplash(event.source, (progress - NORMAL_REVEAL_AT) / (1 - NORMAL_REVEAL_AT), `source:${key(event.source)}`);
+      return;
+    }
     const targets = this.beerVisualTargets(event);
     targets.forEach((target, index) => {
       const start = .17 + index * .10 / Math.max(1, targets.length - 1), impact = start + .35;
       this.drawBeerFlight(event.source, target, clamp((progress - start) / .35));
       if (progress >= impact) this.drawBeerSplash(target, (progress - impact) / (1 - impact), `target:${key(target)}`);
     });
-    // The source reveals in place. No bottle or symbol flies back into it.
-    if (event.kind === 'xways' && progress >= .52) this.drawBeerSplash(event.source, (progress - .52) / .48, `source:${key(event.source)}`);
   }
   private drawBeerFlight(sourceCell: CellPosition, target: CellPosition, t: number) {
     if(t<=0||t>=1)return;

@@ -273,7 +273,7 @@ async function present(p: SpinPresentation) {
     document.querySelector<HTMLElement>('.night-stage')!.dataset.bonusPhase = bonusPresentationState.phase;
     if (purchased) {
       announce(tr('bonusScattersLanding'));
-      await renderer.playBonusTrigger(p.tier, prefs.turbo);
+      await renderer.playBonusTrigger(p, prefs.turbo);
     }
     bonusPresentationState.phase = 'wheel'; bonusPresentationState.wheelStartedAt = performance.now();
     document.querySelector<HTMLElement>('.night-stage')!.dataset.bonusPhase = 'wheel';

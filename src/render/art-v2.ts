@@ -18,7 +18,7 @@ export const ART_SYMBOL_IDS = [...SYMBOLS, 'bomb', 'xways', 'infectious', 'infec
 export type SceneName = 'base' | 'dorm' | 'friday' | 'december';
 const featureAssetBase = `${import.meta.env.BASE_URL}art-v2/`;
 const paintedAssetBase = `${import.meta.env.BASE_URL}art-v3/`;
-export const ART_REVISION = '5.2';
+export const ART_REVISION = '5.3';
 // Transparent gutters protect tile borders; this scale restores full reel legibility.
 const SYMBOL_DISPLAY_SCALE = 1.2;
 export const ATLAS_SYMBOL_IDS = ['book', 'coffee', 'noodles', 'doner', 'beer', 'female', 'male', 'dj', 'bouncer'] as const;
