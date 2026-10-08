@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="260" viewBox="0 0 240 260" role="img" aria-label="Street cash bundle">
+  <defs><filter id="ink-cash" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".043" numOctaves="2" seed="12" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+  <g filter="url(#ink-cash)" stroke="#11100f" stroke-linejoin="round" stroke-linecap="round">
+    <path d="m34 86 125-26 48 107-128 54Z" fill="#72756a" stroke-width="8"/>
+    <path d="M25 108 178 71 214 184 53 223Z" fill="#c3c1ad" stroke-width="8"/>
+    <path d="m21 135 168-28 26 99-174 24Z" fill="#ded9c8" stroke-width="8"/>
+    <path d="m31 149 147-25 20 67-145 23Z" fill="#eee8d5" stroke-width="4"/>
+    <path d="m42 163 119-20m-113 59 135-24m-18-40 13 44m-126-24 9 38" fill="none" stroke-width="3"/>
+    <path d="m87 71 39-7 30 156-41 7Z" fill="#a22f2a" stroke-width="6"/>
+    <path d="m98 77 22 131m-7-134 22 132" fill="none" stroke="#d18d75" stroke-width="3"/>
+    <path d="M169 154q-23-14-28 7t19 21m-27-18 34-5m-35 13 30-6" fill="none" stroke-width="5"/>
+    <path d="m52 167 6-3 3 7-6 2m120 26 9-2m-45 18 8-2m-89 11 16-3m-26-31-6 1m157 4-7-26m-15-62-13 4m-24-52-12 2" fill="none" stroke-width="3"/>
+    <path d="m59 207 7-12m0 12 7-14m0 13 8-16m-46-63 7-10m0 9 8-12m118 68 8-12m1 10 7-12m-12-58 7-10m1 9 6-10" fill="none" stroke-width="2"/>
+    <path d="m34 77-8-11m164-6 11-8m22 79 10 1" fill="none" stroke-width="4"/>
+    <path d="m68 105 13-3m-7-12 7-2m69-7 16-4m-6 17 12-3" fill="none" stroke="#ece7d5" stroke-width="4"/>
+  </g>
+</svg>

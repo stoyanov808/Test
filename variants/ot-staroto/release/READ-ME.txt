@@ -1,0 +1,32 @@
+OT STAROTO - local test build
+
+1. Extract the complete ZIP into a folder.
+2. Double-click PLAY.html in Chrome, Edge or Firefox.
+3. Select BG/EN at the top. Open the menu and Settings to choose your
+   own music, gunshot, feature and win audio files.
+
+If your browser blocks local files or saving:
+- Windows with Node installed: double-click START-WINDOWS.bat.
+- Other systems with Node installed: run node START.cjs in this folder.
+- Keep the terminal open while playing and use the address it prints.
+- Port 5188 must be free. Close an earlier launcher before starting again.
+
+Internet access, npm installation and GitHub access are not required.
+All credits are virtual euros. Saves and uploaded audio stay in the browser.
+Changing the browser or launch method may create a separate save.
+
+Left character: Wild throws; sticky in his bonus.
+Middle character: Wild shots; repeat hits double their multiplier.
+Right character: marked winning cells and coin reveals.
+Four bonuses: Rusensko Vareno, LUKS, Raba sa obazhda, OT STAROTO.
+Super buy: 2,500x. God Spin: 3,000x. Whole-round maximum: 19,999x.
+
+This is a prototype for testing, with original, uncertified mathematics.
+The approximately 96% goal has not been established as theoretical RTP.
+Cloud checks covered the exact embedded HTML over a local HTTP server;
+direct file:// launch was blocked by the cloud browser's managed policy.
+
+Source, payout samples and 25 real screenshots are in the GitHub repository:
+https://github.com/stoyanov808/Test/tree/main/variants/ot-staroto
+
+The repository also includes this ready-to-play ZIP under release/.

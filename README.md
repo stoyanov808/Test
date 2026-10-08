@@ -2,6 +2,14 @@
 
 **„Утре съм на лекции.“** A rebuilt browser slot set in Sofia's student nightlife, with original painted artwork, Bulgarian/English controls and virtual euro balances.
 
+## New test variant: ОТ СТАРОТО
+
+The Ruse cartoon variant includes three feature characters, four bonuses, custom local audio and a 19,999× cap. Download its [ready-to-play test ZIP](https://github.com/stoyanov808/Test/raw/refs/heads/main/variants/ot-staroto/release/ot-staroto-test.zip), extract it and open **PLAY.html**. If local HTML is restricted, use **START-WINDOWS.bat** with Node installed.
+
+If you download the whole repository with **Code → Download ZIP**, the playable files are in `variants/ot-staroto/release`. See the [variant instructions](variants/ot-staroto/README.md), [25-screen gallery](variants/ot-staroto/docs/GALLERY.md) and [validation results](variants/ot-staroto/docs/VALIDATION.md). The commands below run Studentski Grad; development commands for the new variant run from `variants/ot-staroto`.
+
+## Studentski Grad presentation
+
 Presentation 5.5 keeps the version 5 **6 × 5 scatter-pay board**, verified public awards and Studentski Grad party theme. Each falling symbol now has its own timing, slight sideways drift and rocking, followed by a small landing shake and compression. Cascades preserve survivor identity and order; symbols already in place stay still. Grid cells have no hover outline, tooltip or pointer cursor. System reduced-motion preferences suppress this added decoration.
 
 Eight matching physical symbols anywhere win. Both xWays variants open and reveal the selected regular symbol before their effect. Normal xWays boosts **its source position only**; upgraded xWays throws beer to **all currently matching regular symbols**. Cell values and the highest-multiplier display change at the actual hits. All badges on a drop reveal one common symbol in recorded sequence. Bought-bonus invitations vary their reels and rows between purchases and retain their layout on reload. The original painterly art keeps adult portraits, dimensional objects and Sofia nightlife. The BG/EN remaining-spins counter stays visible through the final bonus spin.

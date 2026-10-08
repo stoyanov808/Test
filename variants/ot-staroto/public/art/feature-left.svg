@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="260" viewBox="0 0 240 260" role="img" aria-label="The Wild thrower">
+  <defs><filter id="ink-feature-left" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".043" numOctaves="2" seed="11" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+  <g filter="url(#ink-feature-left)" stroke="#100f0e" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M35 247q-7-51 46-66l77-4q54 13 53 68Z" fill="#33342f" stroke-width="9"/>
+    <path d="m76 188 38 26 45-31-10 64-78 0Z" fill="#9d9e91" stroke-width="6"/>
+    <path d="m96 165-5 30q21 28 43 4l8-34Z" fill="#d6d4c6" stroke-width="6"/>
+    <path d="M63 73q-19-15-32 6t14 40l14-3m117-43q20-15 29 8t-20 40l-9-6" fill="#dcd9ca" stroke-width="6"/>
+    <path d="M50 74Q37 24 91 14q48-18 84 16l11 49-15 75q-13 44-57 48-51-2-64-55Z" fill="#ede8d7" stroke-width="8"/>
+    <path d="M49 75 44 41 60 20 76 24 86 11l26 7 30-7 27 17 9-4 13 35-10 26-15-37-71 1-21-8-13 34Z" fill="#121311" stroke-width="5"/>
+    <path d="m56 88 54-8 8 14 9-14 51 4-8 31-43 0-9-14-10 16-41-1Z" fill="#161714" stroke-width="7"/>
+    <path d="m65 93 18-3-13 17m69-18 18 2-13 15" fill="none" stroke="#c2a364" stroke-width="5"/>
+    <path d="m111 108-6 23 17 3m-33-1-11 9m59-10 13 7" fill="none" stroke-width="5"/>
+    <path d="M59 134q9 31 29 44l24 9 33-13q23-12 29-40l-20 10-9-5-10 18-16 5-17-4-14-15-11 2Z" fill="#181916" stroke-width="5"/>
+    <path d="m90 145 54-4q-4 24-25 28t-29-24Z" fill="#ede7d4" stroke-width="5"/>
+    <path d="m101 146 3 11m10-12 1 11m11-13 1 10m12-13-1 11m-58 85 12 8m-39-13 9-12m130 10-8-10" fill="none" stroke-width="3"/>
+    <path d="m71 133-8-5 2 16m88-10 8-6-2 16m-76 56-8 11-7 22m-10-12 3 17m126-23-9 18m-111-49 9 9m-4-13 10 9" fill="none" stroke-width="2"/>
+    <path d="m43 95 8 5m139-10-7 7m-112 80 6 7m61-8 7-7" fill="none" stroke-width="3"/>
+  </g>
+</svg>

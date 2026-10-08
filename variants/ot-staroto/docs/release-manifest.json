@@ -1,0 +1,96 @@
+{
+  "generatedAt": "2026-10-08T13:47:27.232645+00:00",
+  "variant": "ot-staroto",
+  "publication": "Prototype source and test distribution are stored under variants/ot-staroto in the GitHub repository.",
+  "engineTests": {
+    "passed": 31,
+    "failed": 0,
+    "skipped": 0,
+    "command": "npx tsx --test variants/ot-staroto/tests/engine.test.ts",
+    "testSourceSha256": "d3b801a2e3b11205eb8753cec32dbabb385392dc732fb57dd83e1922bc565699"
+  },
+  "browserChecksPassed": 51,
+  "sampledRounds": 180000,
+  "standalone": {
+    "path": "release/PLAY.html",
+    "sha256": "6611e041cae3218c28eabcd79862938a030808977bcd373d3b878d15b4482ca6",
+    "directFileLaunch": {
+      "attempted": true,
+      "verified": false,
+      "limitation": "Cloud Chromium managed policy blocks file:// navigation (ERR_BLOCKED_BY_ADMINISTRATOR). The exact self-contained HTML is checked over a private static loopback server; direct file-origin launch remains unverified in this environment."
+    },
+    "requests": [
+      "http://127.0.0.1:41513/",
+      "http://127.0.0.1:41513/",
+      "http://127.0.0.1:41513/",
+      "http://127.0.0.1:41513/",
+      "http://127.0.0.1:41513/"
+    ]
+  },
+  "runtimeSourceHashes": {
+    "package.json": "3fa32d16d018d4f60eb89dfe763d8fdcdff68481e1532a175a039fb0982534b3",
+    "public/Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652",
+    "public/Oswald.ttf": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
+    "public/art/bottle.svg": "7e084157c2acce717f5ecd16603cd40710e59096b7dea7512906866840eb2616",
+    "public/art/car.svg": "b5fb94e21970a85797cd352b959ba9aaf16477a0de751716dbd0e37b2ad36453",
+    "public/art/cash.svg": "12f7477a42c1feb49f35fb145675244b933bb10aa51670ab80f68964fe59ffc7",
+    "public/art/cassette.svg": "42bab18fbe7220177bcb96345f9e257b550af59c9a2a5e7b69a4cd7ed8049918",
+    "public/art/chain.svg": "33bc661073ac754eac55ace995bcd09a0964047d6bda7e5008cf5c5a081f01b2",
+    "public/art/characters.png": "fb1f789a3a8ca9cbc0537f150df312eeda75d88f4dde7b088003d0b0970d039f",
+    "public/art/crown.svg": "10dcd7022cecd57d1ad87e4f57ed0f507bf6f0a9ef7a55e55a0b546a5666ca96",
+    "public/art/feature-left.svg": "959f1cd1491d1daed317a9583a0d95e70ca0431f161a1f78ac3e70b89a9f90f1",
+    "public/art/feature-middle.svg": "ba459d3916f28c6d3ba86f7f25c78701f77513638bc27a1495706c958c4004bc",
+    "public/art/feature-right.svg": "2e4a4ad195b25e8b70286617a4c94cb1eecf5781f4f5f4bbd64d9db11b333095",
+    "public/art/ruse-yard.png": "e74b3a330359ba094795cb39b3efd1f1e18249429ec8a4d780903423e03679fd",
+    "public/art/scatter.svg": "b69685eb563dc06f3e7396dbdfefc9ee758c22241f31543049ff55e3f05fe9f9",
+    "public/art/sneaker.svg": "83c5f5b3aed31f44d2520d16e766262d9c53630ed87c534ae3c9854c745171b5",
+    "public/art/wild.svg": "b548fd047ac458128ab38e74515f41b969ea5476f3f9689669e509dd6b55c4ec",
+    "scripts/browser-test.ts": "a160ff551e72aacbcc7cbc268b2f9b3dc5ebb6f77039cfcef57a9d000244d2d5",
+    "scripts/standalone.mjs": "ae155c18c8a29a59593b708df3e5505b0a2aa25c9867faf3b6ab8f659a65b636",
+    "src/art.ts": "934be3f769c7864d61a44e0cbf3bb6a4db7869daad1cd5f1cd993c7bbd20d8c9",
+    "src/audio.ts": "744690378615a09d8a4d9b9f8bea1f2ea69fae581aaccc2ae218930a6b751cc3",
+    "src/engine.ts": "ea1ee6dd309db3714e01a737c3a05d300c926aedac6516296d2c8d1216241c29",
+    "src/main.ts": "57b22b263ba2a69c8612aae3d50102c32d24be5dc4fa99372ab4b888a684c595",
+    "src/renderer.ts": "9188bfa811fc6b850fc7e0d690156cac09c572a7ad17f59144e6ddb96c296f97",
+    "src/style.css": "a0cc8541be22eac131c0e10b5e327767986f979c95d3cad1d4742e2811d63cb3",
+    "src/types.ts": "7a05f5cd2a33ef32581964f919d607ce00fe6802180f539321b34b8f6c2ce947",
+    "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+    "vite.config.ts": "b2a152f0b35a592680eab27a4a91d0aa928a2d2d7694221b207ca5420bdc9127"
+  },
+  "mathematicsSourceHashes": {
+    "src/engine.ts": "ea1ee6dd309db3714e01a737c3a05d300c926aedac6516296d2c8d1216241c29",
+    "src/types.ts": "7a05f5cd2a33ef32581964f919d607ce00fe6802180f539321b34b8f6c2ce947",
+    "scripts/simulate.ts": "ef069901670d74788131cec48af7ab42c7fdc88032a123be468c3c936a145a17"
+  },
+  "screenshotHashes": {
+    "docs/screenshots/base.png": "b51da05fb9fc7d605e816b20e3337756ff2645d2ca1bb8b0b865e23cb7f7e24e",
+    "docs/screenshots/bonus-edge-counter.png": "67e673f6b4305b5754e81f4e55f7e0ed489cda431b811294f8f2d11cb302d244",
+    "docs/screenshots/bonus-edge-scatters.png": "460ae72ac9b3db36c340ad2f1040f1c7d49acf7be62193060f8bc8123f93d817",
+    "docs/screenshots/bonus-lux-counter.png": "316431c0835582893474d182c0ae25aeea71548502e6b32560eca7fc7cd5f0b7",
+    "docs/screenshots/bonus-lux-scatters.png": "c1a5766caa471c0bc9b681d50ca1000c93b68539b97989b4864f4997ed01cdbc",
+    "docs/screenshots/bonus-old-counter.png": "63bff40483bcbc5877a2567eb556fc5416e4065050b8123e95d3011800157e1d",
+    "docs/screenshots/bonus-old-scatters.png": "758e23b358bdc10d3b607cccabfaec4162db22e4257ec57ca46a7fe82dbef51f",
+    "docs/screenshots/bonus-retrigger.png": "c40d629c8c5c764511dea67a7eadfcfe69f790bf4fd9c51b277ca57651e851d0",
+    "docs/screenshots/bonus-ruse-counter.png": "987e4b27fd3617ede876e25289e6341227f12abb76e138589e8117787c6a733a",
+    "docs/screenshots/bonus-ruse-scatters.png": "4af2911cf854c3014e0f90a6ce9eea75c36ca02eebcd2eccb28dc8ea09ccd1f5",
+    "docs/screenshots/character-left-impact.png": "29a9d9f54b8fb1e948c1f1c54ef9bc4e8841d7e57cad833885be4ef9c26cd51a",
+    "docs/screenshots/character-left-reveal.png": "56467da9d2312cc379a5ab2ee2d9cedb1eb7149ee71f83003f40258496894347",
+    "docs/screenshots/character-middle-impact.png": "6f4b768ce6bac08f846e068486f6b6b81c2626bcfb55c0bce8fd011de462bee7",
+    "docs/screenshots/character-middle-reveal.png": "ab42b4849d308149f075cb7abba7cfb50fd71b1d320bb37236779b73387db41b",
+    "docs/screenshots/character-right-impact.png": "1d13899f6b9c12cc1e10a7a3d523ef72b809f08f774d895ece33a493da28b378",
+    "docs/screenshots/character-right-reveal.png": "5945bcaf3dee1bf20df9346962c856ca453d696c218e2eef9a97d7120904eb8a",
+    "docs/screenshots/god-shot.png": "6a525236590751885164913bbb3e407f579e458f0f66ebd9c7863cfec32b3177",
+    "docs/screenshots/local-audio-settings.png": "e86c8635e02c3929e65bf770b806d4aef085836bb655c82cbcc6a6ef9527392c",
+    "docs/screenshots/max-win.png": "a98ff6982e1782e6f317eb9b341ab90ce98423896f93f24ccdb480c6c96eaaf4",
+    "docs/screenshots/mobile.png": "a9aa8b1096f379f77a2242a086961eb7c1d7fdd61f3b17907ecc3726c31d142e",
+    "docs/screenshots/repeated-shot.png": "4bff4daab0b79cefe037e4d8c8ec60991519544287324cca7b5e7f54586c5e23",
+    "docs/screenshots/standalone.png": "88c346ffc9b9fac39cbe3f47964c5fe947e7ecbdf282582cb420f2a1b2e85fce",
+    "docs/screenshots/win-100.png": "e93336465cd4ab966bd168271164d142ba4ff139ba9952744f8ea703b6e03161",
+    "docs/screenshots/win-1000.png": "a96c45e2c3f5e4cfdb4948d3664daef5ea320ff0f65cdde29b1b4eb54733a263",
+    "docs/screenshots/win-500.png": "e28ac47079758c9a40079e02560bc83f338530c870d6bdc783acd67b94022df9"
+  },
+  "evidence": {
+    "docs/browser-validation.json": "e0c00181612f4340c2d2cebad77e3318b61edae029a2f6485562e03bfb8888e1",
+    "docs/mathematics-sample.json": "3d50de853681fd45fa40c9888bce05e8d2cfcbcc45797a0466655acaa533e763"
+  }
+}

@@ -1,0 +1,394 @@
+{
+  "sourceVersion": 1,
+  "generatedAt": "2026-10-08T13:41:00.013Z",
+  "config": {
+    "version": 1,
+    "reels": 6,
+    "rows": 5,
+    "maxWin": 19999,
+    "minimumNaturalSymbols": 7,
+    "betsCents": [
+      10,
+      20,
+      50,
+      100,
+      200,
+      500,
+      1000,
+      2000
+    ],
+    "defaultBetCents": 20,
+    "initialBalanceCents": 1000000,
+    "buyCosts": {
+      "ruse": 35,
+      "lux": 250,
+      "edge": 600,
+      "old": 2500
+    },
+    "xbetCosts": {
+      "left": 1.5,
+      "right": 45,
+      "middle": 4.5
+    },
+    "godCost": 3000,
+    "godShotChance": 0.0256,
+    "godShots": 6,
+    "weights": {
+      "base": {
+        "scatter": 0.009,
+        "left": 0.0015,
+        "middle": 0.00025,
+        "right": 0.0003
+      },
+      "bonus": {
+        "scatter": 0.018,
+        "left": 0.002,
+        "middle": 0.0221,
+        "right": 0.008
+      },
+      "super": {
+        "scatter": 0.018,
+        "left": 0.002,
+        "middle": 0.0065,
+        "right": 0.008
+      }
+    },
+    "shooterRepeatChance": 0.9,
+    "shooterExistingWildChance": 0.75,
+    "paytable": {
+      "bottle": {
+        "8": 0.03,
+        "10": 0.07,
+        "12": 0.2
+      },
+      "cash": {
+        "8": 0.04,
+        "10": 0.1,
+        "12": 0.3
+      },
+      "chain": {
+        "8": 0.06,
+        "10": 0.15,
+        "12": 0.4
+      },
+      "cassette": {
+        "8": 0.08,
+        "10": 0.2,
+        "12": 0.6
+      },
+      "sneaker": {
+        "8": 0.12,
+        "10": 0.3,
+        "12": 0.8
+      },
+      "crown": {
+        "8": 0.2,
+        "10": 0.5,
+        "12": 1.4
+      }
+    }
+  },
+  "sourceHashes": {
+    "src/engine.ts": "ea1ee6dd309db3714e01a737c3a05d300c926aedac6516296d2c8d1216241c29",
+    "src/types.ts": "7a05f5cd2a33ef32581964f919d607ce00fe6802180f539321b34b8f6c2ce947",
+    "scripts/simulate.ts": "ef069901670d74788131cec48af7ab42c7fdc88032a123be468c3c936a145a17"
+  },
+  "notes": [
+    "Independent prototype mathematics, not a licensed game clone or certified RTP.",
+    "Seven natural regular symbols plus Wilds must reach 8/10/12 physical-cell brackets.",
+    "Badges and at most one scatter per reel enter only on each spin initial drop; refill draws regulars.",
+    "Normal confidence intervals approximate sampling error; rare tails can remain unsampled.",
+    "Each mode uses a fixed seed and full settled rounds; odds never depend on credit balance.",
+    "God theoretical six-shot cap contribution excludes ordinary miss-round payouts."
+  ],
+  "godTheoreticalHitProbability": 0.14409876755827844,
+  "godTheoreticalCapReturn": 0.9606104174660036,
+  "rows": [
+    {
+      "choice": {
+        "kind": "spin"
+      },
+      "seed": 1832754,
+      "rounds": 100000,
+      "costCents": 2000000,
+      "payoutCents": 1944479,
+      "observedReturn": 0.9722395,
+      "standardError": 0.034022456117927896,
+      "normalApproximation95": [
+        0.9055554860088614,
+        1.0389235139911388
+      ],
+      "regularReturn": 0.5827095,
+      "coinReturn": 0.38953,
+      "winningRounds": 59464,
+      "maxWinRounds": 0,
+      "godWins": 0,
+      "bonusEntries": 154,
+      "totalSpins": 101947,
+      "totalCascades": 434599,
+      "totalFeatures": 6380,
+      "longestCascade": 129,
+      "longestBonus": 27,
+      "peakBetMultiple": 1150.9,
+      "accountingFailures": 0,
+      "capFailures": 0,
+      "safetyFailures": 0,
+      "entitlementFailures": 0
+    },
+    {
+      "choice": {
+        "kind": "xbet",
+        "character": "left"
+      },
+      "seed": 9966171,
+      "rounds": 10000,
+      "costCents": 300000,
+      "payoutCents": 305321,
+      "observedReturn": 1.0177366666666667,
+      "standardError": 0.05720970446969607,
+      "normalApproximation95": [
+        0.9056056459060624,
+        1.129867687427271
+      ],
+      "regularReturn": 0.7101366666666666,
+      "coinReturn": 0.3076,
+      "winningRounds": 7782,
+      "maxWinRounds": 0,
+      "godWins": 0,
+      "bonusEntries": 19,
+      "totalSpins": 10255,
+      "totalCascades": 50376,
+      "totalFeatures": 10632,
+      "longestCascade": 55,
+      "longestBonus": 24,
+      "peakBetMultiple": 437.45,
+      "accountingFailures": 0,
+      "capFailures": 0,
+      "safetyFailures": 0,
+      "entitlementFailures": 0
+    },
+    {
+      "choice": {
+        "kind": "xbet",
+        "character": "right"
+      },
+      "seed": 18099588,
+      "rounds": 10000,
+      "costCents": 9000000,
+      "payoutCents": 8220685,
+      "observedReturn": 0.9134094444444445,
+      "standardError": 0.02330595056427998,
+      "normalApproximation95": [
+        0.8677297813384557,
+        0.9590891075504333
+      ],
+      "regularReturn": 0.012451666666666666,
+      "coinReturn": 0.9009577777777777,
+      "winningRounds": 5986,
+      "maxWinRounds": 0,
+      "godWins": 0,
+      "bonusEntries": 19,
+      "totalSpins": 10256,
+      "totalCascades": 43386,
+      "totalFeatures": 10605,
+      "longestCascade": 61,
+      "longestBonus": 23,
+      "peakBetMultiple": 3433.5,
+      "accountingFailures": 0,
+      "capFailures": 0,
+      "safetyFailures": 0,
+      "entitlementFailures": 0
+    },
+    {
+      "choice": {
+        "kind": "xbet",
+        "character": "middle"
+      },
+      "seed": 26233005,
+      "rounds": 10000,
+      "costCents": 900000,
+      "payoutCents": 847536,
+      "observedReturn": 0.9417066666666667,
+      "standardError": 0.03606302197765705,
+      "normalApproximation95": [
+        0.8710231435904588,
+        1.0123901897428744
+      ],
+      "regularReturn": 0.8505955555555555,
+      "coinReturn": 0.09111111111111111,
+      "winningRounds": 8223,
+      "maxWinRounds": 0,
+      "godWins": 0,
+      "bonusEntries": 16,
+      "totalSpins": 10189,
+      "totalCascades": 52926,
+      "totalFeatures": 10606,
+      "longestCascade": 51,
+      "longestBonus": 16,
+      "peakBetMultiple": 819.2,
+      "accountingFailures": 0,
+      "capFailures": 0,
+      "safetyFailures": 0,
+      "entitlementFailures": 0
+    },
+    {
+      "choice": {
+        "kind": "buy",
+        "tier": "ruse"
+      },
+      "seed": 34366422,
+      "rounds": 10000,
+      "costCents": 7000000,
+      "payoutCents": 6482025,
+      "observedReturn": 0.9260035714285715,
+      "standardError": 0.08242341284191597,
+      "normalApproximation95": [
+        0.7644536822584161,
+        1.0875534605987267
+      ],
+      "regularReturn": 0.8525807142857142,
+      "coinReturn": 0.07342285714285714,
+      "winningRounds": 10000,
+      "maxWinRounds": 2,
+      "godWins": 0,
+      "bonusEntries": 10000,
+      "totalSpins": 125406,
+      "totalCascades": 735919,
+      "totalFeatures": 7523,
+      "longestCascade": 222,
+      "longestBonus": 36,
+      "peakBetMultiple": 19999,
+      "accountingFailures": 0,
+      "capFailures": 0,
+      "safetyFailures": 0,
+      "entitlementFailures": 0
+    },
+    {
+      "choice": {
+        "kind": "buy",
+        "tier": "lux"
+      },
+      "seed": 42499839,
+      "rounds": 10000,
+      "costCents": 50000000,
+      "payoutCents": 49982054,
+      "observedReturn": 0.99964108,
+      "standardError": 0.011365778976279769,
+      "normalApproximation95": [
+        0.9773641532064916,
+        1.0219180067935083
+      ],
+      "regularReturn": 0.02231308,
+      "coinReturn": 0.977328,
+      "winningRounds": 10000,
+      "maxWinRounds": 0,
+      "godWins": 0,
+      "bonusEntries": 10000,
+      "totalSpins": 126885,
+      "totalCascades": 491234,
+      "totalFeatures": 30504,
+      "longestCascade": 72,
+      "longestBonus": 42,
+      "peakBetMultiple": 9645.15,
+      "accountingFailures": 0,
+      "capFailures": 0,
+      "safetyFailures": 0,
+      "entitlementFailures": 0
+    },
+    {
+      "choice": {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      "seed": 50633256,
+      "rounds": 10000,
+      "costCents": 120000000,
+      "payoutCents": 104733119,
+      "observedReturn": 0.8727759916666666,
+      "standardError": 0.03822291316353435,
+      "normalApproximation95": [
+        0.7978590818661393,
+        0.947692901467194
+      ],
+      "regularReturn": 0.8727759916666666,
+      "coinReturn": 0,
+      "winningRounds": 10000,
+      "maxWinRounds": 92,
+      "godWins": 0,
+      "bonusEntries": 10000,
+      "totalSpins": 126019,
+      "totalCascades": 538966,
+      "totalFeatures": 84045,
+      "longestCascade": 65,
+      "longestBonus": 38,
+      "peakBetMultiple": 19999,
+      "accountingFailures": 0,
+      "capFailures": 0,
+      "safetyFailures": 0,
+      "entitlementFailures": 0
+    },
+    {
+      "choice": {
+        "kind": "buy",
+        "tier": "old"
+      },
+      "seed": 58766673,
+      "rounds": 10000,
+      "costCents": 500000000,
+      "payoutCents": 505833606,
+      "observedReturn": 1.011667212,
+      "standardError": 0.02121604361980527,
+      "normalApproximation95": [
+        0.9700837665051818,
+        1.0532506574948184
+      ],
+      "regularReturn": 0.861021902,
+      "coinReturn": 0.15064531,
+      "winningRounds": 10000,
+      "maxWinRounds": 693,
+      "godWins": 0,
+      "bonusEntries": 10000,
+      "totalSpins": 183310,
+      "totalCascades": 1138991,
+      "totalFeatures": 87548,
+      "longestCascade": 231,
+      "longestBonus": 40,
+      "peakBetMultiple": 19999,
+      "accountingFailures": 0,
+      "capFailures": 0,
+      "safetyFailures": 0,
+      "entitlementFailures": 0
+    },
+    {
+      "choice": {
+        "kind": "god"
+      },
+      "seed": 66900090,
+      "rounds": 10000,
+      "costCents": 600000000,
+      "payoutCents": 576564321,
+      "observedReturn": 0.960940535,
+      "standardError": 0.02341027228321229,
+      "normalApproximation95": [
+        0.9150564013249038,
+        1.0068246686750961
+      ],
+      "regularReturn": 0.00017260166666666668,
+      "coinReturn": 0.0001493,
+      "winningRounds": 6487,
+      "maxWinRounds": 1441,
+      "godWins": 1441,
+      "bonusEntries": 16,
+      "totalSpins": 8743,
+      "totalCascades": 36999,
+      "totalFeatures": 538,
+      "longestCascade": 70,
+      "longestBonus": 18,
+      "peakBetMultiple": 19999,
+      "accountingFailures": 0,
+      "capFailures": 0,
+      "safetyFailures": 0,
+      "entitlementFailures": 0
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="260" viewBox="0 0 240 260" role="img" aria-label="Worn beer bottle">
+  <defs><filter id="ink-bottle" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".043" numOctaves="2" seed="30" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+  <g filter="url(#ink-bottle)" stroke="#100f0e" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M73 234 89 240 184 211 194 196 150 86 128 71 113 24 94 17 79 25 76 37 93 84 87 108Z" fill="#171916" stroke-width="9"/>
+    <path d="m93 37 13-4 14 45-14 6Z" fill="#ebe7d6" stroke-width="5"/>
+    <path d="m103 86 19-7 26 15 42 103-9 11-88 29-16-7 16-121Z" fill="#737970" stroke-width="5"/>
+    <path d="m95 149-6 64 9 10 67-22-31-71Z" fill="#a9945e" stroke-width="4"/>
+    <path d="m94 131 49-17 22 60-59 19-15-18Z" fill="#eae4d2" stroke-width="6"/>
+    <path d="m94 131 49-17 8 20-52 17Z" fill="#a2352e" stroke-width="4"/>
+    <path d="m110 158 25-9 5 10-23 8-4 12 31-10" fill="none" stroke-width="8"/>
+    <path d="m79 25 14-7 20 6 4 13-18 7-19-7Z" fill="#8c8980" stroke-width="6"/>
+    <path d="m86 27 3 12m6-15 4 14m6-12 5 10m-17 82-7 21m10 76-2 15m36-129 9 15m10 68 9 14m7-8 7 12" fill="none" stroke-width="3"/>
+    <path d="m104 104-10 29m24-42 11 9m42 99-33 12" fill="none" stroke="#f4eedb" stroke-width="5"/>
+    <path d="m150 178 7 14m1-22 8 18m1-21 7 16m-47 32 19-7m-19 13 15-5m-14-104 7 10m-3-17 8 11" fill="none" stroke-width="2"/>
+    <path d="m59 233-13 9m151-50 11 5m-39 28 10 6" fill="none" stroke-width="4"/>
+  </g>
+</svg>

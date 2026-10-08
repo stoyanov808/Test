@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="260" viewBox="0 0 240 260" role="img" aria-label="Street king crown">
+  <defs><filter id="ink-crown" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".043" numOctaves="2" seed="26" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+  <g filter="url(#ink-crown)" stroke="#100f0e" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m41 164-21-90 48 41 45-80 39 75 54-50-15 111Z" fill="#c4ac6b" stroke-width="9"/>
+    <path d="m48 151-12-53 32 33 44-68 39 68 42-39-10 65Z" fill="#e7d6a5" stroke-width="4"/>
+    <path d="M37 165q91-22 158 1l-6 48q-83 24-145 1Z" fill="#b49751" stroke-width="8"/>
+    <path d="M45 180q83-20 142 1m-136 19q73-16 129 0" fill="none" stroke="#f0dfad" stroke-width="5"/>
+    <path d="m104 175 16-9 17 12-5 21-21 2-14-12Z" fill="#9f302b" stroke-width="6"/>
+    <path d="m67 176 9 5-2 14-10-2-2-12m94-5 10 1 4 12-11 5-8-8" fill="#e2dec8" stroke-width="5"/>
+    <path d="M20 61q-11 4-5 17t18 2q11-12-1-17Zm92-37q-13 0-13 14t14 16q16-4 12-18t-13-12Zm94 28q-12-2-14 10t10 15q14 1 17-12t-13-13Z" fill="#e7d6a5" stroke-width="6"/>
+    <path d="m48 168 7 6m-9 11 8 6m132-21-8 8m8 7-9 9m-77-90 9-15m11 34 7 10m-52 89-16 3m104-7-15 4" fill="none" stroke-width="3"/>
+    <path d="m111 177 12-3-3 14" fill="none" stroke="#e0bba0" stroke-width="3"/>
+    <path d="m52 204 8 9m-1-13 9 11m-1-15 10 12m90-65 9-7m-9 15 10-8m-13 18 12-9m-127-39 5 9m0-14 6 10m-1-16 7 13m57 82 8 9m0-10 7 9" fill="none" stroke-width="2"/>
+    <path d="m67 45-7-12m82-14 6-11m73 42 12-2m-199 153-13 6" fill="none" stroke-width="4"/>
+  </g>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="260" viewBox="0 0 240 260" role="img" aria-label="The coin revealer">
+  <defs><filter id="ink-feature-right" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".043" numOctaves="2" seed="2" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+  <g filter="url(#ink-feature-right)" stroke="#100f0e" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M37 248q-6-59 49-72l60-4q61 9 68 76Z" fill="#33342f" stroke-width="9"/>
+    <path d="m91 167-4 31q29 28 49-2l-1-31Z" fill="#d8d3c2" stroke-width="6"/>
+    <path d="M60 75q-15-18-27 0t11 40l15-6m109-30q15-17 26 0t-14 38l-9-5" fill="#e6dfcc" stroke-width="6"/>
+    <path d="M49 65Q61 18 114 19q53 1 64 45l-6 79q-5 41-39 57-41-1-64-35Z" fill="#ece7d6" stroke-width="8"/>
+    <path d="M48 78 44 49l16-17 18-19 38 0 36 15 24 28-8 27-18-34-14 18-23-25-17 8-18-6-23 34Z" fill="#141512" stroke-width="5"/>
+    <path d="m63 91 31-4-5 30-21 0Zm66-6 31 4-4 26-22 3Z" fill="#121311" stroke-width="6"/>
+    <path d="m94 93 38 0m-71-1-9-4m107 1 12-3" fill="none" stroke-width="5"/>
+    <path d="m116 109-9 22 16 5m-31 6-9 6m48-10 10 8" fill="none" stroke-width="5"/>
+    <path d="m83 148 57-3q-3 31-22 33t-35-30Z" fill="#181916" stroke-width="5"/>
+    <path d="m85 148 53-1-5 14-43 2Z" fill="#e7dfc5" stroke-width="4"/>
+    <path d="m105 148 13-1 1 15-13 0Z" fill="#bea054" stroke-width="3"/>
+    <path d="m98 149 2 13m28-15-2 13m-15 31 2-9m9 9 1-8m-23-4-4-6m-33-15 7 7m83-23-3 11" fill="none" stroke-width="3"/>
+    <path d="m82 194 10 21 19 9 24-5 8-28" fill="none" stroke="#b89b55" stroke-width="6"/>
+    <path d="m75 136 7 5m-6 0 6 5m73-13-6 5m-66 51-8 12m-7 2-8 12m103-6 8 12m-13-4 9 14m-8-4 9 14" fill="none" stroke-width="2"/>
+    <path d="m61 233 13 6m109-14-10 12m-31-30 7 4" fill="none" stroke-width="3"/>
+  </g>
+</svg>

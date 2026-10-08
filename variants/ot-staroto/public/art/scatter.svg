@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="260" viewBox="0 0 240 260" role="img" aria-label="Bonus scatter invitation">
+  <defs><filter id="ink-scatter" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".043" numOctaves="2" seed="14" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+  <g filter="url(#ink-scatter)" stroke="#100f0e" stroke-linejoin="round" stroke-linecap="round">
+    <path d="m39 46 139-13 31 34 8 156-13 13-164 8-12-27-3-153Z" fill="#d8d1ba" stroke-width="8"/>
+    <path d="m179 33-4 34 34 0Z" fill="#99988a" stroke-width="5"/>
+    <path d="m43 64 120-10m-117 25 150-12m-143 22 142-10" fill="none" stroke-width="3"/>
+    <path d="m13 116 205-15 8 70-203 18Z" fill="#a3332d" stroke-width="8"/>
+    <path d="m23 126 184-14m-177 67 183-17" fill="none" stroke="#e6b5a1" stroke-width="3"/>
+    <g fill="none" stroke="#f1e8d2" stroke-width="6">
+      <path d="m34 137 2 30 10-1q14-2 10-11-2-5-18-4 18 0 15-10-3-7-19-4Z"/>
+      <path d="M76 133q-13 0-12 17t13 16q13-2 11-18t-12-15Z"/>
+      <path d="m101 163-2-30 23 28-2-30"/>
+      <path d="m134 130 2 20q3 14 14 10t9-16l-1-16"/>
+      <path d="M191 128q-19-7-19 7 2 7 16 8t9 10q-2 9-23 4"/>
+    </g>
+    <path d="m60 201 19-5 5 15-19 4m28-24 10 20m7-21 13 21m7-24 11 23m12-21 11 16m13-19 10 18" fill="none" stroke-width="5"/>
+    <path d="m35 217 12-6m151-126-12 4m14 7-8 2m-157-42 11 3m124-12-6 11m25 159-8-6" fill="none" stroke-width="3"/>
+    <path d="m42 91 7 7m-7 0 6 7m-6 1 5 6m151-10 8-5m-8 12 9-6m-5 18 7-5m-113 100 8 8m-2-10 9 8m-3-10 8 8" fill="none" stroke-width="2"/>
+    <path d="m22 47-7-7m202 42 12-3m-9 123 7 8" fill="none" stroke-width="4"/>
+    <path d="m13 92 5-1m204 98 5-1m-18 143 5 2" fill="none" stroke="#a3332d" stroke-width="7"/>
+  </g>
+</svg>

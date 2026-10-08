@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="260" viewBox="0 0 240 260" role="img" aria-label="Heavy gold chain">
+  <defs><filter id="ink-chain" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".043" numOctaves="2" seed="19" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+  <g filter="url(#ink-chain)" stroke="#11100e" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M56 41Q17 76 31 122q9 56 52 66m95-146q38 37 26 91-8 42-48 59" fill="none" stroke-width="25"/>
+    <path d="M56 41Q17 76 31 122q9 56 52 66m95-146q38 37 26 91-8 42-48 59" fill="none" stroke="#b79b53" stroke-width="13"/>
+    <path d="m51 44 10 5-11 20-12-4Zm-17 30 12 8-9 25-13-5Zm-8 37 13-1 4 25-13 5Zm10 35 13-9 13 25-13 10Zm23 28 10-13 20 13-7 15Zm122-127-12 7 11 22 14-6Zm15 31-13 6 8 25 14-3Zm5 36-14-1-4 26 13 6Zm-10 33-13-7-13 23 12 12Zm-22 29-10-14-20 14 10 14Z" fill="#cbb274" stroke-width="5"/>
+    <path d="M101 172q19-14 38 1l-1 18h-38Z" fill="#d0b366" stroke-width="6"/>
+    <path d="m95 192-7 47 28 9 32-14-4-47Z" fill="#b99b58" stroke-width="8"/>
+    <path d="m106 195 23-4 3 17-21 4 1 17 20-6" fill="none" stroke-width="8"/>
+    <path d="m93 201 7-1m-8 10 5-1m45-12-6 3m6 21-7 4M43 52l7 3m-19 36 7 3m-4 67 8-4m154-63-6 2m0 61-8-4" fill="none" stroke-width="3"/>
+    <path d="m98 229 7 9m-1-18 9 14m-1-20 10 15m-76-77 9-4m-5 10 9-4m119-20-9-5m6 11-10-6m-134-45 9 4m-11 3 10 4" fill="none" stroke-width="2"/>
+    <path d="m55 28 8-13m-39 97-13-3m202 18 14 4m-49-87 9-12" fill="none" stroke-width="4"/>
+    <path d="m48 69-8 17m149 52-7 16m-78 46-2 28" fill="none" stroke="#eee2b8" stroke-width="3"/>
+  </g>
+</svg>

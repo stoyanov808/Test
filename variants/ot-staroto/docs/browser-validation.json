@@ -1,0 +1,738 @@
+{
+  "capturedAt": "2026-10-08T13:43:30.089Z",
+  "variant": "ot-staroto",
+  "mode": "full",
+  "checksPassed": 51,
+  "checks": [
+    {
+      "name": "Canvas loads all authored symbols, three character crops and the painted yard",
+      "details": {
+        "assets": 16,
+        "successfulImages": 16
+      }
+    },
+    {
+      "name": "All 30 grid boxes are non-hoverable: no pixel changes, title or pointer cursor"
+    },
+    {
+      "name": "BG / EN setting persists across reload and all displayed credits use EUR"
+    },
+    {
+      "name": "Two immediate Spin clicks create one committed round and one debit"
+    },
+    {
+      "name": "Rapid double-click spin: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 20,
+        "payoutCents": 0,
+        "finalRng": 3134293908
+      }
+    },
+    {
+      "name": "left xBet guarantees its badge, charges its own configured price and reveals before acting"
+    },
+    {
+      "name": "Actual canvas descent uses independent timing, restrained rocking and contact squash without symbol overtaking",
+      "details": {
+        "frames": 29,
+        "uniqueStarts": 29,
+        "uniqueFlights": 22
+      }
+    },
+    {
+      "name": "left impact follows its recorded targets and exclusive feature role"
+    },
+    {
+      "name": "left xBet: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 30,
+        "payoutCents": 33,
+        "finalRng": 2890711346
+      }
+    },
+    {
+      "name": "middle xBet guarantees its badge, charges its own configured price and reveals before acting"
+    },
+    {
+      "name": "middle impact follows its recorded targets and exclusive feature role"
+    },
+    {
+      "name": "middle xBet: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 90,
+        "payoutCents": 40,
+        "finalRng": 1324236901
+      }
+    },
+    {
+      "name": "right xBet guarantees its badge, charges its own configured price and reveals before acting"
+    },
+    {
+      "name": "right impact follows its recorded targets and exclusive feature role"
+    },
+    {
+      "name": "right xBet: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 900,
+        "payoutCents": 1023,
+        "finalRng": 3074934128
+      }
+    },
+    {
+      "name": "ruse buy has the correct cast and cost, then visibly stages 3 scatters on distinct reels",
+      "details": [
+        {
+          "reel": 3,
+          "row": 4
+        },
+        {
+          "reel": 4,
+          "row": 3
+        },
+        {
+          "reel": 5,
+          "row": 3
+        }
+      ]
+    },
+    {
+      "name": "ruse bonus displays its exact entitlement and visible remaining-spin counter"
+    },
+    {
+      "name": "ruse purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 700,
+        "payoutCents": 82,
+        "finalRng": 1071066517
+      }
+    },
+    {
+      "name": "lux buy has the correct cast and cost, then visibly stages 4 scatters on distinct reels",
+      "details": [
+        {
+          "reel": 0,
+          "row": 4
+        },
+        {
+          "reel": 2,
+          "row": 3
+        },
+        {
+          "reel": 4,
+          "row": 3
+        },
+        {
+          "reel": 5,
+          "row": 2
+        }
+      ]
+    },
+    {
+      "name": "lux bonus displays its exact entitlement and visible remaining-spin counter"
+    },
+    {
+      "name": "lux purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 5000,
+        "payoutCents": 2769,
+        "finalRng": 1746699151
+      }
+    },
+    {
+      "name": "edge buy has the correct cast and cost, then visibly stages 5 scatters on distinct reels",
+      "details": [
+        {
+          "reel": 1,
+          "row": 3
+        },
+        {
+          "reel": 2,
+          "row": 2
+        },
+        {
+          "reel": 3,
+          "row": 2
+        },
+        {
+          "reel": 4,
+          "row": 2
+        },
+        {
+          "reel": 5,
+          "row": 0
+        }
+      ]
+    },
+    {
+      "name": "edge bonus displays its exact entitlement and visible remaining-spin counter"
+    },
+    {
+      "name": "edge purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 12000,
+        "payoutCents": 724,
+        "finalRng": 3385473611
+      }
+    },
+    {
+      "name": "old buy has the correct cast and cost, then visibly stages 6 scatters on distinct reels",
+      "details": [
+        {
+          "reel": 0,
+          "row": 2
+        },
+        {
+          "reel": 1,
+          "row": 0
+        },
+        {
+          "reel": 2,
+          "row": 4
+        },
+        {
+          "reel": 3,
+          "row": 1
+        },
+        {
+          "reel": 4,
+          "row": 0
+        },
+        {
+          "reel": 5,
+          "row": 2
+        }
+      ]
+    },
+    {
+      "name": "old bonus displays its exact entitlement and visible remaining-spin counter"
+    },
+    {
+      "name": "old purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 50000,
+        "payoutCents": 8738,
+        "finalRng": 885367107
+      }
+    },
+    {
+      "name": "A repeated recorded shot visibly doubles its existing Wild multiplier"
+    },
+    {
+      "name": "Repeated-shooter fixture: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 90,
+        "payoutCents": 40,
+        "finalRng": 1324236901
+      }
+    },
+    {
+      "name": "Natural recorded Scatters trigger their genuine bonus without a buy"
+    },
+    {
+      "name": "Natural bonus with retrigger: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 20,
+        "payoutCents": 73,
+        "finalRng": 3183584485
+      }
+    },
+    {
+      "name": "A real bonus retrigger shows its added-spin banner and updated remaining counter"
+    },
+    {
+      "name": "Retrigger fixture: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 5000,
+        "payoutCents": 4823,
+        "finalRng": 1055613752
+      }
+    },
+    {
+      "name": "Reloaded pending super bonus charged exactly once: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 50000,
+        "payoutCents": 6306,
+        "finalRng": 1901619961
+      }
+    },
+    {
+      "name": "Settled reload retains exact credits and does not replay or double-credit the round"
+    },
+    {
+      "name": "Count-up genuinely crosses 100× and advances its cutscene stage",
+      "details": {
+        "ratio": 126.4,
+        "visible": [
+          {
+            "opacity": 1,
+            "complete": true,
+            "width": 110
+          },
+          {
+            "opacity": 0,
+            "complete": true,
+            "width": 110
+          },
+          {
+            "opacity": 0,
+            "complete": true,
+            "width": 110
+          }
+        ]
+      }
+    },
+    {
+      "name": "Count-up genuinely crosses 500× and advances its cutscene stage",
+      "details": {
+        "ratio": 534.75,
+        "visible": [
+          {
+            "opacity": 1,
+            "complete": true,
+            "width": 110
+          },
+          {
+            "opacity": 1,
+            "complete": true,
+            "width": 110
+          },
+          {
+            "opacity": 0,
+            "complete": true,
+            "width": 110
+          }
+        ]
+      }
+    },
+    {
+      "name": "Count-up genuinely crosses 1000× and advances its cutscene stage",
+      "details": {
+        "ratio": 1272.95,
+        "visible": [
+          {
+            "opacity": 1,
+            "complete": true,
+            "width": 110
+          },
+          {
+            "opacity": 1,
+            "complete": true,
+            "width": 110
+          },
+          {
+            "opacity": 1,
+            "complete": true,
+            "width": 110
+          }
+        ]
+      }
+    },
+    {
+      "name": "Large recorded win count-up: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 50000,
+        "payoutCents": 94737,
+        "finalRng": 3544942270
+      }
+    },
+    {
+      "name": "God Mode uses recorded hit shots to award exactly 19,999×, with its actual car-entry cutscene"
+    },
+    {
+      "name": "Max-win cutscene shows the exact capped EUR amount and remains until Continue"
+    },
+    {
+      "name": "God maximum win: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 60000,
+        "payoutCents": 399980,
+        "finalRng": 270369
+      }
+    },
+    {
+      "name": "Uploaded real WAV, volume, mute and synth setting persist via local IndexedDB / preferences"
+    },
+    {
+      "name": "Removing local audio deletes its stored track across reload"
+    },
+    {
+      "name": "400×840 mobile layout retains large reels and reachable controls without horizontal overflow",
+      "details": {
+        "width": 400,
+        "scroll": 400,
+        "canvas": 384,
+        "buttons": [
+          {
+            "id": "spin",
+            "width": 43,
+            "x": 269.59375,
+            "right": 312.59375
+          },
+          {
+            "id": "buy",
+            "width": 55.890625,
+            "x": 64.890625,
+            "right": 120.78125
+          },
+          {
+            "id": "god",
+            "width": 60.75,
+            "x": 274.34375,
+            "right": 335.09375
+          },
+          {
+            "id": "settings",
+            "width": 30,
+            "x": 364,
+            "right": 394
+          }
+        ]
+      }
+    },
+    {
+      "name": "Exact self-contained PLAY.html loads all inline art and has no development hooks",
+      "details": {
+        "attempted": true,
+        "verified": false,
+        "limitation": "Cloud Chromium managed policy blocks file:// navigation (ERR_BLOCKED_BY_ADMINISTRATOR). The exact self-contained HTML is checked over a private static loopback server; direct file-origin launch remains unverified in this environment."
+      }
+    },
+    {
+      "name": "Standalone purchased bonus survives pending reload, charges once and settles exact engine credits / RNG"
+    },
+    {
+      "name": "Standalone base game remains playable after bought-bonus reload and settlement"
+    },
+    {
+      "name": "Standalone xBet guarantees its selected character and settles exact cents and RNG"
+    },
+    {
+      "name": "Standalone decodes a local WAV and retains / removes it through IndexedDB across reload"
+    },
+    {
+      "name": "No JavaScript errors, asset failures or external network requests; standalone requires no secondary resources"
+    }
+  ],
+  "sourceHashes": {
+    "package.json": "3fa32d16d018d4f60eb89dfe763d8fdcdff68481e1532a175a039fb0982534b3",
+    "public/Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652",
+    "public/Oswald.ttf": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
+    "public/art/bottle.svg": "7e084157c2acce717f5ecd16603cd40710e59096b7dea7512906866840eb2616",
+    "public/art/car.svg": "b5fb94e21970a85797cd352b959ba9aaf16477a0de751716dbd0e37b2ad36453",
+    "public/art/cash.svg": "12f7477a42c1feb49f35fb145675244b933bb10aa51670ab80f68964fe59ffc7",
+    "public/art/cassette.svg": "42bab18fbe7220177bcb96345f9e257b550af59c9a2a5e7b69a4cd7ed8049918",
+    "public/art/chain.svg": "33bc661073ac754eac55ace995bcd09a0964047d6bda7e5008cf5c5a081f01b2",
+    "public/art/characters.png": "fb1f789a3a8ca9cbc0537f150df312eeda75d88f4dde7b088003d0b0970d039f",
+    "public/art/crown.svg": "10dcd7022cecd57d1ad87e4f57ed0f507bf6f0a9ef7a55e55a0b546a5666ca96",
+    "public/art/feature-left.svg": "959f1cd1491d1daed317a9583a0d95e70ca0431f161a1f78ac3e70b89a9f90f1",
+    "public/art/feature-middle.svg": "ba459d3916f28c6d3ba86f7f25c78701f77513638bc27a1495706c958c4004bc",
+    "public/art/feature-right.svg": "2e4a4ad195b25e8b70286617a4c94cb1eecf5781f4f5f4bbd64d9db11b333095",
+    "public/art/ruse-yard.png": "e74b3a330359ba094795cb39b3efd1f1e18249429ec8a4d780903423e03679fd",
+    "public/art/scatter.svg": "b69685eb563dc06f3e7396dbdfefc9ee758c22241f31543049ff55e3f05fe9f9",
+    "public/art/sneaker.svg": "83c5f5b3aed31f44d2520d16e766262d9c53630ed87c534ae3c9854c745171b5",
+    "public/art/wild.svg": "b548fd047ac458128ab38e74515f41b969ea5476f3f9689669e509dd6b55c4ec",
+    "scripts/browser-test.ts": "a160ff551e72aacbcc7cbc268b2f9b3dc5ebb6f77039cfcef57a9d000244d2d5",
+    "scripts/standalone.mjs": "ae155c18c8a29a59593b708df3e5505b0a2aa25c9867faf3b6ab8f659a65b636",
+    "src/art.ts": "934be3f769c7864d61a44e0cbf3bb6a4db7869daad1cd5f1cd993c7bbd20d8c9",
+    "src/audio.ts": "744690378615a09d8a4d9b9f8bea1f2ea69fae581aaccc2ae218930a6b751cc3",
+    "src/engine.ts": "ea1ee6dd309db3714e01a737c3a05d300c926aedac6516296d2c8d1216241c29",
+    "src/main.ts": "57b22b263ba2a69c8612aae3d50102c32d24be5dc4fa99372ab4b888a684c595",
+    "src/renderer.ts": "9188bfa811fc6b850fc7e0d690156cac09c572a7ad17f59144e6ddb96c296f97",
+    "src/style.css": "a0cc8541be22eac131c0e10b5e327767986f979c95d3cad1d4742e2811d63cb3",
+    "src/types.ts": "7a05f5cd2a33ef32581964f919d607ce00fe6802180f539321b34b8f6c2ce947",
+    "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+    "vite.config.ts": "b2a152f0b35a592680eab27a4a91d0aa928a2d2d7694221b207ca5420bdc9127"
+  },
+  "captures": [
+    {
+      "file": "docs/screenshots/character-left-reveal.png",
+      "sha256": "56467da9d2312cc379a5ab2ee2d9cedb1eb7149ee71f83003f40258496894347",
+      "seed": 1,
+      "choice": {
+        "kind": "xbet",
+        "character": "left"
+      },
+      "costCents": 30,
+      "payoutCents": 33,
+      "maxWin": false,
+      "note": "Real xBet source reveal before recorded feature targets."
+    },
+    {
+      "file": "docs/screenshots/character-left-impact.png",
+      "sha256": "29a9d9f54b8fb1e948c1f1c54ef9bc4e8841d7e57cad833885be4ef9c26cd51a",
+      "seed": 1,
+      "choice": {
+        "kind": "xbet",
+        "character": "left"
+      },
+      "costCents": 30,
+      "payoutCents": 33,
+      "maxWin": false,
+      "note": "Actual recorded Wild throw / shot / coin target after reveal."
+    },
+    {
+      "file": "docs/screenshots/character-middle-reveal.png",
+      "sha256": "ab42b4849d308149f075cb7abba7cfb50fd71b1d320bb37236779b73387db41b",
+      "seed": 1,
+      "choice": {
+        "kind": "xbet",
+        "character": "middle"
+      },
+      "costCents": 90,
+      "payoutCents": 40,
+      "maxWin": false,
+      "note": "Real xBet source reveal before recorded feature targets."
+    },
+    {
+      "file": "docs/screenshots/character-middle-impact.png",
+      "sha256": "6f4b768ce6bac08f846e068486f6b6b81c2626bcfb55c0bce8fd011de462bee7",
+      "seed": 1,
+      "choice": {
+        "kind": "xbet",
+        "character": "middle"
+      },
+      "costCents": 90,
+      "payoutCents": 40,
+      "maxWin": false,
+      "note": "Actual recorded Wild throw / shot / coin target after reveal."
+    },
+    {
+      "file": "docs/screenshots/character-right-reveal.png",
+      "sha256": "5945bcaf3dee1bf20df9346962c856ca453d696c218e2eef9a97d7120904eb8a",
+      "seed": 1,
+      "choice": {
+        "kind": "xbet",
+        "character": "right"
+      },
+      "costCents": 900,
+      "payoutCents": 1023,
+      "maxWin": false,
+      "note": "Real xBet source reveal before recorded feature targets."
+    },
+    {
+      "file": "docs/screenshots/character-right-impact.png",
+      "sha256": "1d13899f6b9c12cc1e10a7a3d523ef72b809f08f774d895ece33a493da28b378",
+      "seed": 1,
+      "choice": {
+        "kind": "xbet",
+        "character": "right"
+      },
+      "costCents": 900,
+      "payoutCents": 1023,
+      "maxWin": false,
+      "note": "Actual recorded Wild throw / shot / coin target after reveal."
+    },
+    {
+      "file": "docs/screenshots/bonus-ruse-scatters.png",
+      "sha256": "4af2911cf854c3014e0f90a6ce9eea75c36ca02eebcd2eccb28dc8ea09ccd1f5",
+      "seed": 37,
+      "choice": {
+        "kind": "buy",
+        "tier": "ruse"
+      },
+      "costCents": 700,
+      "payoutCents": 82,
+      "maxWin": false,
+      "note": "Bought invitations genuinely land before the bonus intro."
+    },
+    {
+      "file": "docs/screenshots/bonus-ruse-counter.png",
+      "sha256": "987e4b27fd3617ede876e25289e6341227f12abb76e138589e8117787c6a733a",
+      "seed": 37,
+      "choice": {
+        "kind": "buy",
+        "tier": "ruse"
+      },
+      "costCents": 700,
+      "payoutCents": 82,
+      "maxWin": false,
+      "note": "Real first free-spin counter and its entitled side characters."
+    },
+    {
+      "file": "docs/screenshots/bonus-lux-scatters.png",
+      "sha256": "c1a5766caa471c0bc9b681d50ca1000c93b68539b97989b4864f4997ed01cdbc",
+      "seed": 37,
+      "choice": {
+        "kind": "buy",
+        "tier": "lux"
+      },
+      "costCents": 5000,
+      "payoutCents": 2769,
+      "maxWin": false,
+      "note": "Bought invitations genuinely land before the bonus intro."
+    },
+    {
+      "file": "docs/screenshots/bonus-lux-counter.png",
+      "sha256": "316431c0835582893474d182c0ae25aeea71548502e6b32560eca7fc7cd5f0b7",
+      "seed": 37,
+      "choice": {
+        "kind": "buy",
+        "tier": "lux"
+      },
+      "costCents": 5000,
+      "payoutCents": 2769,
+      "maxWin": false,
+      "note": "Real first free-spin counter and its entitled side characters."
+    },
+    {
+      "file": "docs/screenshots/bonus-edge-scatters.png",
+      "sha256": "460ae72ac9b3db36c340ad2f1040f1c7d49acf7be62193060f8bc8123f93d817",
+      "seed": 37,
+      "choice": {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      "costCents": 12000,
+      "payoutCents": 724,
+      "maxWin": false,
+      "note": "Bought invitations genuinely land before the bonus intro."
+    },
+    {
+      "file": "docs/screenshots/bonus-edge-counter.png",
+      "sha256": "67e673f6b4305b5754e81f4e55f7e0ed489cda431b811294f8f2d11cb302d244",
+      "seed": 37,
+      "choice": {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      "costCents": 12000,
+      "payoutCents": 724,
+      "maxWin": false,
+      "note": "Real first free-spin counter and its entitled side characters."
+    },
+    {
+      "file": "docs/screenshots/bonus-old-scatters.png",
+      "sha256": "758e23b358bdc10d3b607cccabfaec4162db22e4257ec57ca46a7fe82dbef51f",
+      "seed": 37,
+      "choice": {
+        "kind": "buy",
+        "tier": "old"
+      },
+      "costCents": 50000,
+      "payoutCents": 8738,
+      "maxWin": false,
+      "note": "Bought invitations genuinely land before the bonus intro."
+    },
+    {
+      "file": "docs/screenshots/bonus-old-counter.png",
+      "sha256": "63bff40483bcbc5877a2567eb556fc5416e4065050b8123e95d3011800157e1d",
+      "seed": 37,
+      "choice": {
+        "kind": "buy",
+        "tier": "old"
+      },
+      "costCents": 50000,
+      "payoutCents": 8738,
+      "maxWin": false,
+      "note": "Real first free-spin counter and its entitled side characters."
+    },
+    {
+      "file": "docs/screenshots/repeated-shot.png",
+      "sha256": "4bff4daab0b79cefe037e4d8c8ec60991519544287324cca7b5e7f54586c5e23",
+      "seed": 1,
+      "choice": {
+        "kind": "xbet",
+        "character": "middle"
+      },
+      "costCents": 90,
+      "payoutCents": 40,
+      "maxWin": false,
+      "note": "Repeated shooter impact displays the doubled recorded Wild multiplier."
+    },
+    {
+      "file": "docs/screenshots/bonus-retrigger.png",
+      "sha256": "c40d629c8c5c764511dea67a7eadfcfe69f790bf4fd9c51b277ca57651e851d0",
+      "seed": 1,
+      "choice": {
+        "kind": "buy",
+        "tier": "lux"
+      },
+      "costCents": 5000,
+      "payoutCents": 4823,
+      "maxWin": false,
+      "note": "Natural in-bonus Scatter retrigger; visible counter follows the recorded addition."
+    },
+    {
+      "file": "docs/screenshots/win-100.png",
+      "sha256": "e93336465cd4ab966bd168271164d142ba4ff139ba9952744f8ea703b6e03161",
+      "seed": 7,
+      "choice": {
+        "kind": "buy",
+        "tier": "old"
+      },
+      "costCents": 50000,
+      "payoutCents": 94737,
+      "maxWin": false,
+      "note": "Actual count-up crossing 100×; CSS cutscene escalation is driven by the counted amount."
+    },
+    {
+      "file": "docs/screenshots/win-500.png",
+      "sha256": "e28ac47079758c9a40079e02560bc83f338530c870d6bdc783acd67b94022df9",
+      "seed": 7,
+      "choice": {
+        "kind": "buy",
+        "tier": "old"
+      },
+      "costCents": 50000,
+      "payoutCents": 94737,
+      "maxWin": false,
+      "note": "Actual count-up crossing 500×; CSS cutscene escalation is driven by the counted amount."
+    },
+    {
+      "file": "docs/screenshots/win-1000.png",
+      "sha256": "a96c45e2c3f5e4cfdb4948d3664daef5ea320ff0f65cdde29b1b4eb54733a263",
+      "seed": 7,
+      "choice": {
+        "kind": "buy",
+        "tier": "old"
+      },
+      "costCents": 50000,
+      "payoutCents": 94737,
+      "maxWin": false,
+      "note": "Actual count-up crossing 1000×; CSS cutscene escalation is driven by the counted amount."
+    },
+    {
+      "file": "docs/screenshots/god-shot.png",
+      "sha256": "6a525236590751885164913bbb3e407f579e458f0f66ebd9c7863cfec32b3177",
+      "seed": 1,
+      "choice": {
+        "kind": "god"
+      },
+      "costCents": 60000,
+      "payoutCents": 399980,
+      "maxWin": true,
+      "note": "Real God shot trajectory; payout comes from the engine hit receipt."
+    },
+    {
+      "file": "docs/screenshots/max-win.png",
+      "sha256": "a98ff6982e1782e6f317eb9b341ab90ce98423896f93f24ccdb480c6c96eaaf4",
+      "seed": 1,
+      "choice": {
+        "kind": "god"
+      },
+      "costCents": 60000,
+      "payoutCents": 399980,
+      "maxWin": true,
+      "note": "Settled genuine 19,999× max receipt: €3,999.80 on a €0.20 base bet."
+    }
+  ],
+  "jsErrors": [],
+  "assetFailures": [],
+  "externalRequests": [],
+  "production": {
+    "path": "release/PLAY.html",
+    "sha256": "6611e041cae3218c28eabcd79862938a030808977bcd373d3b878d15b4482ca6",
+    "directFileLaunch": {
+      "attempted": true,
+      "verified": false,
+      "limitation": "Cloud Chromium managed policy blocks file:// navigation (ERR_BLOCKED_BY_ADMINISTRATOR). The exact self-contained HTML is checked over a private static loopback server; direct file-origin launch remains unverified in this environment."
+    },
+    "requests": [
+      "http://127.0.0.1:41513/",
+      "http://127.0.0.1:41513/",
+      "http://127.0.0.1:41513/",
+      "http://127.0.0.1:41513/",
+      "http://127.0.0.1:41513/"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="260" viewBox="0 0 240 260" role="img" aria-label="Worn high top sneaker">
+  <defs><filter id="ink-sneaker" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".043" numOctaves="2" seed="1" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+  <g filter="url(#ink-sneaker)" stroke="#100f0e" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m54 76 66-19 15 73q22 15 48 23 24 7 29 28l-1 25-17 15-145 8-28-15 6-36Z" fill="#686b64" stroke-width="8"/>
+    <path d="m65 85 45-14 10 60-44 28-24-11Z" fill="#b1b1a2" stroke-width="5"/>
+    <path d="m110 71 11-9 14 67 26 30-19 11-28-30Z" fill="#eae6d4" stroke-width="5"/>
+    <path d="m38 179 25-25 54-5 30 23 53 7 11 17-23 18-137 4-24-14Z" fill="#e2dfcd" stroke-width="6"/>
+    <path d="m23 197 48 9 129-8 11 13-14 16-151 7-27-16Z" fill="#a6a696" stroke-width="6"/>
+    <path d="m51 180 51-40 12 9-46 40Z" fill="#a9362e" stroke-width="5"/>
+    <path d="m112 90 17 1m-14 12 17 1m-13 11 16 2m-11 11 17 2m-11 9 21 6" fill="none" stroke-width="5"/>
+    <path d="m116 88 10 18-9 9 18 11-5 15 21 8" fill="none" stroke="#f5efdc" stroke-width="4"/>
+    <path d="m37 215 5 10m8-9 5 11m10-10 4 12m10-12 4 12m10-13 4 12m12-13 3 12m13-13 4 11m12-12 4 11m13-13 4 11m11-13 5 11" fill="none" stroke-width="3"/>
+    <path d="m69 96-7 14m42-34-4 16m-61 73 6-12m128 11 9 4m-12 12 17 2m-115 14 13-1" fill="none" stroke-width="3"/>
+    <path d="m160 183 32 4m-117-63-5 12" fill="none" stroke="#f5efdc" stroke-width="4"/>
+    <path d="m53 161 8-4m-3 10 11-7m-7 13 13-9m-6 14 12-8m75 19 9 7m-1-10 9 7m-1-9 10 7m-70-98-9 17m4-25-9 17m-37 39 6 7m-8 2 7 8" fill="none" stroke-width="2"/>
+    <path d="m28 82-9-4m134-37 6-11m68 154 8 4" fill="none" stroke-width="4"/>
+  </g>
+</svg>

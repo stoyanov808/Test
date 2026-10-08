@@ -1,0 +1,11 @@
+node_modules/
+dist/
+release/*
+!release/PLAY.html
+!release/START.cjs
+!release/START-WINDOWS.bat
+!release/READ-ME.txt
+!release/Oswald-LICENSE.txt
+!release/RELEASE-INFO.json
+!release/ot-staroto-test.zip
+test-results/
