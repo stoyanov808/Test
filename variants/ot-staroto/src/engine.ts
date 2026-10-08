@@ -1,24 +1,31 @@
-import type { Cascade, Cell, Character, Choice, Coin, Feature, Grid, Matrix, Regular, Round, Session, Spin, Tier, Win } from './types';
+import type { Cascade, Cell, Character, Choice, Coin, CoinWave, Feature, GodShot, Grid, Matrix, Regular, Round, Session, Spin, Tier, Win } from './types';
 
-export const REGULARS: Regular[] = ['bottle', 'cash', 'chain', 'cassette', 'sneaker', 'crown'];
+export const REGULARS: Regular[] = ['bottle', 'cash', 'chain', 'cassette', 'sneaker', 'crown', 'lighter', 'dice', 'ring'];
 export const TIER_ORDER: Tier[] = ['ruse', 'lux', 'edge', 'old'];
 export const BONUS_NAMES: Record<Tier, string> = { ruse: 'Русенско Варено', lux: 'ЛУКС', edge: 'Ръба са обажда', old: 'ОТ СТАРОТО' };
 export const TIER_CHARACTERS: Record<Tier, Character[]> = { ruse: ['left'], lux: ['right'], edge: ['middle'], old: ['left', 'middle', 'right'] };
 export const CONFIG = {
-  version: 1, reels: 6, rows: 5, maxWin: 19999, minimumNaturalSymbols: 7,
+  version: 2, reels: 6, rows: 5, maxWin: 19999, minimumNaturalSymbols: 1,
   betsCents: [10, 20, 50, 100, 200, 500, 1000, 2000], defaultBetCents: 20, initialBalanceCents: 1000000,
-  buyCosts: { ruse: 35, lux: 250, edge: 600, old: 2500 }, xbetCosts: { left: 1.5, right: 45, middle: 4.5 }, godCost: 3000,
-  godShotChance: .0256, godShots: 6,
+  buyCosts: { ruse: 95, lux: 150, edge: 1800, old: 2500 }, xbetCosts: { left: 8.5, right: 2.7, middle: 25 }, godCost: 3000,
+  godShots: 5, godMinimumShots: 4, godExtraShotChance: .32,
+  coinRevealChance: .35, coinCollectorChance: .015, coinLocalChance: .04, coinGlobalChance: .005,
   weights: {
     base: { scatter: .009, left: .0015, middle: .00025, right: .0003 },
     bonus: { scatter: .018, left: .002, middle: .0221, right: .008 },
-    super: { scatter: .018, left: .002, middle: .0065, right: .008 },
+    super: { scatter: .018, left: .0015, middle: .0052, right: .008 },
+  },
+  coinValues: [1, 2, 3, 5, 10, 20, 50, 100, 250, 500],
+  coinValueWeights: {
+    base: [6500, 2000, 700, 400, 200, 100, 60, 25, 10, 5],
+    bonus: [1500, 1500, 1500, 1500, 1000, 1000, 1000, 700, 250, 50],
   },
   shooterRepeatChance: .9, shooterExistingWildChance: .75,
   paytable: {
-    bottle: { 8: .03, 10: .07, 12: .2 }, cash: { 8: .04, 10: .1, 12: .3 },
-    chain: { 8: .06, 10: .15, 12: .4 }, cassette: { 8: .08, 10: .2, 12: .6 },
-    sneaker: { 8: .12, 10: .3, 12: .8 }, crown: { 8: .2, 10: .5, 12: 1.4 },
+    bottle: { 8: .6, 10: 1.5, 12: 5 }, cash: { 8: .8, 10: 2, 12: 6 },
+    chain: { 8: 1.2, 10: 3, 12: 10 }, cassette: { 8: 1.5, 10: 4, 12: 12 },
+    sneaker: { 8: 2, 10: 5, 12: 16 }, crown: { 8: 3, 10: 8, 12: 32 },
+    lighter: { 8: .5, 10: 1.2, 12: 3 }, dice: { 8: 2.5, 10: 6, 12: 24 }, ring: { 8: 5, 10: 12, 12: 50 },
   } satisfies Record<Regular, Record<8 | 10 | 12, number>>,
 } as const;
 
@@ -57,7 +64,7 @@ export function costCents(betCents: number, choice: Choice): number {
 
 export function createSession(seed = 0x59a10, balanceCents: number = CONFIG.initialBalanceCents): Session {
   if (!money(balanceCents)) throw new Error('Invalid balance');
-  return { version: 1, balanceCents, betCents: CONFIG.defaultBetCents, rngState: new Rng(seed).state, sequence: 0, pending: null, history: [] };
+  return { version: 2, balanceCents, betCents: CONFIG.defaultBetCents, rngState: new Rng(seed).state, sequence: 0, pending: null, history: [] };
 }
 
 function randomRegular(rng: Rng): Regular { return REGULARS[rng.int(REGULARS.length)]; }
@@ -89,18 +96,20 @@ function makeGrid(rng: Rng, tier: Tier | null, sticky: Matrix): { grid: Grid; mu
   return { grid, multipliers };
 }
 
-export function wildGlobal(grid: Grid, multipliers: Matrix): number {
-  return Math.max(1, allCells().reduce((sum, c) => sum + (grid[c.reel][c.row] === 'wild' ? multipliers[c.reel][c.row] || 1 : 0), 0));
+export function wildGlobal(grid: Grid, multipliers: Matrix, inactive: Cell[] = []): number {
+  const exhausted = new Set(inactive.map(key));
+  return Math.max(1, allCells().reduce((sum, c) => sum + (grid[c.reel][c.row] === 'wild' && !exhausted.has(key(c)) ? multipliers[c.reel][c.row] || 1 : 0), 0));
 }
 
-export function evaluate(grid: Grid, multipliers: Matrix, betCents: number, budgetCents = MONEY_LIMIT): Win[] {
-  const globalMultiplier = wildGlobal(grid, multipliers);
+export function evaluate(grid: Grid, multipliers: Matrix, betCents: number, budgetCents = MONEY_LIMIT, inactive: Cell[] = []): Win[] {
+  const globalMultiplier = wildGlobal(grid, multipliers, inactive);
+  const exhausted = new Set(inactive.map(key));
   const positions = allCells();
   let remaining = budgetCents;
   return REGULARS.flatMap(symbol => {
     const actual = positions.filter(c => grid[c.reel][c.row] === symbol);
     if (actual.length < CONFIG.minimumNaturalSymbols) return [];
-    const cells = positions.filter(c => grid[c.reel][c.row] === symbol || grid[c.reel][c.row] === 'wild');
+    const cells = positions.filter(c => grid[c.reel][c.row] === symbol || (grid[c.reel][c.row] === 'wild' && !exhausted.has(key(c))));
     if (cells.length < 8) return [];
     const bracket = cells.length >= 12 ? 12 : cells.length >= 10 ? 10 : 8;
     const baseMultiplier = CONFIG.paytable[symbol][bracket];
@@ -113,15 +122,15 @@ export function evaluate(grid: Grid, multipliers: Matrix, betCents: number, budg
 
 export interface FeatureContext {
   grid: Grid; multipliers: Matrix; sticky: Matrix; marks: boolean[][];
-  tier: Tier | null; betCents: number; budgetCents?: number;
+  tier: Tier | null; betCents: number; budgetCents?: number; inactiveWilds?: Cell[];
 }
 export interface FeatureResult {
   feature: Feature; grid: Grid; multipliers: Matrix; sticky: Matrix; marks: boolean[][];
 }
 
-function coinValue(rng: Rng): number {
-  const values = [1, 2, 3, 5, 10, 20, 50, 100, 250, 500];
-  const weights = [6500, 2000, 700, 400, 200, 100, 60, 25, 10, 5];
+function coinValue(rng: Rng, tier: Tier | null): number {
+  const values = CONFIG.coinValues;
+  const weights = tier === 'lux' || tier === 'old' ? CONFIG.coinValueWeights.bonus : CONFIG.coinValueWeights.base;
   let ticket = rng.int(weights.reduce((a, b) => a + b, 0));
   for (let i = 0; i < values.length; i++) { ticket -= weights[i]; if (ticket < 0) return values[i]; }
   return 500;
@@ -132,7 +141,7 @@ export function resolveFeature(which: Character, source: Cell, context: FeatureC
   const grid = cloneGrid(context.grid), multipliers = cloneMatrix(context.multipliers), sticky = cloneMatrix(context.sticky), marks = context.marks.map(column => [...column]);
   grid[source.reel][source.row] = randomRegular(rng);
   multipliers[source.reel][source.row] = 0;
-  const targets: Cell[] = [], hits: Feature['hits'] = [], coins: Coin[] = [];
+  const targets: Cell[] = [], hits: Feature['hits'] = [], coins: Coin[] = [], coinWaves: CoinWave[] = [];
   let payoutCents = 0;
   const eligible = allCells().filter(c => key(c) !== key(source) && (regular(grid[c.reel][c.row]) || grid[c.reel][c.row] === 'wild'));
   if (which === 'left') {
@@ -158,41 +167,77 @@ export function resolveFeature(which: Character, source: Cell, context: FeatureC
     }
   } else if (which === 'right') {
     const cells = allCells().filter(c => marks[c.reel][c.row]);
-    let globalCoinFactor = 1;
-    for (const c of cells) {
-      const chance = rng.next();
-      let kind: Coin['kind'] = chance < .935 ? 'value' : chance < .945 ? 'collector' : chance < .995 ? 'multiplier' : 'global';
-      // One collector and one global coin event per reveal prevent exponential
-      // self-collection; extra rolls become ordinary values, shown honestly.
-      if ((kind === 'collector' || kind === 'global') && coins.some(c => c.kind === kind)) kind = 'value';
-      const value = kind === 'value' ? coinValue(rng) : kind === 'collector' ? 0 : [2, 3, 5][rng.int(kind === 'global' ? 2 : 3)];
-      coins.push({ cell: c, kind, value, payoutCents: 0 });
-      targets.push(c); marks[c.reel][c.row] = false;
-      if (kind === 'global') globalCoinFactor = value;
-    }
-    const values = coins.filter(c => c.kind === 'value');
-    const localFactors = new Map<Coin, number>();
-    for (const modifier of coins.filter(c => c.kind === 'multiplier')) {
-      if (!values.length) continue;
-      const recipient = values[rng.int(values.length)];
-      modifier.target = { ...recipient.cell };
-      localFactors.set(recipient, Math.max(localFactors.get(recipient) || 1, modifier.value));
-    }
-    for (const value of values) value.payoutCents = Math.round(context.betCents * value.value * (localFactors.get(value) || 1) * globalCoinFactor);
-    const collection = values.reduce((sum, c) => sum + c.payoutCents, 0);
-    for (const collector of coins.filter(c => c.kind === 'collector')) {
-      collector.value = collection / context.betCents;
-      collector.payoutCents = collection;
-    }
-    let budget = context.budgetCents ?? MONEY_LIMIT;
-    for (const coin of coins) {
-      coin.payoutCents = Math.min(budget, coin.payoutCents);
-      budget -= coin.payoutCents; payoutCents += coin.payoutCents;
+    targets.push(...cells);
+    for (const c of cells) marks[c.reel][c.row] = false;
+    const copyCoin = (coin: Coin): Coin => ({ ...coin, cell: { ...coin.cell }, ...(coin.target ? { target: { ...coin.target } } : {}) });
+    let retained: Coin[] = [];
+    let vacancies = cells;
+    const budget = context.budgetCents ?? MONEY_LIMIT;
+    // Every repeat is caused by a newly revealed collector. A retained collector
+    // sits quietly until another one absorbs it; it cannot collect itself again.
+    while (vacancies.length) {
+      const existing = retained.map(copyCoin);
+      const revealed: Coin[] = vacancies.map(c => {
+        const chance = rng.next();
+        let kind: Coin['kind'];
+        if (chance >= CONFIG.coinRevealChance) kind = 'empty';
+        else if (chance < CONFIG.coinCollectorChance) kind = 'collector';
+        else if (chance < CONFIG.coinCollectorChance + CONFIG.coinGlobalChance) kind = 'global';
+        else if (chance < CONFIG.coinCollectorChance + CONFIG.coinGlobalChance + CONFIG.coinLocalChance) kind = 'multiplier';
+        else kind = 'value';
+        const value = kind === 'value' ? coinValue(rng, context.tier) : kind === 'collector' || kind === 'empty' ? 0 : [2, 3, 5][rng.int(kind === 'global' ? 2 : 3)];
+        return { cell: { ...c }, kind, value, payoutCents: kind === 'value' ? Math.round(context.betCents * value) : 0 };
+      });
+      const wave: CoinWave = { index: coinWaves.length, existingCollectors: existing.map(copyCoin), coins: revealed.map(copyCoin), modifierEvents: [], collections: [], retainedCollectors: [], cleared: [], repeat: false };
+      // The wave receipt keeps the raw reveal amounts. All modifiers happen only
+      // after every fresh coin is revealed and are recorded in presentation order.
+      const monetary = [...revealed.filter(c => c.kind === 'value'), ...existing];
+      for (const modifier of revealed.filter(c => c.kind === 'multiplier' || c.kind === 'global')) {
+        if (!monetary.length) continue;
+        const recipients = modifier.kind === 'global' ? monetary : [monetary[rng.int(monetary.length)]];
+        if (modifier.kind === 'multiplier') modifier.target = { ...recipients[0].cell };
+        wave.modifierEvents.push({ source: { ...modifier.cell }, targets: recipients.map(c => ({ ...c.cell })), factor: modifier.value, global: modifier.kind === 'global' });
+        for (const recipient of recipients) {
+          recipient.payoutCents = Math.min(MONEY_LIMIT, recipient.payoutCents * modifier.value);
+          recipient.value = recipient.payoutCents / context.betCents;
+        }
+      }
+      let pool = monetary;
+      const newCollectors = revealed.filter(c => c.kind === 'collector');
+      for (const collector of newCollectors) {
+        const amount = pool.reduce((sum, c) => sum + c.payoutCents, 0);
+        wave.collections.push({ collector: { ...collector.cell }, sources: pool.map(copyCoin), collectedCents: amount, valueBeforeCents: collector.payoutCents, valueAfterCents: amount });
+        collector.payoutCents = amount; collector.value = amount / context.betCents;
+        pool = [collector];
+      }
+      if (newCollectors.length) {
+        retained = pool.map(copyCoin);
+        const surviving = new Set(retained.map(c => key(c.cell)));
+        wave.cleared = cells.filter(c => !surviving.has(key(c))).map(c => ({ ...c }));
+        vacancies = wave.cleared;
+        wave.repeat = vacancies.length > 0 && retained.reduce((sum, c) => sum + c.payoutCents, 0) < budget;
+      } else {
+        retained = existing;
+        vacancies = [];
+      }
+      wave.retainedCollectors = retained.map(copyCoin);
+      coinWaves.push(wave);
+      if (!wave.repeat) {
+        const terminal = newCollectors.length ? retained : [...revealed, ...retained];
+        let remaining = budget;
+        for (const coin of terminal) {
+          const paid = Math.min(remaining, coin.payoutCents);
+          coins.push({ ...copyCoin(coin), payoutCents: paid });
+          remaining -= paid; payoutCents += paid;
+        }
+        break;
+      }
     }
   }
+
   return {
     grid, multipliers, sticky, marks,
-    feature: { character: which, source: { ...source }, targets, hits, coins, globalMultiplier: wildGlobal(grid, multipliers), gridAfter: cloneGrid(grid), wildMultipliersAfter: cloneMatrix(multipliers), payoutCents },
+    feature: { character: which, source: { ...source }, targets, hits, coins, coinWaves, globalMultiplier: wildGlobal(grid, multipliers, context.inactiveWilds), gridAfter: cloneGrid(grid), wildMultipliersAfter: cloneMatrix(multipliers), payoutCents },
   };
 }
 
@@ -205,8 +250,8 @@ export function retrigger(scatters: number, tier: Tier): { addedSpins: number; u
 }
 
 interface State { sticky: Matrix; marks: boolean[][]; markEnabled: boolean }
-function playSpin(rng: Rng, tier: Tier | null, betCents: number, index: number, before: number, roundTotal: number, capCents: number, state: State, guaranteed?: Character): Spin {
-  let { grid, multipliers } = makeGrid(rng, tier, state.sticky);
+function playSpin(rng: Rng, tier: Tier | null, betCents: number, index: number, before: number, roundTotal: number, capCents: number, state: State, guaranteed?: Character, suppliedGrid?: Grid): Spin {
+  let { grid, multipliers } = suppliedGrid ? { grid: cloneGrid(suppliedGrid), multipliers: blankMatrix() } : makeGrid(rng, tier, state.sticky);
   if (guaranteed) {
     const candidates = allCells().filter(c => !state.sticky[c.reel][c.row]);
     const chosen = candidates[rng.int(candidates.length)];
@@ -214,6 +259,7 @@ function playSpin(rng: Rng, tier: Tier | null, betCents: number, index: number, 
   }
   const initialGrid = cloneGrid(grid), initialWildMultipliers = cloneMatrix(multipliers);
   const cascades: Cascade[] = [], presentCharacters: Character[] = [];
+  const exhausted = new Map<string, Cell>();
   let payoutCents = 0;
   for (let cascadeIndex = 0; ; cascadeIndex++) {
     if (cascadeIndex >= 500) throw new Error('Cascade safety limit reached; round was not charged');
@@ -224,28 +270,34 @@ function playSpin(rng: Rng, tier: Tier | null, betCents: number, index: number, 
       if (which === 'right') state.markEnabled = true;
     }
     const applyFeature = (c: Cell, which: Character): void => {
-      const result = resolveFeature(which, c, { grid, multipliers, sticky: state.sticky, marks: state.marks, tier, betCents, budgetCents: capCents - roundTotal - payoutCents }, rng);
+      const result = resolveFeature(which, c, { grid, multipliers, sticky: state.sticky, marks: state.marks, tier, betCents, budgetCents: capCents - roundTotal - payoutCents, inactiveWilds: [...exhausted.values()] }, rng);
       grid = result.grid; multipliers = result.multipliers; state.sticky = result.sticky; state.marks = result.marks;
       features.push(result.feature); payoutCents += result.feature.payoutCents;
     };
     for (const { c, which } of sources) if (which !== 'right') applyFeature(c, which);
-    let wins = evaluate(grid, multipliers, betCents, capCents - roundTotal - payoutCents);
+    let wins = evaluate(grid, multipliers, betCents, capCents - roundTotal - payoutCents, [...exhausted.values()]);
     // A right badge remains visible while combinations clear; its coin reveal follows
     // those real marked boxes rather than arriving before any boxes can be marked.
     if (!wins.length) {
       for (const { c, which } of sources) if (which === 'right') applyFeature(c, which);
-      wins = evaluate(grid, multipliers, betCents, capCents - roundTotal - payoutCents);
+      wins = evaluate(grid, multipliers, betCents, capCents - roundTotal - payoutCents, [...exhausted.values()]);
     }
+    const inactiveWilds = [...exhausted.values()].map(c => ({ ...c }));
+    const globalMultiplier = wildGlobal(grid, multipliers, inactiveWilds);
     const winPayout = wins.reduce((sum, win) => sum + win.payoutCents, 0);
     payoutCents += winPayout;
     const combined = new Map<string, Cell>();
     for (const win of wins) for (const c of win.cells) if (!state.sticky[c.reel][c.row]) combined.set(key(c), c);
     const removed = [...combined.values()];
+    // A sticky Wild can join all matching wins in this batch, then rests until
+    // the next free spin. Its coordinate and multiplier stay in the bonus state.
+    for (const win of wins) for (const c of win.cells) if (state.sticky[c.reel][c.row]) exhausted.set(key(c), { ...c });
     if (state.markEnabled) for (const c of removed) state.marks[c.reel][c.row] = true;
     const cascade: Cascade = {
       index: cascadeIndex, grid: incoming, wildMultipliers: incomingMultipliers, stickyWilds: cloneMatrix(state.sticky), features,
       resolvedGrid: cloneGrid(grid), resolvedWildMultipliers: cloneMatrix(multipliers), marks: state.marks.map(column => [...column]),
-      wins, removed, globalMultiplier: wildGlobal(grid, multipliers), payoutCents: features.reduce((sum, f) => sum + f.payoutCents, 0) + winPayout,
+      inactiveWilds, inactiveWildsAfter: [...exhausted.values()].map(c => ({ ...c })),
+      wins, removed, globalMultiplier, payoutCents: features.reduce((sum, f) => sum + f.payoutCents, 0) + winPayout,
     };
     cascades.push(cascade);
     if (!removed.length || roundTotal + payoutCents >= capCents) break;
@@ -268,7 +320,7 @@ function playSpin(rng: Rng, tier: Tier | null, betCents: number, index: number, 
   const awarded = tier ? null : bonusAward(scatters);
   const extension = tier ? retrigger(scatters, tier) : { addedSpins: 0, upgradedTo: null };
   return {
-    index, tier, initialGrid, initialWildMultipliers, cascades, finalGrid: cloneGrid(grid), finalWildMultipliers: cloneMatrix(multipliers), marks: state.marks.map(column => [...column]), presentCharacters,
+    index, tier, initialGrid, initialWildMultipliers, cascades, finalGrid: cloneGrid(grid), finalWildMultipliers: cloneMatrix(multipliers), marks: state.marks.map(column => [...column]), presentCharacters, inactiveWilds: [...exhausted.values()].map(c => ({ ...c })),
     scatters, spinsRemainingBefore: before, spinsRemainingAfter: tier ? Math.max(0, before - 1 + extension.addedSpins) : awarded ? awarded === 'old' ? 15 : 10 : 0,
     addedSpins: extension.addedSpins, upgradedTo: extension.upgradedTo, bonusAwarded: awarded, payoutCents, roundTotalCents: roundTotal + payoutCents, maxWin: roundTotal + payoutCents >= capCents,
   };
@@ -282,19 +334,29 @@ export function playRound(session: Session, choice: Choice): Session {
   if (session.balanceCents < cost) throw new Error('Insufficient credits');
   const rng = new Rng(session.rngState), capCents = session.betCents * CONFIG.maxWin;
   const state: State = { sticky: blankMatrix(), marks: blankMarks(), markEnabled: false };
-  const spins: Spin[] = [], godHits: boolean[] = [];
+  const spins: Spin[] = [], godHits: boolean[] = [], godShots: GodShot[] = [];
+  let godGrid: Grid | null = null;
   if (choice.kind === 'god') {
-    for (let i = 0; i < CONFIG.godShots; i++) {
-      const hit = rng.next() < CONFIG.godShotChance;
-      godHits.push(hit); if (hit) break;
+    godGrid = Array.from({ length: CONFIG.reels }, () => Array.from({ length: CONFIG.rows }, () => randomRegular(rng)));
+    const maxCell = allCells()[rng.int(CONFIG.reels * CONFIG.rows)];
+    godGrid[maxCell.reel][maxCell.row] = 'max';
+    const shots = CONFIG.godMinimumShots + Number(rng.next() < CONFIG.godExtraShotChance);
+    const remainingTargets = allCells();
+    for (let i = 0; i < shots; i++) {
+      const target = remainingTargets.splice(rng.int(remainingTargets.length), 1)[0];
+      const hit = key(target) === key(maxCell);
+      godShots.push({ target, character: CHARS[i % CHARS.length], hit });
+      godHits.push(hit);
+      if (hit) break;
     }
   }
+
   let payoutCents = godHits.some(Boolean) ? capCents : 0;
   let activeTier: Tier | null = choice.kind === 'buy' ? choice.tier : null;
   let triggerTier: Tier | null = activeTier;
   let remaining = activeTier ? activeTier === 'old' ? 15 : 10 : 0;
   if (!payoutCents && !activeTier) {
-    const spin = playSpin(rng, null, session.betCents, spins.length, 0, payoutCents, capCents, state, choice.kind === 'xbet' ? choice.character : undefined);
+    const spin = playSpin(rng, null, session.betCents, spins.length, 0, payoutCents, capCents, state, choice.kind === 'xbet' ? choice.character : undefined, godGrid ?? undefined);
     spins.push(spin); payoutCents += spin.payoutCents;
     activeTier = spin.bonusAwarded; triggerTier = activeTier; remaining = spin.spinsRemainingAfter;
     // Base Wilds are never carried into a newly triggered bonus.
@@ -309,7 +371,7 @@ export function playRound(session: Session, choice: Choice): Session {
   }
   const round: Round = {
     id: session.sequence + 1, choice: { ...choice }, betCents: session.betCents, costCents: cost, payoutCents, capCents, maxWin: payoutCents >= capCents,
-    godHits, spins, initialRng: session.rngState, finalRng: rng.state, triggerTier,
+    godHits, godGrid, godShots, spins, initialRng: session.rngState, finalRng: rng.state, triggerTier,
   };
   const balanceCents = session.balanceCents - cost + payoutCents;
   if (!money(balanceCents)) throw new Error('Credit limit reached; round was not charged');
@@ -338,7 +400,7 @@ function validRound(r: unknown): r is Round {
 export function deserializeSession(raw: string): Session | null {
   try {
     const s = JSON.parse(raw) as Session;
-    if (s.version !== 1 || !money(s.balanceCents) || !(CONFIG.betsCents as readonly number[]).includes(s.betCents) || !integer(s.rngState, 1, 0xffffffff) || !integer(s.sequence, 0, Number.MAX_SAFE_INTEGER) || !Array.isArray(s.history) || s.history.length > 12) return null;
+    if (s.version !== 2 || !money(s.balanceCents) || !(CONFIG.betsCents as readonly number[]).includes(s.betCents) || !integer(s.rngState, 1, 0xffffffff) || !integer(s.sequence, 0, Number.MAX_SAFE_INTEGER) || !Array.isArray(s.history) || s.history.length > 12) return null;
     if (s.pending !== null && !validRound(s.pending)) return null;
     if (!s.history.every(validRound)) return null;
     for (let i = 1; i < s.history.length; i++) if (s.history[i].id !== s.history[i - 1].id + 1 || s.history[i].initialRng !== s.history[i - 1].finalRng) return null;

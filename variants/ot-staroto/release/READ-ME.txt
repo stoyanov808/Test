@@ -1,32 +1,40 @@
-OT STAROTO - local test build
+OT STAROTO - version 2 server-based prototype
 
+Recommended: download or clone the complete GitHub repository.
+With Node 20.19+ or 22.12+ installed, open its root folder in a terminal:
+  npm ci
+  npm start
+Keep the terminal open and use the localhost address Vite prints.
+For a production server run npm run build, then npm run preview.
+
+This smaller ZIP is a secondary self-contained distribution:
 1. Extract the complete ZIP into a folder.
-2. Double-click PLAY.html in Chrome, Edge or Firefox.
-3. Select BG/EN at the top. Open the menu and Settings to choose your
-   own music, gunshot, feature and win audio files.
+2. Windows with Node installed: double-click START-WINDOWS.bat.
+   Other systems: run node START.cjs in that folder.
+3. Keep the terminal open and visit http://127.0.0.1:5188/.
+   Close an earlier launcher if port 5188 is occupied.
+The smaller distribution needs no npm installation or internet access.
+Direct file:// launch has not been validated.
 
-If your browser blocks local files or saving:
-- Windows with Node installed: double-click START-WINDOWS.bat.
-- Other systems with Node installed: run node START.cjs in this folder.
-- Keep the terminal open while playing and use the address it prints.
-- Port 5188 must be free. Close an earlier launcher before starting again.
-
-Internet access, npm installation and GitHub access are not required.
+Choose BG/EN and custom music, gunshot, feature and win audio in Settings.
 All credits are virtual euros. Saves and uploaded audio stay in the browser.
-Changing the browser or launch method may create a separate save.
+Changing the browser or server address may create a separate save.
 
-Left character: Wild throws; sticky in his bonus.
-Middle character: Wild shots; repeat hits double their multiplier.
-Right character: marked winning cells and coin reveals.
-Four bonuses: Rusensko Vareno, LUKS, Raba sa obazhda, OT STAROTO.
-Super buy: 2,500x. God Spin: 3,000x. Whole-round maximum: 19,999x.
+Left: Wild throws, sticky in his bonus. Used sticky Wilds rest for the
+remainder of a spin and recharge on the next free spin.
+Middle: Wild shots; repeat hits double their multiplier.
+Right: marked winning cells and sparse coin reveals. Each wave reveals
+completely before collection. The collector stays, other coins clear,
+and a new collector can absorb the retained collector in a later wave.
+God Spin: the car shoots recorded random grid cells. MAX is one real
+symbol; only a shot hitting that symbol triggers the maximum award.
 
-This is a prototype for testing, with original, uncertified mathematics.
-The approximately 96% goal has not been established as theoretical RTP.
-Cloud checks covered the exact embedded HTML over a local HTTP server;
-direct file:// launch was blocked by the cloud browser's managed policy.
+Bonus prices: Rusensko Vareno 95x, LUKS 150x, Raba sa obazhda 1,800x,
+OT STAROTO 2,500x. God Spin 3,000x. Whole-round maximum 19,999x.
 
-Source, payout samples and 25 real screenshots are in the GitHub repository:
+35 engine tests, 69 browser checks and 180,000 sampled rounds passed.
+This is an uncertified prototype with original mathematics. Base sampled
+return is approximately 90%; a theoretical 96% return is not established.
+The full confidence intervals, receipts and 36 current screenshots are
+documented in the repository:
 https://github.com/stoyanov808/Test/tree/main/variants/ot-staroto
-
-The repository also includes this ready-to-play ZIP under release/.

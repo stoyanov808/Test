@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" role="img" aria-label="Wild star">
+ <defs><pattern id="engrave" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(28)"><path d="M0 0v8" stroke="#6d522a" stroke-width="1.3"/></pattern></defs>
+ <g stroke="#100f0d" stroke-linejoin="round" stroke-linecap="round">
+  <path d="m180 27 45 78 87 15-58 68 14 103-88-43-86 43 11-102-58-65 88-19Z" fill="#0b0d0b" stroke-width="13"/>
+  <path d="m178 38 40 74 81 15-56 62 14 87-78-39-75 39 11-87-56-60 79-17Z" fill="#b49950" stroke="#f0dba0" stroke-width="3"/>
+  <path d="m179 57 28 64 70 12-49 53 10 65-59-30-58 31 9-66-48-50 67-13Z" fill="#e9d392" stroke-width="4"/>
+  <path d="m57 130 62 16-15 91 12-43-37-40Zm155-10 58 14-40 50 8 62-21-46 1-58Z" fill="url(#engrave)" stroke="none"/>
+  <path d="m28 151 293-7 4 93-298 11Z" fill="#151513" stroke-width="9"/>
+  <path d="m39 159 269-7m-268 83 272-11" fill="none" stroke="#b94133" stroke-width="3"/>
+  <g fill="none" stroke="#f8f0d4" stroke-width="10"><path d="m55 178 10 44 13-30 13 29 8-45m20 0 1 44m-10-44h21m-19 45h20m21-47 1 45h27m23-47 1 46h12q32-1 31-24t-32-22Z"/></g>
+  <path d="m59 90 15 14m-26 4 13 6m244-21-14 14m22 5-12 7M69 286l14-17m208 16-18-14M177 12v11" fill="none" stroke="#d0aa54" stroke-width="5"/>
+  <path d="m139 113 5-10m-12 11 5-12m83 138 9 5m-12 1 9 6m-17-1 9 5m-85-118 8 2m-10 5 8 3m-10 4 9 4" fill="none" stroke-width="2"/>
+ </g>
+</svg>

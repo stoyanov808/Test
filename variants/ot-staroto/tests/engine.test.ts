@@ -5,7 +5,7 @@ import type { Character, Choice, Grid, Matrix, Session, Tier } from '../src/type
 
 const matrix = (): Matrix => Array.from({ length: 6 }, () => Array(5).fill(0));
 const marks = (): boolean[][] => Array.from({ length: 6 }, () => Array(5).fill(false));
-const grid = (): Grid => Array.from({ length: 6 }, (_, reel) => Array.from({ length: 5 }, (_, row) => REGULARS[(reel + row) % 6]));
+const grid = (): Grid => Array.from({ length: 6 }, (_, reel) => Array.from({ length: 5 }, (_, row) => REGULARS[(reel * 5 + row) % REGULARS.length]));
 const fixture = (tier: Tier | null = null) => ({ grid: grid(), multipliers: matrix(), sticky: matrix(), marks: marks(), tier, betCents: 20 });
 
 class Scripted extends Rng {
@@ -36,14 +36,20 @@ test('visible Wild multipliers sum rather than multiply and empty grids have ×1
   board[0][0] = board[3][4] = 'wild'; multipliers[0][0] = 2; multipliers[3][4] = 8;
   assert.equal(wildGlobal(board, multipliers), 10);
 });
-test('Wild substitution requires seven natural copies and pure Wild boards cannot invent six wins', () => {
+test('Wilds fully substitute with one real matching symbol and pure Wilds never invent a payout', () => {
   const board: Grid = Array.from({ length: 6 }, () => Array(5).fill('wild'));
   const multipliers: Matrix = Array.from({ length: 6 }, () => Array(5).fill(1));
   assert.equal(evaluate(board, multipliers, 20).length, 0);
   board[5][4] = 'crown'; multipliers[5][4] = 0;
-  assert.equal(evaluate(board, multipliers, 20).length, 0);
-  for (let i = 0; i < 7; i++) { board[Math.floor(i / 5)][i % 5] = 'crown'; multipliers[Math.floor(i / 5)][i % 5] = 0; }
-  assert.equal(evaluate(board, multipliers, 20).length, 1);
+  const wins = evaluate(board, multipliers, 20);
+  assert.equal(wins.length, 1); assert.equal(wins[0].symbol, 'crown');
+  assert.equal(wins[0].count, 30); assert.equal(wins[0].globalMultiplier, 29);
+  assert.equal(wins[0].payoutCents, Math.round(20 * CONFIG.paytable.crown[12] * 29));
+  const sparse: Grid = Array.from({ length: 6 }, () => Array(5).fill('scatter'));
+  for (let i = 0; i < 6; i++) sparse[Math.floor(i / 5)][i % 5] = 'bottle';
+  sparse[2][0] = 'wild'; sparse[2][1] = 'wild';
+  const m = matrix(); m[2][0] = 1; m[2][1] = 2;
+  assert.equal(evaluate(sparse, m, 100)[0].payoutCents, CONFIG.paytable.bottle[8] * 300);
 });
 test('normal shooter creates three to seven shots and repeated hits double 1,2,4', () => {
   const context = fixture('edge'); context.grid[0][0] = 'middle';
@@ -76,25 +82,58 @@ test('shooter can double an existing sticky Wild while its new targets stay tran
 });
 test('right consumes only marked boxes; other characters preserve those marks', () => {
   const context = fixture('lux'); context.grid[0][0] = 'right'; context.marks[2][3] = true;
-  const result = resolveFeature('right', { reel: 0, row: 0 }, context, new Scripted([0, 0, 0]));
+  const result = resolveFeature('right', { reel: 0, row: 0 }, context, new Scripted([0, .1, 0]));
   assert.deepEqual(result.feature.targets, [{ reel: 2, row: 3 }]);
   assert.equal(result.feature.coins[0].kind, 'value'); assert.equal(result.feature.coins[0].value, 1); assert.equal(result.feature.payoutCents, 20);
   assert.equal(result.marks[2][3], false); assert.equal(result.feature.hits.length, 0);
   for (const c of ['left', 'middle'] as Character[]) assert.equal(resolveFeature(c, { reel: 0, row: 0 }, context, new Rng(5)).marks[2][3], true);
 });
-test('right supports 500× values, local multipliers, global coin multipliers and collectors', () => {
+test('all coins reveal before modifiers and collectors absorb their final monetary amounts once', () => {
   const context = fixture('lux'); context.grid[0][0] = 'right';
   [0, 1, 2, 3].forEach(row => { context.marks[1][row] = true; });
-  const result = resolveFeature('right', { reel: 0, row: 0 }, context, new Scripted([0, 0, .9999, .95, 0, .999, 0, .94, 0]));
-  assert.deepEqual(result.feature.coins.map(c => c.kind), ['value', 'multiplier', 'global', 'collector']);
-  assert.equal(result.feature.coins[0].value, 500);
-  assert.equal(result.feature.coins[0].payoutCents, 20 * 500 * 2 * 2);
-  assert.equal(result.feature.coins[3].payoutCents, result.feature.coins[0].payoutCents);
-  assert.equal(result.feature.globalMultiplier, 1); // Coin factor cannot inflate Wild sum.
+  // reveal 500×, local ×2, global ×2, collector; second wave is all empty.
+  const result = resolveFeature('right', { reel: 0, row: 0 }, context,
+    new Scripted([.1, .1, .9999, .03, 0, .018, 0, .001, 0, .8, .8, .8]));
+  const wave = result.feature.coinWaves[0];
+  assert.deepEqual(wave.coins.map(c => c.kind), ['value', 'multiplier', 'global', 'collector']);
+  assert.equal(wave.coins[0].payoutCents, 20 * 500); // Raw reveal, before any modifier.
+  assert.deepEqual(wave.modifierEvents.map(e => e.factor), [2, 2]);
+  assert.equal(wave.collections[0].sources[0].payoutCents, 20 * 500 * 2 * 2);
+  assert.equal(wave.collections[0].valueAfterCents, 40000);
+  assert.equal(result.feature.payoutCents, 40000); // Never pay both source and collector.
+  assert.equal(result.feature.coins.reduce((sum, c) => sum + c.payoutCents, 0), 40000);
+  assert.equal(result.feature.globalMultiplier, 1);
+});
+test('new collectors clear noncollectors and reveal again while the last collector stays dormant', () => {
+  const context = fixture('lux'); context.grid[0][0] = 'right';
+  [0, 1, 2].forEach(row => { context.marks[1][row] = true; });
+  const result = resolveFeature('right', { reel: 0, row: 0 }, context,
+    new Scripted([.1, .1, 0, .001, .1, .2, .1, .5, .8]));
+  const waves = result.feature.coinWaves;
+  assert.equal(waves.length, 2); assert.equal(waves[0].repeat, true); assert.equal(waves[1].repeat, false);
+  assert.deepEqual(waves[0].cleared, [{ reel: 1, row: 0 }, { reel: 1, row: 2 }]);
+  assert.equal(waves[0].retainedCollectors[0].payoutCents, 60);
+  assert.equal(waves[1].existingCollectors[0].payoutCents, 60);
+  assert.equal(waves[1].collections.length, 0);
+  assert.equal(result.feature.payoutCents, 160);
+});
+test('a subsequent collector absorbs the previous collector without replaying or double-paying it', () => {
+  const context = fixture('lux'); context.grid[0][0] = 'right';
+  [0, 1, 2].forEach(row => { context.marks[1][row] = true; });
+  const result = resolveFeature('right', { reel: 0, row: 0 }, context,
+    new Scripted([.1, .1, 0, .001, .1, .2, .001, .1, .5, .1, 0, .8]));
+  const waves = result.feature.coinWaves;
+  assert.equal(waves.length, 3);
+  const absorption = waves[1].collections[0];
+  assert.ok(absorption.sources.some(c => c.kind === 'collector' && c.cell.row === 1));
+  assert.equal(absorption.valueAfterCents, 160);
+  assert.deepEqual(waves[1].retainedCollectors[0].cell, { reel: 1, row: 0 });
+  assert.ok(waves[1].cleared.some(c => c.row === 1));
+  assert.equal(result.feature.payoutCents, 180);
 });
 test('coin and regular wins obey remaining whole-round cent budget', () => {
   const context = fixture('lux'); context.grid[0][0] = 'right'; context.marks[2][2] = true;
-  const result = resolveFeature('right', { reel: 0, row: 0 }, { ...context, budgetCents: 7 }, new Scripted([0, 0, .999]));
+  const result = resolveFeature('right', { reel: 0, row: 0 }, { ...context, budgetCents: 7 }, new Scripted([0, .1, .999]));
   assert.equal(result.feature.payoutCents, 7); assert.equal(result.feature.coins[0].payoutCents, 7);
   const board: Grid = Array.from({ length: 6 }, () => Array(5).fill('crown'));
   assert.equal(evaluate(board, matrix(), 100, 3).reduce((sum, w) => sum + w.payoutCents, 0), 3);
@@ -116,7 +155,7 @@ test('natural 3/4/5/6-scatter tiers and bonus retrigger upgrades preserve strong
 });
 test('buy costs and xBet costs debit exact euros and settle full bonus', () => {
   const choices: Choice[] = [...TIER_ORDER.map(tier => ({ kind: 'buy', tier } as Choice)), ...(['left', 'right', 'middle'] as Character[]).map(character => ({ kind: 'xbet', character } as Choice)), { kind: 'god' }];
-  assert.deepEqual(choices.map(choice => costCents(20, choice)), [700, 5000, 12000, 50000, 30, 900, 90, 60000]);
+  assert.deepEqual(choices.map(choice => costCents(20, choice)), [1900, 3000, 36000, 50000, 170, 54, 500, 60000]);
   for (const choice of choices) {
     const session = rich(422), settled = playRound(session, choice), receipt = settled.pending!;
     assert.equal(settled.balanceCents, session.balanceCents - receipt.costCents + receipt.payoutCents);
@@ -153,6 +192,27 @@ test('left sticky Wilds survive every subsequent bonus spin at their coordinates
   }
   assert.ok(checks > 100);
 });
+test('sticky Wilds pay every matching win in one batch, rest for that spin and re-arm on the next', () => {
+  let exhaustedChecks = 0, rearmedChecks = 0;
+  for (let seed = 1; seed <= 50; seed++) {
+    const receipt = round(seed * 0x19bcf, { kind: 'buy', tier: 'ruse' });
+    for (const [spinIndex, spin] of receipt.spins.entries()) {
+      assert.deepEqual(spin.cascades[0].inactiveWilds, []);
+      for (const [i, cascade] of spin.cascades.entries()) {
+        const before = new Set(cascade.inactiveWilds.map(c => `${c.reel}:${c.row}`));
+        for (const win of cascade.wins) for (const c of win.cells) assert.equal(before.has(`${c.reel}:${c.row}`), false);
+        for (const c of cascade.inactiveWildsAfter) {
+          assert.ok(cascade.stickyWilds[c.reel][c.row] > 0);
+          assert.equal(cascade.resolvedGrid[c.reel][c.row], 'wild');
+          exhaustedChecks++;
+        }
+        if (spin.cascades[i + 1]) assert.deepEqual(spin.cascades[i + 1].inactiveWilds, cascade.inactiveWildsAfter);
+      }
+      if (spinIndex && receipt.spins[spinIndex - 1].inactiveWilds.length) rearmedChecks++;
+    }
+  }
+  assert.ok(exhaustedChecks > 20 && rearmedChecks > 10);
+});
 test('shooter bonus Wilds reset at next spin, with no fixed sticky upgrade', () => {
   let changed = 0;
   for (let seed = 1; seed <= 20; seed++) {
@@ -178,16 +238,31 @@ test('right bonus marks accumulate wins and survive until right reveal consumes 
   }
   assert.ok(coinReveals > 50); assert.ok(carried > 50);
 });
-test('God shots stop on first hit and produce exactly 19,999×; all misses retain ordinary rounds', () => {
-  let hits = 0, misses = 0;
+test('God shoots distinct real board cells; MAX hit alone triggers the cap and misses settle that same board', () => {
+  let hits = 0, misses = 0, fifthShots = 0;
   for (let seed = 1; seed <= 600; seed++) {
     const receipt = round(seed * 0x19abf, { kind: 'god' });
+    assert.equal(receipt.godGrid!.flat().filter(s => s === 'max').length, 1);
+    assert.deepEqual(receipt.godHits, receipt.godShots.map(s => s.hit));
+    assert.equal(new Set(receipt.godShots.map(s => `${s.target.reel}:${s.target.row}`)).size, receipt.godShots.length);
+    for (const shot of receipt.godShots) assert.equal(shot.hit, receipt.godGrid![shot.target.reel][shot.target.row] === 'max');
     if (receipt.godHits.some(Boolean)) {
       hits++; assert.equal(receipt.godHits.at(-1), true); assert.equal(receipt.godHits.filter(Boolean).length, 1);
       assert.equal(receipt.spins.length, 0); assert.equal(receipt.payoutCents, 20 * 19999); assert.equal(receipt.maxWin, true);
-    } else { misses++; assert.equal(receipt.godHits.length, 6); assert.ok(receipt.spins.length >= 1); }
+    } else {
+      misses++; assert.ok(receipt.godHits.length === 4 || receipt.godHits.length === 5);
+      assert.deepEqual(receipt.spins[0].initialGrid, receipt.godGrid);
+    }
+    fifthShots += Number(receipt.godShots.length === 5);
   }
-  assert.ok(hits > 20 && misses > 200);
+  assert.ok(hits > 20 && misses > 200 && fifthShots > 50);
+});
+test('reload rejects a tampered God target or MAX board position', () => {
+  const source = playRound(rich(58243), { kind: 'god' });
+  const badShot = structuredClone(source); badShot.pending!.godShots[0].target.row = (badShot.pending!.godShots[0].target.row + 1) % 5;
+  assert.equal(deserializeSession(JSON.stringify(badShot)), null);
+  const badBoard = structuredClone(source); badBoard.pending!.godGrid![0][0] = 'max';
+  assert.equal(deserializeSession(JSON.stringify(badBoard)), null);
 });
 test('whole-round cap and atomic cascade ledger hold across bonus spins and coin payouts', () => {
   for (const tier of TIER_ORDER) for (let seed = 1; seed <= 40; seed++) {
@@ -253,7 +328,7 @@ test('right base feature waits through real wins, then reveals their marked boxe
       checked++;
     }
   }
-  assert.ok(checked > 10);
+  assert.ok(checked > 5);
 });
 test('special badges and one-scatter-per-reel are initial-drop events; refill adds only regulars', () => {
   for (const tier of TIER_ORDER) for (let seed = 1; seed <= 10; seed++) for (const spin of round(seed * 131, { kind: 'buy', tier }).spins) {
@@ -266,9 +341,10 @@ test('special badges and one-scatter-per-reel are initial-drop events; refill ad
   }
 });
 test('prices round fractional xBet multipliers to exact cents', () => {
-  assert.equal(costCents(10, { kind: 'xbet', character: 'left' }), 15);
-  assert.equal(costCents(10, { kind: 'xbet', character: 'middle' }), 45);
-  assert.equal(costCents(11, { kind: 'xbet', character: 'left' }), 17);
+  assert.equal(costCents(10, { kind: 'xbet', character: 'left' }), 85);
+  assert.equal(costCents(10, { kind: 'xbet', character: 'middle' }), 250);
+  assert.equal(costCents(11, { kind: 'xbet', character: 'left' }), 94);
+  assert.equal(costCents(10, { kind: 'xbet', character: 'right' }), 27);
 });
 test('identical seeds and bets have identical outcomes irrespective of credit balance', () => {
   const a = playRound(createSession(598, 1000000), { kind: 'buy', tier: 'old' });

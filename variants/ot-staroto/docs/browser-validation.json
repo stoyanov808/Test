@@ -1,14 +1,14 @@
 {
-  "capturedAt": "2026-10-08T13:43:30.089Z",
+  "capturedAt": "2026-10-08T15:04:13.469Z",
   "variant": "ot-staroto",
   "mode": "full",
-  "checksPassed": 51,
+  "checksPassed": 69,
   "checks": [
     {
       "name": "Canvas loads all authored symbols, three character crops and the painted yard",
       "details": {
-        "assets": 16,
-        "successfulImages": 16
+        "assets": 25,
+        "successfulImages": 25
       }
     },
     {
@@ -16,6 +16,9 @@
     },
     {
       "name": "BG / EN setting persists across reload and all displayed credits use EUR"
+    },
+    {
+      "name": "V1 settled wallet migrates once into V2 with the same credits and stake; original V1 bytes remain intact"
     },
     {
       "name": "Two immediate Spin clicks create one committed round and one debit"
@@ -34,8 +37,8 @@
     {
       "name": "Actual canvas descent uses independent timing, restrained rocking and contact squash without symbol overtaking",
       "details": {
-        "frames": 29,
-        "uniqueStarts": 29,
+        "frames": 35,
+        "uniqueStarts": 28,
         "uniqueFlights": 22
       }
     },
@@ -45,9 +48,9 @@
     {
       "name": "left xBet: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
-        "costCents": 30,
-        "payoutCents": 33,
-        "finalRng": 2890711346
+        "costCents": 170,
+        "payoutCents": 12,
+        "finalRng": 1437599121
       }
     },
     {
@@ -59,9 +62,9 @@
     {
       "name": "middle xBet: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
-        "costCents": 90,
-        "payoutCents": 40,
-        "finalRng": 1324236901
+        "costCents": 500,
+        "payoutCents": 48,
+        "finalRng": 2496955744
       }
     },
     {
@@ -73,25 +76,25 @@
     {
       "name": "right xBet: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
-        "costCents": 900,
-        "payoutCents": 1023,
-        "finalRng": 3074934128
+        "costCents": 54,
+        "payoutCents": 252,
+        "finalRng": 3109127632
       }
     },
     {
       "name": "ruse buy has the correct cast and cost, then visibly stages 3 scatters on distinct reels",
       "details": [
         {
-          "reel": 3,
+          "reel": 0,
+          "row": 0
+        },
+        {
+          "reel": 1,
           "row": 4
         },
         {
-          "reel": 4,
-          "row": 3
-        },
-        {
-          "reel": 5,
-          "row": 3
+          "reel": 2,
+          "row": 0
         }
       ]
     },
@@ -101,28 +104,28 @@
     {
       "name": "ruse purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
-        "costCents": 700,
-        "payoutCents": 82,
-        "finalRng": 1071066517
+        "costCents": 1900,
+        "payoutCents": 24,
+        "finalRng": 3914006537
       }
     },
     {
       "name": "lux buy has the correct cast and cost, then visibly stages 4 scatters on distinct reels",
       "details": [
         {
-          "reel": 0,
-          "row": 4
+          "reel": 1,
+          "row": 2
         },
         {
           "reel": 2,
-          "row": 3
+          "row": 1
+        },
+        {
+          "reel": 3,
+          "row": 4
         },
         {
           "reel": 4,
-          "row": 3
-        },
-        {
-          "reel": 5,
           "row": 2
         }
       ]
@@ -133,9 +136,9 @@
     {
       "name": "lux purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
-        "costCents": 5000,
-        "payoutCents": 2769,
-        "finalRng": 1746699151
+        "costCents": 3000,
+        "payoutCents": 1904,
+        "finalRng": 2007927538
       }
     },
     {
@@ -143,23 +146,23 @@
       "details": [
         {
           "reel": 1,
-          "row": 3
+          "row": 0
         },
         {
           "reel": 2,
-          "row": 2
+          "row": 3
         },
         {
           "reel": 3,
-          "row": 2
+          "row": 4
         },
         {
           "reel": 4,
-          "row": 2
+          "row": 4
         },
         {
           "reel": 5,
-          "row": 0
+          "row": 3
         }
       ]
     },
@@ -169,9 +172,9 @@
     {
       "name": "edge purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
-        "costCents": 12000,
-        "payoutCents": 724,
-        "finalRng": 3385473611
+        "costCents": 36000,
+        "payoutCents": 18304,
+        "finalRng": 1026917148
       }
     },
     {
@@ -179,7 +182,7 @@
       "details": [
         {
           "reel": 0,
-          "row": 2
+          "row": 1
         },
         {
           "reel": 1,
@@ -191,15 +194,15 @@
         },
         {
           "reel": 3,
-          "row": 1
+          "row": 3
         },
         {
           "reel": 4,
-          "row": 0
+          "row": 4
         },
         {
           "reel": 5,
-          "row": 2
+          "row": 4
         }
       ]
     },
@@ -210,8 +213,8 @@
       "name": "old purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 50000,
-        "payoutCents": 8738,
-        "finalRng": 885367107
+        "payoutCents": 2280,
+        "finalRng": 3541950170
       }
     },
     {
@@ -220,9 +223,200 @@
     {
       "name": "Repeated-shooter fixture: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
-        "costCents": 90,
-        "payoutCents": 40,
-        "finalRng": 1324236901
+        "costCents": 500,
+        "payoutCents": 48,
+        "finalRng": 2496955744
+      }
+    },
+    {
+      "name": "Wilds genuinely complete paid symbol groups with fewer than seven natural copies and apply their recorded multiplier",
+      "details": {
+        "seed": 29,
+        "wins": [
+          {
+            "symbol": "crown",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 1
+              },
+              {
+                "reel": 0,
+                "row": 2
+              },
+              {
+                "reel": 1,
+                "row": 0
+              },
+              {
+                "reel": 1,
+                "row": 4
+              },
+              {
+                "reel": 2,
+                "row": 4
+              },
+              {
+                "reel": 3,
+                "row": 1
+              },
+              {
+                "reel": 3,
+                "row": 3
+              },
+              {
+                "reel": 4,
+                "row": 4
+              },
+              {
+                "reel": 5,
+                "row": 1
+              }
+            ],
+            "count": 9,
+            "baseMultiplier": 3,
+            "globalMultiplier": 35,
+            "payoutCents": 2100
+          },
+          {
+            "symbol": "dice",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 2
+              },
+              {
+                "reel": 1,
+                "row": 2
+              },
+              {
+                "reel": 2,
+                "row": 0
+              },
+              {
+                "reel": 2,
+                "row": 4
+              },
+              {
+                "reel": 3,
+                "row": 1
+              },
+              {
+                "reel": 3,
+                "row": 2
+              },
+              {
+                "reel": 4,
+                "row": 0
+              },
+              {
+                "reel": 5,
+                "row": 1
+              }
+            ],
+            "count": 8,
+            "baseMultiplier": 2.5,
+            "globalMultiplier": 35,
+            "payoutCents": 1750
+          },
+          {
+            "symbol": "ring",
+            "cells": [
+              {
+                "reel": 0,
+                "row": 2
+              },
+              {
+                "reel": 0,
+                "row": 3
+              },
+              {
+                "reel": 0,
+                "row": 4
+              },
+              {
+                "reel": 2,
+                "row": 4
+              },
+              {
+                "reel": 3,
+                "row": 1
+              },
+              {
+                "reel": 4,
+                "row": 1
+              },
+              {
+                "reel": 4,
+                "row": 2
+              },
+              {
+                "reel": 5,
+                "row": 1
+              }
+            ],
+            "count": 8,
+            "baseMultiplier": 5,
+            "globalMultiplier": 35,
+            "payoutCents": 3500
+          }
+        ]
+      }
+    },
+    {
+      "name": "Useful Wild paid-combination fixture: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 500,
+        "payoutCents": 7350,
+        "finalRng": 351866627
+      }
+    },
+    {
+      "name": "Sticky Wilds visibly become inactive after contributing a winning cascade while retaining their location and multiplier"
+    },
+    {
+      "name": "A real tumble preserves each falling survivor identity and ordering while sticky Wild cells stay fixed"
+    },
+    {
+      "name": "The next free spin recharges the same sticky Wild cells and multipliers without moving them"
+    },
+    {
+      "name": "Sticky Wild spend / recharge fixture: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 1900,
+        "payoutCents": 4898,
+        "finalRng": 413202278
+      }
+    },
+    {
+      "name": "All fresh coins are revealed together before any modifier or collector begins",
+      "details": {
+        "seed": 163,
+        "wave": 0,
+        "freshReveals": 8
+      }
+    },
+    {
+      "name": "Collection removes all non-collector coins, retains only the recorded collector and then permits a new reveal"
+    },
+    {
+      "name": "The next reveal starts with only the previously retained collector, while all cleared cells reveal fresh outcomes"
+    },
+    {
+      "name": "A later collector absorbs the previous collector and its actual accumulated value exactly once"
+    },
+    {
+      "name": "The terminal collector and fresh coins award their final recorded sum once; every collection frame follows complete reveals",
+      "details": {
+        "payoutCents": 340
+      }
+    },
+    {
+      "name": "Collector reveal / clear / reroll chain: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 54,
+        "payoutCents": 420,
+        "finalRng": 4275668377
       }
     },
     {
@@ -232,8 +426,8 @@
       "name": "Natural bonus with retrigger: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 20,
-        "payoutCents": 73,
-        "finalRng": 3183584485
+        "payoutCents": 19706,
+        "finalRng": 2836687781
       }
     },
     {
@@ -242,17 +436,17 @@
     {
       "name": "Retrigger fixture: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
-        "costCents": 5000,
-        "payoutCents": 4823,
-        "finalRng": 1055613752
+        "costCents": 3000,
+        "payoutCents": 284,
+        "finalRng": 3541038576
       }
     },
     {
       "name": "Reloaded pending super bonus charged exactly once: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 50000,
-        "payoutCents": 6306,
-        "finalRng": 1901619961
+        "payoutCents": 7034,
+        "finalRng": 97994505
       }
     },
     {
@@ -261,22 +455,22 @@
     {
       "name": "Count-up genuinely crosses 100× and advances its cutscene stage",
       "details": {
-        "ratio": 126.4,
+        "ratio": 127.3,
         "visible": [
           {
             "opacity": 1,
             "complete": true,
-            "width": 110
+            "width": 122
           },
           {
             "opacity": 0,
             "complete": true,
-            "width": 110
+            "width": 107
           },
           {
             "opacity": 0,
             "complete": true,
-            "width": 110
+            "width": 104
           }
         ]
       }
@@ -284,22 +478,22 @@
     {
       "name": "Count-up genuinely crosses 500× and advances its cutscene stage",
       "details": {
-        "ratio": 534.75,
+        "ratio": 621.2,
         "visible": [
           {
             "opacity": 1,
             "complete": true,
-            "width": 110
+            "width": 122
           },
           {
             "opacity": 1,
             "complete": true,
-            "width": 110
+            "width": 138
           },
           {
-            "opacity": 0,
+            "opacity": 0.901379,
             "complete": true,
-            "width": 110
+            "width": 107
           }
         ]
       }
@@ -307,22 +501,22 @@
     {
       "name": "Count-up genuinely crosses 1000× and advances its cutscene stage",
       "details": {
-        "ratio": 1272.95,
+        "ratio": 1909.1,
         "visible": [
           {
             "opacity": 1,
             "complete": true,
-            "width": 110
+            "width": 158
           },
           {
             "opacity": 1,
             "complete": true,
-            "width": 110
+            "width": 214
           },
           {
             "opacity": 1,
             "complete": true,
-            "width": 110
+            "width": 104
           }
         ]
       }
@@ -331,12 +525,25 @@
       "name": "Large recorded win count-up: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 50000,
-        "payoutCents": 94737,
-        "finalRng": 3544942270
+        "payoutCents": 44684,
+        "finalRng": 3439666798
       }
     },
     {
-      "name": "God Mode uses recorded hit shots to award exactly 19,999×, with its actual car-entry cutscene"
+      "name": "God car fires each recorded random board target; the single MAX symbol awards exactly 19,999× only when hit",
+      "details": {
+        "seed": 1,
+        "shots": [
+          {
+            "target": {
+              "reel": 0,
+              "row": 0
+            },
+            "character": "left",
+            "hit": true
+          }
+        ]
+      }
     },
     {
       "name": "Max-win cutscene shows the exact capped EUR amount and remains until Continue"
@@ -346,7 +553,18 @@
       "details": {
         "costCents": 60000,
         "payoutCents": 399980,
-        "finalRng": 270369
+        "finalRng": 53684993
+      }
+    },
+    {
+      "name": "Missed God shots continue the same dealt board into its ordinary receipt without inventing a MAX hit"
+    },
+    {
+      "name": "God miss same-board settlement: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 60000,
+        "payoutCents": 0,
+        "finalRng": 366804586
       }
     },
     {
@@ -360,340 +578,559 @@
       "details": {
         "width": 400,
         "scroll": 400,
-        "canvas": 384,
+        "canvas": 592,
         "buttons": [
           {
             "id": "spin",
-            "width": 43,
-            "x": 269.59375,
-            "right": 312.59375
+            "width": 72,
+            "x": 275,
+            "right": 347
           },
           {
             "id": "buy",
-            "width": 55.890625,
-            "x": 64.890625,
-            "right": 120.78125
+            "width": 71.546875,
+            "x": 14,
+            "right": 85.546875
           },
           {
             "id": "god",
-            "width": 60.75,
-            "x": 274.34375,
-            "right": 335.09375
+            "width": 71.546875,
+            "x": 14,
+            "right": 85.546875
           },
           {
             "id": "settings",
-            "width": 30,
-            "x": 364,
-            "right": 394
+            "width": 35,
+            "x": 357,
+            "right": 392
           }
         ]
       }
     },
     {
-      "name": "Exact self-contained PLAY.html loads all inline art and has no development hooks",
+      "name": "640×360 landscape keeps Spin, feature buys, settings, language and stake controls fully within the viewport",
       "details": {
-        "attempted": true,
-        "verified": false,
-        "limitation": "Cloud Chromium managed policy blocks file:// navigation (ERR_BLOCKED_BY_ADMINISTRATOR). The exact self-contained HTML is checked over a private static loopback server; direct file-origin launch remains unverified in this environment."
+        "width": 640,
+        "height": 360,
+        "scroll": 640,
+        "controls": [
+          {
+            "id": "spin",
+            "x": 480.09375,
+            "y": 310.8125,
+            "width": 48,
+            "height": 48,
+            "right": 528.09375,
+            "bottom": 358.8125
+          },
+          {
+            "id": "buy",
+            "x": 81.90625,
+            "y": 310.3125,
+            "width": 65,
+            "height": 24,
+            "right": 146.90625,
+            "bottom": 334.3125
+          },
+          {
+            "id": "god",
+            "x": 81.90625,
+            "y": 335.3125,
+            "width": 65,
+            "height": 24,
+            "right": 146.90625,
+            "bottom": 359.3125
+          },
+          {
+            "id": "settings",
+            "x": 506,
+            "y": 2,
+            "width": 40,
+            "height": 40,
+            "right": 546,
+            "bottom": 42
+          },
+          {
+            "id": "language",
+            "x": 461,
+            "y": 2,
+            "width": 40,
+            "height": 40,
+            "right": 501,
+            "bottom": 42
+          },
+          {
+            "id": "bet",
+            "x": 342.28125,
+            "y": 325.703125,
+            "width": 75,
+            "height": 29,
+            "right": 417.28125,
+            "bottom": 354.703125
+          },
+          {
+            "id": "xbet",
+            "x": 152.90625,
+            "y": 326.3125,
+            "width": 77,
+            "height": 24,
+            "right": 229.90625,
+            "bottom": 350.3125
+          }
+        ]
       }
     },
     {
-      "name": "Standalone purchased bonus survives pending reload, charges once and settles exact engine credits / RNG"
+      "name": "Reduced-motion setting removes rocking and squash during a real drop while retaining symbol identities"
     },
     {
-      "name": "Standalone base game remains playable after bought-bonus reload and settlement"
+      "name": "Reduced-motion deterministic settlement: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 20,
+        "payoutCents": 0,
+        "finalRng": 3134293908
+      }
     },
     {
-      "name": "Standalone xBet guarantees its selected character and settles exact cents and RNG"
+      "name": "Production server loads the exact built bundle and all art without development hooks",
+      "details": {
+        "bundleFiles": 19,
+        "hashes": {
+          "Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652",
+          "Oswald.ttf": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
+          "art/README.md": "8ef38bbb8a37e95ccbd3806c0b5a276e1eba1ea337acdc17558170125dda0984",
+          "art/character-left-actions.png": "05994651b9fce1312c2ef8c88a5379840bbaf54714b05be6f1154c7b6c65796d",
+          "art/character-middle-actions.png": "3db9e8643bcef68a0d75d4c24c9a04203169d8df0d4b42f31bc996b767d8aab9",
+          "art/character-right-actions.png": "015535a2102b24a967ff2ecec9dc42926de381766341c71fdbf2e20b122e4c83",
+          "art/coin-global.svg": "b8102841961d9d55f4622f74aa4ddd71a1b42511ccbe04f7a0a9964730773028",
+          "art/coin-multiplier.svg": "8b2cc17a679d0308f6a503eac85babab0e0f2ba178a3068dad2ad886b6e24394",
+          "art/coin.svg": "cebbdb905324f52308f4d5a48d2e1cf02173363ed5fe526544d4ab3df96d0248",
+          "art/collector.svg": "a7a17d19663a8c5a1e13aad0daacd4532ad2ffcc5baf8ba5517fea6cdaa6ccd4",
+          "art/getaway-car.png": "6f282a829f2de61061e07f9b78aa3a996c3ec9033f22794fabde8f53989aec02",
+          "art/max.svg": "6b99ffd09c0c3e45173c89a45aced1024ac101b86a7e4a473cdfed2d7861e603",
+          "art/ruse-yard.png": "e74b3a330359ba094795cb39b3efd1f1e18249429ec8a4d780903423e03679fd",
+          "art/scatter-premium.svg": "5f0cbf5bee081556a0ee63467c75f033285cc1a859c458aaafc58e9d94c4a232",
+          "art/symbols-premium.png": "38404eff5bd9c73caa782c746e4888dabe441028f602075e4e618697afcc707b",
+          "art/wild-premium.svg": "15f89e75bd7cce0518c35f8c8245870f59010c80e3f1c143884809b2b6d6339e",
+          "assets/index-BUpVmvzj.css": "e673085e66120f18b55d8e0341566cb5855e6fed322bb4fa7acfeecab8f78eb5",
+          "assets/index-L_PwxB4X.js": "2cfe1f0c4cdc582745522c25fc2c406b524ef86351e5507e9741bc3dc30fdb35",
+          "index.html": "9e7df19e342bad458770a6f3ef8374f0b4712f1b882055542d09296015cecec5"
+        }
+      }
     },
     {
-      "name": "Standalone decodes a local WAV and retains / removes it through IndexedDB across reload"
+      "name": "Server-built purchased bonus survives pending reload, charges once and settles exact engine credits / RNG"
     },
     {
-      "name": "No JavaScript errors, asset failures or external network requests; standalone requires no secondary resources"
+      "name": "Server-built base game remains playable after bought-bonus reload and settlement"
+    },
+    {
+      "name": "Server-built xBet guarantees its selected character and settles exact cents and RNG"
+    },
+    {
+      "name": "Server-built decodes a local WAV and retains / removes it through IndexedDB across reload"
+    },
+    {
+      "name": "No JavaScript errors, asset failures or external network requests in development and production servers"
     }
   ],
   "sourceHashes": {
-    "package.json": "3fa32d16d018d4f60eb89dfe763d8fdcdff68481e1532a175a039fb0982534b3",
+    "package.json": "f739dc2eb3dbcdf663b707baa2a18c59581c387e5f43ef07525ffe9729ef2738",
     "public/Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652",
     "public/Oswald.ttf": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
-    "public/art/bottle.svg": "7e084157c2acce717f5ecd16603cd40710e59096b7dea7512906866840eb2616",
-    "public/art/car.svg": "b5fb94e21970a85797cd352b959ba9aaf16477a0de751716dbd0e37b2ad36453",
-    "public/art/cash.svg": "12f7477a42c1feb49f35fb145675244b933bb10aa51670ab80f68964fe59ffc7",
-    "public/art/cassette.svg": "42bab18fbe7220177bcb96345f9e257b550af59c9a2a5e7b69a4cd7ed8049918",
-    "public/art/chain.svg": "33bc661073ac754eac55ace995bcd09a0964047d6bda7e5008cf5c5a081f01b2",
-    "public/art/characters.png": "fb1f789a3a8ca9cbc0537f150df312eeda75d88f4dde7b088003d0b0970d039f",
-    "public/art/crown.svg": "10dcd7022cecd57d1ad87e4f57ed0f507bf6f0a9ef7a55e55a0b546a5666ca96",
-    "public/art/feature-left.svg": "959f1cd1491d1daed317a9583a0d95e70ca0431f161a1f78ac3e70b89a9f90f1",
-    "public/art/feature-middle.svg": "ba459d3916f28c6d3ba86f7f25c78701f77513638bc27a1495706c958c4004bc",
-    "public/art/feature-right.svg": "2e4a4ad195b25e8b70286617a4c94cb1eecf5781f4f5f4bbd64d9db11b333095",
+    "public/art/character-left-actions.png": "05994651b9fce1312c2ef8c88a5379840bbaf54714b05be6f1154c7b6c65796d",
+    "public/art/character-middle-actions.png": "3db9e8643bcef68a0d75d4c24c9a04203169d8df0d4b42f31bc996b767d8aab9",
+    "public/art/character-right-actions.png": "015535a2102b24a967ff2ecec9dc42926de381766341c71fdbf2e20b122e4c83",
+    "public/art/coin-global.svg": "b8102841961d9d55f4622f74aa4ddd71a1b42511ccbe04f7a0a9964730773028",
+    "public/art/coin-multiplier.svg": "8b2cc17a679d0308f6a503eac85babab0e0f2ba178a3068dad2ad886b6e24394",
+    "public/art/coin.svg": "cebbdb905324f52308f4d5a48d2e1cf02173363ed5fe526544d4ab3df96d0248",
+    "public/art/collector.svg": "a7a17d19663a8c5a1e13aad0daacd4532ad2ffcc5baf8ba5517fea6cdaa6ccd4",
+    "public/art/getaway-car.png": "6f282a829f2de61061e07f9b78aa3a996c3ec9033f22794fabde8f53989aec02",
+    "public/art/max.svg": "6b99ffd09c0c3e45173c89a45aced1024ac101b86a7e4a473cdfed2d7861e603",
     "public/art/ruse-yard.png": "e74b3a330359ba094795cb39b3efd1f1e18249429ec8a4d780903423e03679fd",
-    "public/art/scatter.svg": "b69685eb563dc06f3e7396dbdfefc9ee758c22241f31543049ff55e3f05fe9f9",
-    "public/art/sneaker.svg": "83c5f5b3aed31f44d2520d16e766262d9c53630ed87c534ae3c9854c745171b5",
-    "public/art/wild.svg": "b548fd047ac458128ab38e74515f41b969ea5476f3f9689669e509dd6b55c4ec",
-    "scripts/browser-test.ts": "a160ff551e72aacbcc7cbc268b2f9b3dc5ebb6f77039cfcef57a9d000244d2d5",
+    "public/art/scatter-premium.svg": "5f0cbf5bee081556a0ee63467c75f033285cc1a859c458aaafc58e9d94c4a232",
+    "public/art/symbols-premium.png": "38404eff5bd9c73caa782c746e4888dabe441028f602075e4e618697afcc707b",
+    "public/art/wild-premium.svg": "15f89e75bd7cce0518c35f8c8245870f59010c80e3f1c143884809b2b6d6339e",
+    "scripts/browser-test.ts": "d4d4b7d6ad650f736d304ca4dd8d3c81201406b508c3e6b11dbf211def40444b",
     "scripts/standalone.mjs": "ae155c18c8a29a59593b708df3e5505b0a2aa25c9867faf3b6ab8f659a65b636",
-    "src/art.ts": "934be3f769c7864d61a44e0cbf3bb6a4db7869daad1cd5f1cd993c7bbd20d8c9",
+    "src/art.ts": "1e3b2d465423225418a0ad403ffb5b2e3d76d5f858d03912bd9af3cf1cc9c881",
     "src/audio.ts": "744690378615a09d8a4d9b9f8bea1f2ea69fae581aaccc2ae218930a6b751cc3",
-    "src/engine.ts": "ea1ee6dd309db3714e01a737c3a05d300c926aedac6516296d2c8d1216241c29",
-    "src/main.ts": "57b22b263ba2a69c8612aae3d50102c32d24be5dc4fa99372ab4b888a684c595",
-    "src/renderer.ts": "9188bfa811fc6b850fc7e0d690156cac09c572a7ad17f59144e6ddb96c296f97",
-    "src/style.css": "a0cc8541be22eac131c0e10b5e327767986f979c95d3cad1d4742e2811d63cb3",
-    "src/types.ts": "7a05f5cd2a33ef32581964f919d607ce00fe6802180f539321b34b8f6c2ce947",
+    "src/engine.ts": "34523ce66144cf305922e78bbc9b29ed3ec2cdd33ca3a04ad51c31f42faba50b",
+    "src/main.ts": "75254a56ce108334a3030740915128333cf63b39d06bb2919d59c3fe93a344c2",
+    "src/renderer.ts": "5677afdaeccd9af370087e07d576c7da785740d83b5a91857d7ef4e1f342c7fe",
+    "src/style.css": "6c9de0eb04a8cb31fabd82997cb216011c55cb73bf84688c4cda8ab3671da2c9",
+    "src/types.ts": "1c69df508f06db26a1004099832f911ddde53bf60bb8c69bdb8c3a001f260005",
     "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
     "vite.config.ts": "b2a152f0b35a592680eab27a4a91d0aa928a2d2d7694221b207ca5420bdc9127"
   },
   "captures": [
     {
       "file": "docs/screenshots/character-left-reveal.png",
-      "sha256": "56467da9d2312cc379a5ab2ee2d9cedb1eb7149ee71f83003f40258496894347",
+      "sha256": "b4fbdef05f7176687e981398c69e330108783eeb2c3a0a034b7bbd72fb98410d",
       "seed": 1,
       "choice": {
         "kind": "xbet",
         "character": "left"
       },
-      "costCents": 30,
-      "payoutCents": 33,
+      "costCents": 170,
+      "payoutCents": 12,
       "maxWin": false,
       "note": "Real xBet source reveal before recorded feature targets."
     },
     {
       "file": "docs/screenshots/character-left-impact.png",
-      "sha256": "29a9d9f54b8fb1e948c1f1c54ef9bc4e8841d7e57cad833885be4ef9c26cd51a",
+      "sha256": "8010c83664e36141162464c962f0aa189b5eadcfbfb788a9282fc88ebb89eddc",
       "seed": 1,
       "choice": {
         "kind": "xbet",
         "character": "left"
       },
-      "costCents": 30,
-      "payoutCents": 33,
+      "costCents": 170,
+      "payoutCents": 12,
       "maxWin": false,
       "note": "Actual recorded Wild throw / shot / coin target after reveal."
     },
     {
       "file": "docs/screenshots/character-middle-reveal.png",
-      "sha256": "ab42b4849d308149f075cb7abba7cfb50fd71b1d320bb37236779b73387db41b",
+      "sha256": "a6a0fab2338c7c4c1e3cf4b7d1368100b3816e5e1f434f4a68dd0401b3264ed7",
       "seed": 1,
       "choice": {
         "kind": "xbet",
         "character": "middle"
       },
-      "costCents": 90,
-      "payoutCents": 40,
+      "costCents": 500,
+      "payoutCents": 48,
       "maxWin": false,
       "note": "Real xBet source reveal before recorded feature targets."
     },
     {
       "file": "docs/screenshots/character-middle-impact.png",
-      "sha256": "6f4b768ce6bac08f846e068486f6b6b81c2626bcfb55c0bce8fd011de462bee7",
+      "sha256": "7f03a5ec9fa092f8fae4cfc0cf211a4656d0401dbaf76bacd4ce43ce15109754",
       "seed": 1,
       "choice": {
         "kind": "xbet",
         "character": "middle"
       },
-      "costCents": 90,
-      "payoutCents": 40,
+      "costCents": 500,
+      "payoutCents": 48,
       "maxWin": false,
       "note": "Actual recorded Wild throw / shot / coin target after reveal."
     },
     {
       "file": "docs/screenshots/character-right-reveal.png",
-      "sha256": "5945bcaf3dee1bf20df9346962c856ca453d696c218e2eef9a97d7120904eb8a",
+      "sha256": "bdc4d02a071ad0c4605628fe99ee72b340cf7d1cdffe4f16065a4eb9f965913a",
       "seed": 1,
       "choice": {
         "kind": "xbet",
         "character": "right"
       },
-      "costCents": 900,
-      "payoutCents": 1023,
+      "costCents": 54,
+      "payoutCents": 252,
       "maxWin": false,
       "note": "Real xBet source reveal before recorded feature targets."
     },
     {
       "file": "docs/screenshots/character-right-impact.png",
-      "sha256": "1d13899f6b9c12cc1e10a7a3d523ef72b809f08f774d895ece33a493da28b378",
+      "sha256": "03dfe3805a4b131a80033e1a344450bd396edc54260cf4ea3591cb058f691232",
       "seed": 1,
       "choice": {
         "kind": "xbet",
         "character": "right"
       },
-      "costCents": 900,
-      "payoutCents": 1023,
+      "costCents": 54,
+      "payoutCents": 252,
       "maxWin": false,
       "note": "Actual recorded Wild throw / shot / coin target after reveal."
     },
     {
       "file": "docs/screenshots/bonus-ruse-scatters.png",
-      "sha256": "4af2911cf854c3014e0f90a6ce9eea75c36ca02eebcd2eccb28dc8ea09ccd1f5",
+      "sha256": "1c165ad31df76122d01a27e4c015758edb92267233617302b39f3e14fc46edb0",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "ruse"
       },
-      "costCents": 700,
-      "payoutCents": 82,
+      "costCents": 1900,
+      "payoutCents": 24,
       "maxWin": false,
       "note": "Bought invitations genuinely land before the bonus intro."
     },
     {
       "file": "docs/screenshots/bonus-ruse-counter.png",
-      "sha256": "987e4b27fd3617ede876e25289e6341227f12abb76e138589e8117787c6a733a",
+      "sha256": "3e7be0ac2a5a542e07c56a503e968ede0e2c7b1d698efa2838058633eafd2d14",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "ruse"
       },
-      "costCents": 700,
-      "payoutCents": 82,
+      "costCents": 1900,
+      "payoutCents": 24,
       "maxWin": false,
       "note": "Real first free-spin counter and its entitled side characters."
     },
     {
       "file": "docs/screenshots/bonus-lux-scatters.png",
-      "sha256": "c1a5766caa471c0bc9b681d50ca1000c93b68539b97989b4864f4997ed01cdbc",
+      "sha256": "ed0edb1bbc248d3f4fd99b65879817000daecfb2b2e6cbc4a577d68301f85f1e",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "lux"
       },
-      "costCents": 5000,
-      "payoutCents": 2769,
+      "costCents": 3000,
+      "payoutCents": 1904,
       "maxWin": false,
       "note": "Bought invitations genuinely land before the bonus intro."
     },
     {
       "file": "docs/screenshots/bonus-lux-counter.png",
-      "sha256": "316431c0835582893474d182c0ae25aeea71548502e6b32560eca7fc7cd5f0b7",
+      "sha256": "d7e3bb4a660462291e5ba02032bbd243408bc004953d8a1357ceb6b922ff7bfa",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "lux"
       },
-      "costCents": 5000,
-      "payoutCents": 2769,
+      "costCents": 3000,
+      "payoutCents": 1904,
       "maxWin": false,
       "note": "Real first free-spin counter and its entitled side characters."
     },
     {
       "file": "docs/screenshots/bonus-edge-scatters.png",
-      "sha256": "460ae72ac9b3db36c340ad2f1040f1c7d49acf7be62193060f8bc8123f93d817",
+      "sha256": "0548bbbcf288978876f49f34cef54bb945d93d2f8d1cb70d052c6dd85c1f5040",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "edge"
       },
-      "costCents": 12000,
-      "payoutCents": 724,
+      "costCents": 36000,
+      "payoutCents": 18304,
       "maxWin": false,
       "note": "Bought invitations genuinely land before the bonus intro."
     },
     {
       "file": "docs/screenshots/bonus-edge-counter.png",
-      "sha256": "67e673f6b4305b5754e81f4e55f7e0ed489cda431b811294f8f2d11cb302d244",
+      "sha256": "2127aa4f5f8f5201694c6f7b670b85c806508304c7610d486ead2ac62002fcdb",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "edge"
       },
-      "costCents": 12000,
-      "payoutCents": 724,
+      "costCents": 36000,
+      "payoutCents": 18304,
       "maxWin": false,
       "note": "Real first free-spin counter and its entitled side characters."
     },
     {
       "file": "docs/screenshots/bonus-old-scatters.png",
-      "sha256": "758e23b358bdc10d3b607cccabfaec4162db22e4257ec57ca46a7fe82dbef51f",
+      "sha256": "24085310abf7b0e9db4c834bf10902819141f52622f62e3217b59f8d4fd7c435",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 8738,
+      "payoutCents": 2280,
       "maxWin": false,
       "note": "Bought invitations genuinely land before the bonus intro."
     },
     {
       "file": "docs/screenshots/bonus-old-counter.png",
-      "sha256": "63bff40483bcbc5877a2567eb556fc5416e4065050b8123e95d3011800157e1d",
+      "sha256": "e06eaef8ed2e2ea2cf4a91ded6a419ba65bd24623d2c54ad6555c029f52d8536",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 8738,
+      "payoutCents": 2280,
       "maxWin": false,
       "note": "Real first free-spin counter and its entitled side characters."
     },
     {
       "file": "docs/screenshots/repeated-shot.png",
-      "sha256": "4bff4daab0b79cefe037e4d8c8ec60991519544287324cca7b5e7f54586c5e23",
+      "sha256": "ed3c385134f6530ae70a0484b69252755002bd6b79cd72768bfd7a08315c2712",
       "seed": 1,
       "choice": {
         "kind": "xbet",
         "character": "middle"
       },
-      "costCents": 90,
-      "payoutCents": 40,
+      "costCents": 500,
+      "payoutCents": 48,
       "maxWin": false,
       "note": "Repeated shooter impact displays the doubled recorded Wild multiplier."
     },
     {
-      "file": "docs/screenshots/bonus-retrigger.png",
-      "sha256": "c40d629c8c5c764511dea67a7eadfcfe69f790bf4fd9c51b277ca57651e851d0",
+      "file": "docs/screenshots/wild-completes-and-pays.png",
+      "sha256": "e90b42a5cdf343bd5759339b2fead1684126549d7da2c7f3400107ed8843a6f5",
+      "seed": 29,
+      "choice": {
+        "kind": "xbet",
+        "character": "middle"
+      },
+      "costCents": 500,
+      "payoutCents": 7350,
+      "maxWin": false,
+      "note": "A genuine paid combination uses Wild substitution; it does not require the old seven-natural-symbol gate."
+    },
+    {
+      "file": "docs/screenshots/sticky-wild-spent.png",
+      "sha256": "cb1cbf9bfa776ae8639c32bfe18853ed9912a5d880437f19eba7873ed791f0a3",
       "seed": 1,
+      "choice": {
+        "kind": "buy",
+        "tier": "ruse"
+      },
+      "costCents": 1900,
+      "payoutCents": 4898,
+      "maxWin": false,
+      "note": "Sticky Wild positions stay fixed and dim after being used; ordinary symbols refill their free rows."
+    },
+    {
+      "file": "docs/screenshots/independent-tumble.png",
+      "sha256": "664c70c4d28a02e9f27280cfda0d7abcca52b77fa58db0e6e92056234a25eaa9",
+      "seed": 1,
+      "choice": {
+        "kind": "buy",
+        "tier": "ruse"
+      },
+      "costCents": 1900,
+      "payoutCents": 4898,
+      "maxWin": false,
+      "note": "Actual receipt-derived survivor motion and independent replacement drops around stationary sticky Wilds."
+    },
+    {
+      "file": "docs/screenshots/sticky-wild-recharged.png",
+      "sha256": "8c8dfef6813050513e2609cb5be9babbf62874bfac266bee29122096f72922b4",
+      "seed": 1,
+      "choice": {
+        "kind": "buy",
+        "tier": "ruse"
+      },
+      "costCents": 1900,
+      "payoutCents": 4898,
+      "maxWin": false,
+      "note": "The following free-spin drop reactivates the recorded sticky Wilds at the same positions."
+    },
+    {
+      "file": "docs/screenshots/collector-all-coins-revealed.png",
+      "sha256": "c33e40ef34094f7ccbaa448bbd746d2cccefc1fe4a011b59fa33649f0a602134",
+      "seed": 163,
+      "choice": {
+        "kind": "xbet",
+        "character": "right"
+      },
+      "costCents": 54,
+      "payoutCents": 420,
+      "maxWin": false,
+      "note": "All coin faces are visible before collecting; this exact receipt later replaces a collector."
+    },
+    {
+      "file": "docs/screenshots/collector-clears-and-stays.png",
+      "sha256": "f8fd6a589cea74f37dd69d361ae0606463e2b2c81c7cf0ed89762d7984c9292c",
+      "seed": 163,
+      "choice": {
+        "kind": "xbet",
+        "character": "right"
+      },
+      "costCents": 54,
+      "payoutCents": 420,
+      "maxWin": false,
+      "note": "The collected amount remains at the sole collector; every other marked cell has cleared before reroll."
+    },
+    {
+      "file": "docs/screenshots/collector-fresh-reroll.png",
+      "sha256": "641bbc4ba33b7cfcea64c57f22dc2164bf60b2a1ef034fe1833a220fd1be2322",
+      "seed": 163,
+      "choice": {
+        "kind": "xbet",
+        "character": "right"
+      },
+      "costCents": 54,
+      "payoutCents": 420,
+      "maxWin": false,
+      "note": "Only the retained collector is present when the cleared positions begin revealing new coin outcomes."
+    },
+    {
+      "file": "docs/screenshots/collector-chain-absorption.png",
+      "sha256": "bd28e35557adc37249fb384f0f5d7114c2baaafcb23efdf45d543d389b1f54ea",
+      "seed": 163,
+      "choice": {
+        "kind": "xbet",
+        "character": "right"
+      },
+      "costCents": 54,
+      "payoutCents": 420,
+      "maxWin": false,
+      "note": "A newly revealed collector takes the retained collector and new coin values after all fresh reveals."
+    },
+    {
+      "file": "docs/screenshots/collector-final-award.png",
+      "sha256": "299d8ac0dd6a2a2062fc377e1400c50478cee24cbb268e3f86e82d59ef7f3a95",
+      "seed": 163,
+      "choice": {
+        "kind": "xbet",
+        "character": "right"
+      },
+      "costCents": 54,
+      "payoutCents": 420,
+      "maxWin": false,
+      "note": "The final collector total and fresh values sum to the authoritative €4.20 feature award at €0.20 stake."
+    },
+    {
+      "file": "docs/screenshots/bonus-retrigger.png",
+      "sha256": "0ae23d540a9cf98c1033947a79039797e5402c6231363f81aad3a0b417777a0a",
+      "seed": 2,
       "choice": {
         "kind": "buy",
         "tier": "lux"
       },
-      "costCents": 5000,
-      "payoutCents": 4823,
+      "costCents": 3000,
+      "payoutCents": 284,
       "maxWin": false,
       "note": "Natural in-bonus Scatter retrigger; visible counter follows the recorded addition."
     },
     {
       "file": "docs/screenshots/win-100.png",
-      "sha256": "e93336465cd4ab966bd168271164d142ba4ff139ba9952744f8ea703b6e03161",
+      "sha256": "9d3f6b5b664e2b0909b58c65d6ecaca9be8fe512ce992e278256d2530b419875",
       "seed": 7,
       "choice": {
         "kind": "buy",
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 94737,
+      "payoutCents": 44684,
       "maxWin": false,
       "note": "Actual count-up crossing 100×; CSS cutscene escalation is driven by the counted amount."
     },
     {
       "file": "docs/screenshots/win-500.png",
-      "sha256": "e28ac47079758c9a40079e02560bc83f338530c870d6bdc783acd67b94022df9",
+      "sha256": "6d00e22cb8aa630f94c37e671eff1c514f69daa414487c30413d5260a30597a1",
       "seed": 7,
       "choice": {
         "kind": "buy",
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 94737,
+      "payoutCents": 44684,
       "maxWin": false,
       "note": "Actual count-up crossing 500×; CSS cutscene escalation is driven by the counted amount."
     },
     {
       "file": "docs/screenshots/win-1000.png",
-      "sha256": "a96c45e2c3f5e4cfdb4948d3664daef5ea320ff0f65cdde29b1b4eb54733a263",
+      "sha256": "384881ce54331a1193d87ee816776e5187fe424c3e9222756f6f535b70c52c6d",
       "seed": 7,
       "choice": {
         "kind": "buy",
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 94737,
+      "payoutCents": 44684,
       "maxWin": false,
       "note": "Actual count-up crossing 1000×; CSS cutscene escalation is driven by the counted amount."
     },
     {
       "file": "docs/screenshots/god-shot.png",
-      "sha256": "6a525236590751885164913bbb3e407f579e458f0f66ebd9c7863cfec32b3177",
+      "sha256": "d58727c7547ee15ba2369aa9b869f8f0939ee0b3bb094165237f4713eb52f7d4",
       "seed": 1,
       "choice": {
         "kind": "god"
@@ -705,7 +1142,7 @@
     },
     {
       "file": "docs/screenshots/max-win.png",
-      "sha256": "a98ff6982e1782e6f317eb9b341ab90ce98423896f93f24ccdb480c6c96eaaf4",
+      "sha256": "6fd2fecc6fb84c6a27d73b919b7e860947e22bdb4e2b796e38c037af3ddd986c",
       "seed": 1,
       "choice": {
         "kind": "god"
@@ -714,25 +1151,110 @@
       "payoutCents": 399980,
       "maxWin": true,
       "note": "Settled genuine 19,999× max receipt: €3,999.80 on a €0.20 base bet."
+    },
+    {
+      "file": "docs/screenshots/god-miss-board.png",
+      "sha256": "c7a39d72be4c06cfe14a70b495085ea2f1f9ffa270994e08491b5309ee6f841e",
+      "seed": 2,
+      "choice": {
+        "kind": "god"
+      },
+      "costCents": 60000,
+      "payoutCents": 0,
+      "maxWin": false,
+      "note": "Recorded misses leave the MAX symbol unhit; the same board then resolves normal symbol wins."
+    }
+  ],
+  "presentationCaptures": [
+    {
+      "file": "docs/screenshots/base.png",
+      "sha256": "102f534efaa0b18b1c09fc5a4a8ccc20bf58ed464155ecd21552966031c0a900",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "note": "Fresh base game and integrated HUD on the desktop viewport."
+    },
+    {
+      "file": "docs/screenshots/local-audio-settings.png",
+      "sha256": "cb4ba26d1af1a1cc8c89be9ba4efcf943b41075b0b6db3e2aedf4341d4b67948",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "note": "Uploaded WAV and persisted sound preferences, with the scene blurred behind the settings dialog."
+    },
+    {
+      "file": "docs/screenshots/mobile.png",
+      "sha256": "db2c899e2d39cc8de115d752ee1d5447a3dae3f184c8f52e4c77f4583f4ebeaf",
+      "viewport": {
+        "width": 400,
+        "height": 840
+      },
+      "note": "400×840 mobile layout with the reels and controls on one stage."
+    },
+    {
+      "file": "docs/screenshots/landscape.png",
+      "sha256": "f2532920f8cc1358cfd926ba541dca0c3b4c9593217169aeafdce74b21289243",
+      "viewport": {
+        "width": 640,
+        "height": 360
+      },
+      "note": "Compact 640×360 landscape layout with the Spin button and every game control fully visible."
+    },
+    {
+      "file": "docs/screenshots/server-production.png",
+      "sha256": "fc9ca041f7782a8caaac0c2bee39886b7f7ff8c2444136b71a2716bb041a6320",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "note": "Exact production bundle served over HTTP after a bonus, base spin, xBet, pending reload and audio persistence checks."
     }
   ],
   "jsErrors": [],
   "assetFailures": [],
   "externalRequests": [],
   "production": {
-    "path": "release/PLAY.html",
-    "sha256": "6611e041cae3218c28eabcd79862938a030808977bcd373d3b878d15b4482ca6",
-    "directFileLaunch": {
-      "attempted": true,
-      "verified": false,
-      "limitation": "Cloud Chromium managed policy blocks file:// navigation (ERR_BLOCKED_BY_ADMINISTRATOR). The exact self-contained HTML is checked over a private static loopback server; direct file-origin launch remains unverified in this environment."
+    "path": "dist/index.html",
+    "sha256": "9e7df19e342bad458770a6f3ef8374f0b4712f1b882055542d09296015cecec5",
+    "bundleHashes": {
+      "Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652",
+      "Oswald.ttf": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
+      "art/README.md": "8ef38bbb8a37e95ccbd3806c0b5a276e1eba1ea337acdc17558170125dda0984",
+      "art/character-left-actions.png": "05994651b9fce1312c2ef8c88a5379840bbaf54714b05be6f1154c7b6c65796d",
+      "art/character-middle-actions.png": "3db9e8643bcef68a0d75d4c24c9a04203169d8df0d4b42f31bc996b767d8aab9",
+      "art/character-right-actions.png": "015535a2102b24a967ff2ecec9dc42926de381766341c71fdbf2e20b122e4c83",
+      "art/coin-global.svg": "b8102841961d9d55f4622f74aa4ddd71a1b42511ccbe04f7a0a9964730773028",
+      "art/coin-multiplier.svg": "8b2cc17a679d0308f6a503eac85babab0e0f2ba178a3068dad2ad886b6e24394",
+      "art/coin.svg": "cebbdb905324f52308f4d5a48d2e1cf02173363ed5fe526544d4ab3df96d0248",
+      "art/collector.svg": "a7a17d19663a8c5a1e13aad0daacd4532ad2ffcc5baf8ba5517fea6cdaa6ccd4",
+      "art/getaway-car.png": "6f282a829f2de61061e07f9b78aa3a996c3ec9033f22794fabde8f53989aec02",
+      "art/max.svg": "6b99ffd09c0c3e45173c89a45aced1024ac101b86a7e4a473cdfed2d7861e603",
+      "art/ruse-yard.png": "e74b3a330359ba094795cb39b3efd1f1e18249429ec8a4d780903423e03679fd",
+      "art/scatter-premium.svg": "5f0cbf5bee081556a0ee63467c75f033285cc1a859c458aaafc58e9d94c4a232",
+      "art/symbols-premium.png": "38404eff5bd9c73caa782c746e4888dabe441028f602075e4e618697afcc707b",
+      "art/wild-premium.svg": "15f89e75bd7cce0518c35f8c8245870f59010c80e3f1c143884809b2b6d6339e",
+      "assets/index-BUpVmvzj.css": "e673085e66120f18b55d8e0341566cb5855e6fed322bb4fa7acfeecab8f78eb5",
+      "assets/index-L_PwxB4X.js": "2cfe1f0c4cdc582745522c25fc2c406b524ef86351e5507e9741bc3dc30fdb35",
+      "index.html": "9e7df19e342bad458770a6f3ef8374f0b4712f1b882055542d09296015cecec5"
     },
     "requests": [
-      "http://127.0.0.1:41513/",
-      "http://127.0.0.1:41513/",
-      "http://127.0.0.1:41513/",
-      "http://127.0.0.1:41513/",
-      "http://127.0.0.1:41513/"
+      "http://127.0.0.1:36527/",
+      "http://127.0.0.1:36527/assets/index-L_PwxB4X.js",
+      "http://127.0.0.1:36527/assets/index-BUpVmvzj.css",
+      "http://127.0.0.1:36527/",
+      "http://127.0.0.1:36527/assets/index-L_PwxB4X.js",
+      "http://127.0.0.1:36527/assets/index-BUpVmvzj.css",
+      "http://127.0.0.1:36527/",
+      "http://127.0.0.1:36527/assets/index-L_PwxB4X.js",
+      "http://127.0.0.1:36527/assets/index-BUpVmvzj.css",
+      "http://127.0.0.1:36527/",
+      "http://127.0.0.1:36527/assets/index-L_PwxB4X.js",
+      "http://127.0.0.1:36527/assets/index-BUpVmvzj.css",
+      "http://127.0.0.1:36527/",
+      "http://127.0.0.1:36527/assets/index-L_PwxB4X.js",
+      "http://127.0.0.1:36527/assets/index-BUpVmvzj.css"
     ]
   }
 }

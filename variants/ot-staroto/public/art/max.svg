@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" role="img" aria-label="Maximum win target">
+ <defs><pattern id="cut" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-25)"><path d="M0 0v9" stroke="#e5c76e" stroke-width="1.8"/></pattern></defs>
+ <g stroke="#110d0b" stroke-linejoin="round" stroke-linecap="round">
+  <path d="m179 15 27 43 48-28 3 53 56-2-26 46 55 22-45 31 37 47-55 9 5 57-51-24-28 47-29-46-49 27 3-54-57-7 35-43-47-28 52-26-24-45 52 2 2-54 48 28Z" fill="#ac2924" stroke-width="8"/>
+  <circle cx="180" cy="175" r="116" fill="#121211" stroke-width="9"/>
+  <circle cx="180" cy="175" r="107" fill="url(#cut)" stroke="#f1d781" stroke-width="4"/>
+  <circle cx="180" cy="175" r="88" fill="#a8342b" stroke="#100e0c" stroke-width="7"/>
+  <circle cx="180" cy="175" r="65" fill="#e4d7b5" stroke-width="6"/>
+  <path d="M180 51v37m0 174v37M55 175h37m176 0h37" fill="none" stroke="#f0d680" stroke-width="5"/>
+  <path d="m45 105 270-8 11 98-281 9Z" fill="#090a09" stroke="#e6d9b4" stroke-width="5"/>
+  <path d="m58 116 245-7m-243 83 248-6" fill="none" stroke="#a4382c" stroke-width="2"/>
+  <g fill="none" stroke="#f5eed7" stroke-width="13"><path d="M77 176v-48l22 28 23-29v48m20 0 21-49 22 49m-35-17h30m18-32 42 48m-42 0 42-48"/></g>
+  <path d="m92 219 176-2-7 49-174 4Z" fill="#b49951" stroke-width="5"/>
+  <text x="178" y="252" text-anchor="middle" font-family="Arial,sans-serif" font-size="27" font-weight="900" fill="#0b0a09" stroke="none">19 999×</text>
+  <path d="m51 61 17 12M303 63l-17 15M44 290l25-15m239 17-23-16M116 322l8-20m116 22-11-18" fill="none" stroke="#e1c066" stroke-width="5"/>
+  <path d="m278 225-13 7m9 2-15 7m10 2-13 5m-164-139 8 7m-15-3 9 8m-17-3 9 7" fill="none" stroke-width="2"/>
+ </g>
+</svg>

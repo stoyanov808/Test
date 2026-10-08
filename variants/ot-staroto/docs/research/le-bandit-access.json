@@ -1,0 +1,73 @@
+{
+  "purpose": "Attempt primary and secondary Le Bandit references for the requested collector/tumble changes",
+  "recordedAt": "2026-10-08T14:21:05.455180+00:00",
+  "results": [
+    {
+      "url": "https://hacksawgaming.com/games/le-bandit",
+      "attemptedAt": "2026-10-08T14:21:05.418053+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "url": "https://www.hacksawgaming.com/games/le-bandit/",
+      "attemptedAt": "2026-10-08T14:21:05.418869+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "url": "https://www.hacksawgaming.com",
+      "attemptedAt": "2026-10-08T14:21:05.419394+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "url": "https://www.hacksawgroup.com/products/hacksaw-gaming",
+      "attemptedAt": "2026-10-08T14:21:05.419852+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "url": "https://www.youtube.com/results?search_query=Hacksaw+Gaming+Le+Bandit+official",
+      "attemptedAt": "2026-10-08T14:21:05.420259+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "url": "https://www.google.com/search?q=Hacksaw+Gaming+Le+Bandit+golden+clover+rules",
+      "attemptedAt": "2026-10-08T14:21:05.420623+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "url": "https://www.bing.com/search?q=Hacksaw+Le+Bandit+golden+clover+rules",
+      "attemptedAt": "2026-10-08T14:21:05.421153+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "url": "https://slotcatalog.com/en/slots/Le-Bandit",
+      "attemptedAt": "2026-10-08T14:21:05.430483+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "url": "https://www.bigwinboard.com/le-bandit-hacksaw-gaming-slot-review/",
+      "attemptedAt": "2026-10-08T14:21:05.430982+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "url": "https://www.slotscalendar.com/slots/le-bandit/",
+      "attemptedAt": "2026-10-08T14:21:05.431335+00:00",
+      "retrieved": false,
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    }
+  ],
+  "escalatedRequest": {
+    "url": "https://hacksawgaming.com/games/le-bandit",
+    "retrieved": false,
+    "error": "curl: (56) CONNECT tunnel failed, response 403",
+    "approvalReviewRejected": false
+  },
+  "consequence": "No source content or footage verified; adaptation document separates user instructions and audited prototype evidence from inaccessible publisher rules."
+}
