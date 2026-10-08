@@ -1,10 +1,10 @@
 {
-  "presentationVersion": "5.4.0",
+  "presentationVersion": "5.5.0",
   "mathematicsVersion": "studentski-duck-5",
-  "browserGeneratedAt": "2026-10-08T07:38:25.169Z",
+  "browserGeneratedAt": "2026-10-08T12:12:39.420Z",
   "engineTestsPassed": 62,
   "productionBuildPassed": true,
-  "browserChecksPassed": 48,
+  "browserChecksPassed": 49,
   "browserChecksFailed": 0,
   "browserSourceHashes": {
     "index.html": "ff0fd82334ea51b0e79a9b6702d7ff6cf59a381c482e2f1f30561b1895af64e4",
@@ -35,7 +35,7 @@
     "public/art-v3/manifest.json": "3973d935cfecadc611b7d5bb04fe5f390a8cef5e756360e25fc2ce3e276d6291",
     "public/art-v3/scene-atlas.png": "a7c6ca6ca22e8424a13fc9054932a9214f83b0c3785b5a88fa5377f5896d90a7",
     "public/art-v3/symbol-atlas.png": "beae7ea7016c46a56553b408f00e73836188afcede2ea492519cd6bb14559e2a",
-    "scripts/browser-test.ts": "a62be3724019a8acb16e4ee3d133dc02e723225904fdfd0c6894853d778c7617",
+    "scripts/browser-test.ts": "b85e26097f9040520c2150d87fe13dff81508b1cac81ea33e910fd472648e32d",
     "src/audio.ts": "29807275831a3e06f70536b401861ea1cb282de3ee263a0faf949f7b74bc796f",
     "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
     "src/engine/config.ts": "e139911399a038a1df509fbbe3c01b6577e5051ca9797b0ff0dac6658e70333d",
@@ -49,21 +49,26 @@
     "src/main.ts": "38d5eec804e93c5a5e31c44093c282e7963d9582ec593b9ea4cdb5492b7590f0",
     "src/menus.css": "54b7022b626a166a98b2977325f6dcee44a7e9f505eb7411947830a570cacf83",
     "src/menus.ts": "9d3b57f350c9a79565172815fd77bd4944470cf7fab45e9407262a37be926062",
-    "src/render/art-v2.ts": "8555ef88349c5f56ae2c5130b9804f47d43d663d1e1071b90203c6d2583365a7",
+    "src/render/art-v2.ts": "194dae71f4fca86bcc10079baf9c7993d1b152c9868ef58a878713e240f9e206",
     "src/render/bonus-trigger.ts": "a75a11ed2b79cc7624fbeeedb83b2acc32eab69d019f27c872eb608f5c82fab6",
     "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
+    "src/render/drop-motion.ts": "da5b6a9c61404fd1591587444a9b05f4233b955641ff4d84480668515f3e411b",
     "src/render/index.ts": "cf8c66a896a83e46bf1eb429df69a363a7f317c4deb69125f0fc52652618b0ec",
-    "src/render/renderer.ts": "4091b48f9a4b58d5ea7921721c8627285291cbdeae4ca901eee716836c190a54",
+    "src/render/renderer.ts": "707f730b606f5109f99c3d386ba75b937fe6460669d00e164c229e9f93a2643f",
     "src/style.css": "4f7d5d834b98ed7df9ed6ad581c571750e71dbbc6b686af7f7b28bcb1f701e4c",
     "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
   },
   "browserChecks": [
     {
-      "name": "Desktop renders the original 6 × 5 illustrated board, 9 distinct atlas symbols and local fonts",
+      "name": "Desktop renders the original 6 \u00d7 5 illustrated board, 9 distinct atlas symbols and local fonts",
       "passed": true
     },
     {
       "name": "English/Bulgarian settings and euro formatting persist through a reload",
+      "passed": true
+    },
+    {
+      "name": "Every grid cell ignores mouse hover while clicking a busy board still skips the same paid receipt",
       "passed": true
     },
     {
@@ -75,35 +80,35 @@
       "passed": true
     },
     {
-      "name": "standard charges 1× and starts every position at 1×",
+      "name": "standard charges 1\u00d7 and starts every position at 1\u00d7",
       "passed": true
     },
     {
-      "name": "hunt charges 2× and starts every position at 1×",
+      "name": "hunt charges 2\u00d7 and starts every position at 1\u00d7",
       "passed": true
     },
     {
-      "name": "frames charges 2.8× and starts every position at 2×",
+      "name": "frames charges 2.8\u00d7 and starts every position at 2\u00d7",
       "passed": true
     },
     {
-      "name": "wild charges 90× and starts every position at 64×",
+      "name": "wild charges 90\u00d7 and starts every position at 64\u00d7",
       "passed": true
     },
     {
-      "name": "god charges 3000× and starts every position at 1024×",
+      "name": "god charges 3000\u00d7 and starts every position at 1024\u00d7",
       "passed": true
     },
     {
-      "name": "dorm buy lands 3 invitations, shows 1 exact wheel awards and charges one 70× debit",
+      "name": "dorm buy lands 3 invitations, shows 1 exact wheel awards and charges one 70\u00d7 debit",
       "passed": true
     },
     {
-      "name": "friday buy lands 4 invitations, shows 2 exact wheel awards and charges one 200× debit",
+      "name": "friday buy lands 4 invitations, shows 2 exact wheel awards and charges one 200\u00d7 debit",
       "passed": true
     },
     {
-      "name": "december buy lands 5 invitations, shows 3 exact wheel awards and charges one 600× debit",
+      "name": "december buy lands 5 invitations, shows 3 exact wheel awards and charges one 600\u00d7 debit",
       "passed": true
     },
     {
@@ -227,7 +232,7 @@
       "passed": true
     },
     {
-      "name": "390 × 844 touch layout has no overflow and accessible 44px controls/bonus menus",
+      "name": "390 \u00d7 844 touch layout has no overflow and accessible 44px controls/bonus menus",
       "passed": true
     },
     {
@@ -849,7 +854,7 @@
       "sourceImpactRadius": 12.622427648442681,
       "returningSymbols": 0,
       "sourceBadgeProgress": 0,
-      "sourceRevealProgress": 0.10800000000993248
+      "sourceRevealProgress": 0.1028888888623947
     },
     "normalNoMatchBeer": {
       "source": {
@@ -868,7 +873,7 @@
       "oldMultiplier": 2,
       "factor": 8,
       "newMultiplier": 16,
-      "actualLabelFrames": 16
+      "actualLabelFrames": 12
     },
     "xways-normal-reveal-before-boost": {
       "source": {
@@ -879,10 +884,11 @@
       "factor": 8,
       "oldSourceMultiplier": 1,
       "newSourceMultiplier": 8,
-      "revealedAtProgress": 0.32855555555886695,
-      "revealOnlyDurationMs": 195,
-      "firstEffectProgress": 0.5692222222255401,
-      "boostedAtProgress": 0.5692222222255401,
+      "revealedAtProgress": 0.3267777777777843,
+      "revealOnlyDurationMs": 200,
+      "visibleRevealHoldMs": 217,
+      "firstEffectProgress": 0.5674444444444412,
+      "boostedAtProgress": 0.5674444444444412,
       "recordedTargets": [
         {
           "reel": 0,
@@ -890,7 +896,7 @@
         }
       ],
       "actualBottles": 0,
-      "revealOnlyFrames": 11
+      "revealOnlyFrames": 13
     },
     "xways-turbo-reveal-before-boost": {
       "source": {
@@ -901,10 +907,11 @@
       "factor": 8,
       "oldSourceMultiplier": 1,
       "newSourceMultiplier": 8,
-      "revealedAtProgress": 0.3484848485089253,
-      "revealOnlyDurationMs": 100,
-      "firstEffectProgress": 0.5842424242664952,
-      "boostedAtProgress": 0.5842424242664952,
+      "revealedAtProgress": 0.3866666666185013,
+      "revealOnlyDurationMs": 66,
+      "visibleRevealHoldMs": 95,
+      "firstEffectProgress": 0.5886868686387033,
+      "boostedAtProgress": 0.5886868686387033,
       "recordedTargets": [
         {
           "reel": 0,
@@ -912,7 +919,7 @@
         }
       ],
       "actualBottles": 0,
-      "revealOnlyFrames": 6
+      "revealOnlyFrames": 3
     },
     "infectious-normal-reveal-before-boost": {
       "source": {
@@ -923,10 +930,11 @@
       "factor": 4,
       "oldSourceMultiplier": 1,
       "newSourceMultiplier": 4,
-      "revealedAtProgress": 0.3321428571508347,
-      "revealOnlyDurationMs": 142,
-      "firstEffectProgress": 0.4809821428651308,
-      "boostedAtProgress": 0.8827678571508452,
+      "revealedAtProgress": 0.321696428550136,
+      "revealOnlyDurationMs": 169,
+      "visibleRevealHoldMs": 188,
+      "firstEffectProgress": 0.4853571428358529,
+      "boostedAtProgress": 0.9019642856930009,
       "recordedTargets": [
         {
           "reel": 0,
@@ -965,8 +973,8 @@
           "row": 0
         }
       ],
-      "actualBottles": 162,
-      "revealOnlyFrames": 9
+      "actualBottles": 113,
+      "revealOnlyFrames": 11
     },
     "infectious-turbo-reveal-before-boost": {
       "source": {
@@ -977,10 +985,11 @@
       "factor": 4,
       "oldSourceMultiplier": 1,
       "newSourceMultiplier": 4,
-      "revealedAtProgress": 0.3285714285859474,
-      "revealOnlyDurationMs": 71,
-      "firstEffectProgress": 0.4910714285859332,
-      "boostedAtProgress": 0.8967532467677656,
+      "revealedAtProgress": 0.321428571409224,
+      "revealOnlyDurationMs": 83,
+      "visibleRevealHoldMs": 100,
+      "firstEffectProgress": 0.48360389608453924,
+      "boostedAtProgress": 0.889448051928695,
       "recordedTargets": [
         {
           "reel": 0,
@@ -1019,8 +1028,8 @@
           "row": 0
         }
       ],
-      "actualBottles": 91,
-      "revealOnlyFrames": 5
+      "actualBottles": 99,
+      "revealOnlyFrames": 6
     },
     "revealReload": [
       {
@@ -1084,7 +1093,7 @@
         }
       ],
       "actualBottles": 181,
-      "actualImpacts": 1584,
+      "actualImpacts": 1620,
       "splashDurations": [
         {
           "target": {
@@ -1102,7 +1111,7 @@
           },
           "visibleFrames": 10,
           "highOpacityDurationMs": 150,
-          "totalDurationMs": 266
+          "totalDurationMs": 264
         },
         {
           "target": {
@@ -1110,8 +1119,8 @@
             "row": 3
           },
           "visibleFrames": 10,
-          "highOpacityDurationMs": 150,
-          "totalDurationMs": 267
+          "highOpacityDurationMs": 149,
+          "totalDurationMs": 264
         },
         {
           "target": {
@@ -1119,8 +1128,8 @@
             "row": 1
           },
           "visibleFrames": 10,
-          "highOpacityDurationMs": 150,
-          "totalDurationMs": 267
+          "highOpacityDurationMs": 151,
+          "totalDurationMs": 264
         },
         {
           "target": {
@@ -1128,8 +1137,8 @@
             "row": 0
           },
           "visibleFrames": 10,
-          "highOpacityDurationMs": 150,
-          "totalDurationMs": 267
+          "highOpacityDurationMs": 151,
+          "totalDurationMs": 264
         },
         {
           "target": {
@@ -1137,8 +1146,8 @@
             "row": 4
           },
           "visibleFrames": 10,
-          "highOpacityDurationMs": 150,
-          "totalDurationMs": 267
+          "highOpacityDurationMs": 149,
+          "totalDurationMs": 280
         },
         {
           "target": {
@@ -1146,8 +1155,8 @@
             "row": 0
           },
           "visibleFrames": 11,
-          "highOpacityDurationMs": 152,
-          "totalDurationMs": 266
+          "highOpacityDurationMs": 151,
+          "totalDurationMs": 264
         },
         {
           "target": {
@@ -1155,8 +1164,8 @@
             "row": 1
           },
           "visibleFrames": 11,
-          "highOpacityDurationMs": 150,
-          "totalDurationMs": 267
+          "highOpacityDurationMs": 148,
+          "totalDurationMs": 263
         },
         {
           "target": {
@@ -1164,8 +1173,8 @@
             "row": 0
           },
           "visibleFrames": 11,
-          "highOpacityDurationMs": 149,
-          "totalDurationMs": 266
+          "highOpacityDurationMs": 147,
+          "totalDurationMs": 264
         }
       ]
     },
@@ -1180,78 +1189,1549 @@
     "normalReels": [
       {
         "phase": "spin",
-        "duration": 1380.7000000029802
+        "duration": 1341.699999988079
       },
       {
         "phase": "bomb",
-        "duration": 1582.7000000029802
+        "duration": 1600.7000000178814
       },
       {
         "phase": "clear",
-        "duration": 434.69999998807907
+        "duration": 450.69999998807907
       },
       {
         "phase": "cascade",
-        "duration": 715.7000000029802
+        "duration": 685.3000000119209
       },
       {
         "phase": "xways",
-        "duration": 916.9000000059605
+        "duration": 916.6999999880791
       },
       {
         "phase": "win",
-        "duration": 915.3999999910593
+        "duration": 948
       },
       {
         "phase": "clear",
-        "duration": 432.6000000089407
+        "duration": 463.30000001192093
       },
       {
         "phase": "cascade",
-        "duration": 720.2000000029802
+        "duration": 632.5999999940395
       }
     ],
     "turboReels": [
       {
         "phase": "spin",
-        "duration": 747.7999999970198
+        "duration": 727.0999999940395
       },
       {
         "phase": "bomb",
-        "duration": 884.2999999970198
+        "duration": 865.3000000119209
       },
       {
         "phase": "clear",
-        "duration": 247.40000000596046
+        "duration": 248.89999997615814
       },
       {
         "phase": "cascade",
-        "duration": 445.09999999403954
+        "duration": 437.80000001192093
       },
       {
         "phase": "xways",
-        "duration": 506.70000000298023
+        "duration": 514.5999999940395
       },
       {
         "phase": "win",
-        "duration": 382.79999999701977
+        "duration": 381.40000000596046
       },
       {
         "phase": "clear",
-        "duration": 251.6000000089407
+        "duration": 249.30000001192093
       },
       {
         "phase": "cascade",
-        "duration": 446.09999999403954
+        "duration": 386.2999999821186
       }
-    ]
+    ],
+    "gridHover": {
+      "checkedCells": 30,
+      "canvasPixelHash": 1917557597,
+      "cursor": "default",
+      "unchangedIdleReceipt": true,
+      "preservedBusyClickReceipt": true
+    },
+    "normal-top-down-drops": {
+      "frames": 127,
+      "landingFrames": 68,
+      "cascadeFrames": 59,
+      "durationMs": 1325,
+      "independentLanding": {
+        "distinctStarts": 30,
+        "distinctFlights": 23,
+        "contactFrames": 25,
+        "contactSample": {
+          "kind": "landing",
+          "elapsedMs": 1009.0999999821188,
+          "durationMs": 1325,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 2,
+              "row": 0,
+              "symbol": "female",
+              "sourceRow": -5.85,
+              "stationary": false,
+              "targetX": 439,
+              "startY": -647.5,
+              "targetY": 113,
+              "startMs": 394,
+              "flightMs": 528,
+              "settleMs": 109,
+              "drift": 3.123885252722539,
+              "lean": 0.05667404604889452,
+              "phase": 2.20694088465487,
+              "curve": 1.042969044360798,
+              "shake": 1.9712086424231527,
+              "progress": 1,
+              "settleProgress": 0.7990825686432916,
+              "x": 438.9728389211108,
+              "y": 113,
+              "rotation": -0.00044092467217749404,
+              "scaleX": 1.0071138580106687,
+              "scaleY": 0.9939532206909316
+            },
+            {
+              "reel": 2,
+              "row": 1,
+              "symbol": "bouncer",
+              "sourceRow": -4.85,
+              "stationary": false,
+              "targetX": 439,
+              "startY": -517.5,
+              "targetY": 243,
+              "startMs": 407,
+              "flightMs": 488,
+              "settleMs": 127,
+              "drift": 1.7187865521060304,
+              "lean": 0.04880087672779337,
+              "phase": 1.0013786385254484,
+              "curve": 1.043628691616468,
+              "shake": 1.8008241618052123,
+              "progress": 1,
+              "settleProgress": 0.8984251967095968,
+              "x": 438.9944218709067,
+              "y": 243,
+              "rotation": -9.912135497261974e-05,
+              "scaleX": 1.0019119533375627,
+              "scaleY": 0.9983748396630717
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "female",
+              "x": 438.97283229978694,
+              "y": 113.00000161647796,
+              "rotation": -0.0004409246855720244,
+              "scaleX": 1.0071137981664449,
+              "scaleY": 0.9939532422154352
+            },
+            {
+              "symbol": "bouncer",
+              "x": 438.9944082271745,
+              "y": 243.00000347614287,
+              "rotation": -9.912135798375577e-05,
+              "scaleX": 1.0019119816912108,
+              "scaleY": 0.9983748340374202
+            }
+          ],
+          "multiplierPaints": []
+        }
+      },
+      "independentCascade": {
+        "distinctStarts": 15,
+        "distinctFlights": 17,
+        "contactFrames": 14,
+        "contactSample": {
+          "kind": "cascade",
+          "elapsedMs": 532.5999999880787,
+          "durationMs": 674,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 1,
+              "row": 0,
+              "symbol": "xways",
+              "sourceRow": -3.85,
+              "stationary": false,
+              "targetX": 277,
+              "startY": -387.5,
+              "targetY": 113,
+              "startMs": 63,
+              "flightMs": 415,
+              "settleMs": 96,
+              "drift": 3.251684963819571,
+              "lean": 0.03396739042177797,
+              "phase": 5.53760551954303,
+              "curve": 0.9678637940436602,
+              "shake": 1.7019351474009454,
+              "progress": 1,
+              "settleProgress": 0.5687499998758199,
+              "x": 277.23509165839437,
+              "y": 113,
+              "rotation": 0.004420223109034949,
+              "scaleX": 1.0252738171886187,
+              "scaleY": 0.9785172553896742
+            },
+            {
+              "reel": 1,
+              "row": 1,
+              "symbol": "female",
+              "sourceRow": -2.85,
+              "stationary": false,
+              "targetX": 277,
+              "startY": -257.5,
+              "targetY": 243,
+              "startMs": 63,
+              "flightMs": 401,
+              "settleMs": 108,
+              "drift": 2.8534265499794857,
+              "lean": 0.05876521915243939,
+              "phase": 5.760652784299755,
+              "curve": 0.9361159233865328,
+              "shake": 1.9724534578621387,
+              "progress": 1,
+              "settleProgress": 0.6351851850748028,
+              "x": 277.23723629269017,
+              "y": 243,
+              "rotation": 0.0038487911265155435,
+              "scaleX": 1.0199443612839467,
+              "scaleY": 0.9830472929086453
+            },
+            {
+              "reel": 0,
+              "row": 3,
+              "symbol": "doner",
+              "sourceRow": 3,
+              "stationary": true,
+              "targetX": 115,
+              "startY": 503,
+              "targetY": 503,
+              "startMs": 0,
+              "flightMs": 0,
+              "settleMs": 0,
+              "drift": 2.91411275411956,
+              "lean": 0.06143015321856364,
+              "phase": 3.044166047266293,
+              "curve": 0.9652417925558985,
+              "shake": 1.3894551389850676,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 503,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "xways",
+              "x": 277.2350724482524,
+              "y": 113.00000161647796,
+              "rotation": 0.004420223243311965,
+              "scaleX": 1.0252737834174563,
+              "scaleY": 0.9785172483226297
+            },
+            {
+              "symbol": "female",
+              "x": 277.23723919626445,
+              "y": 243.00000347614287,
+              "rotation": 0.0038487912434340345,
+              "scaleX": 1.0199442937950216,
+              "scaleY": 0.9830473205997903
+            },
+            {
+              "symbol": "doner",
+              "x": 114.99999815158631,
+              "y": 503.0000071954727,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": [
+            {
+              "value": 2,
+              "x": 114.99999815158631,
+              "y": 243.00000347614287,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 2,
+              "x": 114.99999815158631,
+              "y": 373.00000533580777,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 2,
+              "x": 276.999995547734,
+              "y": 113.00000161647796,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ]
+        }
+      },
+      "anchoredMultiplierLabels": 1394,
+      "samples": [
+        {
+          "kind": "landing",
+          "elapsedMs": 0,
+          "durationMs": 1325,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 0,
+              "row": 0,
+              "symbol": "wild",
+              "sourceRow": -5.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -647.5,
+              "targetY": 113,
+              "startMs": 227,
+              "flightMs": 502,
+              "settleMs": 102,
+              "drift": 3.0847908734576777,
+              "lean": 0.05580634129745886,
+              "phase": 5.920323177018227,
+              "curve": 0.9630623243469746,
+              "shake": 1.3070388676598668,
+              "progress": 0,
+              "settleProgress": 0,
+              "x": 115,
+              "y": -647.5,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 1,
+              "symbol": "bomb",
+              "sourceRow": -4.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -517.5,
+              "targetY": 243,
+              "startMs": 223,
+              "flightMs": 500,
+              "settleMs": 120,
+              "drift": 2.9489102042512965,
+              "lean": 0.03236204501986504,
+              "phase": 1.43965606089358,
+              "curve": 0.9656259217811749,
+              "shake": 1.2239356571808457,
+              "progress": 0,
+              "settleProgress": 0,
+              "x": 115,
+              "y": -517.5,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "wild",
+              "x": 114.99999815158631,
+              "y": -647.5000092625618,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "bomb",
+              "x": 114.99999815158631,
+              "y": -517.5000074028968,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": []
+        },
+        {
+          "kind": "landing",
+          "elapsedMs": 592.399999982119,
+          "durationMs": 1325,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 0,
+              "row": 0,
+              "symbol": "wild",
+              "sourceRow": -5.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -647.5,
+              "targetY": 113,
+              "startMs": 227,
+              "flightMs": 502,
+              "settleMs": 102,
+              "drift": 3.0847908734576777,
+              "lean": 0.05580634129745886,
+              "phase": 5.920323177018227,
+              "curve": 0.9630623243469746,
+              "shake": 1.3070388676598668,
+              "progress": 0.7278884461795199,
+              "settleProgress": 0,
+              "x": 115.4945918227114,
+              "y": 23.04203645295331,
+              "rotation": -0.04198582542052453,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 1,
+              "symbol": "bomb",
+              "sourceRow": -4.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -517.5,
+              "targetY": 243,
+              "startMs": 223,
+              "flightMs": 500,
+              "settleMs": 120,
+              "drift": 2.9489102042512965,
+              "lean": 0.03236204501986504,
+              "phase": 1.43965606089358,
+              "curve": 0.9656259217811749,
+              "shake": 1.2239356571808457,
+              "progress": 0.738799999964238,
+              "settleProgress": 0,
+              "x": 116.84057914113471,
+              "y": 161.46584137986235,
+              "rotation": 0.01089717141449285,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "wild",
+              "x": 115.49458890291402,
+              "y": 23.04203638613752,
+              "rotation": -0.04198582669448319,
+              "scaleX": 0.9999999839803572,
+              "scaleY": 1.000000014251595
+            },
+            {
+              "symbol": "bomb",
+              "x": 116.84057429387742,
+              "y": 161.46583788107634,
+              "rotation": 0.010897171745503944,
+              "scaleX": 0.9999999839304448,
+              "scaleY": 1.0000000143015073
+            }
+          ],
+          "multiplierPaints": []
+        },
+        {
+          "kind": "landing",
+          "elapsedMs": 1309.0999999821188,
+          "durationMs": 1325,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 0,
+              "row": 0,
+              "symbol": "wild",
+              "sourceRow": -5.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -647.5,
+              "targetY": 113,
+              "startMs": 227,
+              "flightMs": 502,
+              "settleMs": 102,
+              "drift": 3.0847908734576777,
+              "lean": 0.05580634129745886,
+              "phase": 5.920323177018227,
+              "curve": 0.9630623243469746,
+              "shake": 1.3070388676598668,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 113,
+              "rotation": 2.425846694208642e-18,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 1,
+              "symbol": "bomb",
+              "sourceRow": -4.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -517.5,
+              "targetY": 243,
+              "startMs": 223,
+              "flightMs": 500,
+              "settleMs": 120,
+              "drift": 2.9489102042512965,
+              "lean": 0.03236204501986504,
+              "phase": 1.43965606089358,
+              "curve": 0.9656259217811749,
+              "shake": 1.2239356571808457,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 243,
+              "rotation": -3.9291771331354074e-18,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "wild",
+              "x": 114.99999815158631,
+              "y": 113.00000161647796,
+              "rotation": 2.4258467679016865e-18,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "bomb",
+              "x": 114.99999815158631,
+              "y": 243.00000347614287,
+              "rotation": -3.929177252497041e-18,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": []
+        },
+        {
+          "kind": "cascade",
+          "elapsedMs": 0,
+          "durationMs": 674,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 0,
+              "row": 0,
+              "symbol": "doner",
+              "sourceRow": -2.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -257.5,
+              "targetY": 113,
+              "startMs": 65,
+              "flightMs": 362,
+              "settleMs": 105,
+              "drift": 1.6008520723786206,
+              "lean": 0.03601362451724708,
+              "phase": 4.266024517616008,
+              "curve": 0.9627897119335831,
+              "shake": 1.2480469864793122,
+              "progress": 0,
+              "settleProgress": 0,
+              "x": 115,
+              "y": -257.5,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 1,
+              "symbol": "wild",
+              "sourceRow": -1.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -127.5,
+              "targetY": 243,
+              "startMs": 52,
+              "flightMs": 369,
+              "settleMs": 98,
+              "drift": 2.618773724115454,
+              "lean": 0.056420401626266534,
+              "phase": 3.0025923014729075,
+              "curve": 0.9820368940685876,
+              "shake": 2.275411927420646,
+              "progress": 0,
+              "settleProgress": 0,
+              "x": 115,
+              "y": -127.5,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 3,
+              "symbol": "doner",
+              "sourceRow": 3,
+              "stationary": true,
+              "targetX": 115,
+              "startY": 503,
+              "targetY": 503,
+              "startMs": 0,
+              "flightMs": 0,
+              "settleMs": 0,
+              "drift": 2.91411275411956,
+              "lean": 0.06143015321856364,
+              "phase": 3.044166047266293,
+              "curve": 0.9652417925558985,
+              "shake": 1.3894551389850676,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 503,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "doner",
+              "x": 114.99999815158631,
+              "y": -257.500003683567,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "wild",
+              "x": 114.99999815158631,
+              "y": -127.50000182390211,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "doner",
+              "x": 114.99999815158631,
+              "y": 503.0000071954727,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": [
+            {
+              "value": 2,
+              "x": 114.99999815158631,
+              "y": 243.00000347614287,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 2,
+              "x": 114.99999815158631,
+              "y": 373.00000533580777,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 2,
+              "x": 276.999995547734,
+              "y": 113.00000161647796,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ]
+        },
+        {
+          "kind": "cascade",
+          "elapsedMs": 602.5000000059608,
+          "durationMs": 615,
+          "cascade": 1,
+          "cells": [
+            {
+              "reel": 0,
+              "row": 0,
+              "symbol": "noodles",
+              "sourceRow": -2.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -257.5,
+              "targetY": 113,
+              "startMs": 61,
+              "flightMs": 406,
+              "settleMs": 116,
+              "drift": 1.723085464234464,
+              "lean": 0.04226306128595024,
+              "phase": 5.9056790100927525,
+              "curve": 0.9910736192343758,
+              "shake": 1.4797022569924592,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 113,
+              "rotation": 1.9077930556499044e-18,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 1,
+              "symbol": "bouncer",
+              "sourceRow": -1.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -127.5,
+              "targetY": 243,
+              "startMs": 49,
+              "flightMs": 364,
+              "settleMs": 112,
+              "drift": 1.61127633866854,
+              "lean": 0.04146490555070341,
+              "phase": 4.674692760402961,
+              "curve": 1.0121377149224282,
+              "shake": 1.9259171144105494,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 243,
+              "rotation": 5.0743788911564875e-18,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 3,
+              "symbol": "doner",
+              "sourceRow": 3,
+              "stationary": true,
+              "targetX": 115,
+              "startY": 503,
+              "targetY": 503,
+              "startMs": 0,
+              "flightMs": 0,
+              "settleMs": 0,
+              "drift": 2.2657401294447483,
+              "lean": 0.04345318447146565,
+              "phase": 2.492817707223441,
+              "curve": 0.9642627040413209,
+              "shake": 2.0862854523584247,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 503,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "noodles",
+              "x": 114.99999815158631,
+              "y": 113.00000161647796,
+              "rotation": 1.9077931136053715e-18,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "bouncer",
+              "x": 114.99999815158631,
+              "y": 243.00000347614287,
+              "rotation": 5.074379045307379e-18,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "doner",
+              "x": 114.99999815158631,
+              "y": 503.0000071954727,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": [
+            {
+              "value": 4,
+              "x": 114.99999815158631,
+              "y": 243.00000347614287,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 4,
+              "x": 114.99999815158631,
+              "y": 373.00000533580777,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 4,
+              "x": 276.999995547734,
+              "y": 113.00000161647796,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ]
+        }
+      ]
+    },
+    "turbo-top-down-drops": {
+      "frames": 93,
+      "landingFrames": 44,
+      "cascadeFrames": 49,
+      "durationMs": 719,
+      "independentLanding": {
+        "distinctStarts": 30,
+        "distinctFlights": 21,
+        "contactFrames": 17,
+        "contactSample": {
+          "kind": "landing",
+          "elapsedMs": 556.7999999880776,
+          "durationMs": 719,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 2,
+              "row": 0,
+              "symbol": "female",
+              "sourceRow": -5.85,
+              "stationary": false,
+              "targetX": 439,
+              "startY": -647.5,
+              "targetY": 113,
+              "startMs": 211,
+              "flightMs": 304,
+              "settleMs": 68,
+              "drift": 3.123885252722539,
+              "lean": 0.05667404604889452,
+              "phase": 2.20694088465487,
+              "curve": 1.042969044360798,
+              "shake": 1.9712086424231527,
+              "progress": 1,
+              "settleProgress": 0.614705882177612,
+              "x": 439.27154554073167,
+              "y": 113,
+              "rotation": 0.004408187503039764,
+              "scaleX": 1.021632806184264,
+              "scaleY": 0.9816121147433756
+            },
+            {
+              "reel": 2,
+              "row": 1,
+              "symbol": "bouncer",
+              "sourceRow": -4.85,
+              "stationary": false,
+              "targetX": 439,
+              "startY": -517.5,
+              "targetY": 243,
+              "startMs": 220,
+              "flightMs": 281,
+              "settleMs": 80,
+              "drift": 1.7187865521060304,
+              "lean": 0.04880087672779337,
+              "phase": 1.0013786385254484,
+              "curve": 1.043628691616468,
+              "shake": 1.8008241618052123,
+              "progress": 1,
+              "settleProgress": 0.6974999998509702,
+              "x": 439.08217356680206,
+              "y": 243,
+              "rotation": 0.0014601948338083572,
+              "scaleX": 1.0147669933706551,
+              "scaleY": 0.9874480556349432
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "female",
+              "x": 439.2715383496733,
+              "y": 113.00000161647796,
+              "rotation": 0.004408187636951173,
+              "scaleX": 1.021632774145224,
+              "scaleY": 0.9816121003375755
+            },
+            {
+              "symbol": "bouncer",
+              "x": 439.08217678045133,
+              "y": 243.00000347614287,
+              "rotation": 0.0014601948781664984,
+              "scaleX": 1.0147670344326531,
+              "scaleY": 0.9874480507961784
+            }
+          ],
+          "multiplierPaints": []
+        }
+      },
+      "independentCascade": {
+        "distinctStarts": 17,
+        "distinctFlights": 16,
+        "contactFrames": 9,
+        "contactSample": {
+          "kind": "cascade",
+          "elapsedMs": 315.500000005959,
+          "durationMs": 418,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 0,
+              "row": 0,
+              "symbol": "doner",
+              "sourceRow": -2.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -257.5,
+              "targetY": 113,
+              "startMs": 41,
+              "flightMs": 219,
+              "settleMs": 66,
+              "drift": 1.6008520723786206,
+              "lean": 0.03601362451724708,
+              "phase": 4.266024517616008,
+              "curve": 0.9627897119335831,
+              "shake": 1.2480469864793122,
+              "progress": 1,
+              "settleProgress": 0.8409090909993789,
+              "x": 114.98622953538265,
+              "y": 113,
+              "rotation": -0.0003530755432521304,
+              "scaleX": 1.0045746494137189,
+              "scaleY": 0.996111547998339
+            },
+            {
+              "reel": 0,
+              "row": 1,
+              "symbol": "wild",
+              "sourceRow": -1.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -127.5,
+              "targetY": 243,
+              "startMs": 34,
+              "flightMs": 223,
+              "settleMs": 61,
+              "drift": 2.618773724115454,
+              "lean": 0.056420401626266534,
+              "phase": 3.0025923014729075,
+              "curve": 0.9820368940685876,
+              "shake": 2.275411927420646,
+              "progress": 1,
+              "settleProgress": 0.9590163935403117,
+              "x": 114.999758293431,
+              "y": 243,
+              "rotation": -3.399213177496923e-06,
+              "scaleX": 1.0003157336586954,
+              "scaleY": 0.9997316263901089
+            },
+            {
+              "reel": 0,
+              "row": 3,
+              "symbol": "doner",
+              "sourceRow": 3,
+              "stationary": true,
+              "targetX": 115,
+              "startY": 503,
+              "targetY": 503,
+              "startMs": 0,
+              "flightMs": 0,
+              "settleMs": 0,
+              "drift": 2.91411275411956,
+              "lean": 0.06143015321856364,
+              "phase": 3.044166047266293,
+              "curve": 0.9652417925558985,
+              "shake": 1.3894551389850676,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 503,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "doner",
+              "x": 114.98622709467874,
+              "y": 113.00000161647796,
+              "rotation": -0.0003530755539779564,
+              "scaleX": 1.0045746403398232,
+              "scaleY": 0.9961115860382744
+            },
+            {
+              "symbol": "wild",
+              "x": 114.99975401096523,
+              "y": 243.00000347614287,
+              "rotation": -3.399213280759165e-06,
+              "scaleX": 1.0003157693297817,
+              "scaleY": 0.9997316145858515
+            },
+            {
+              "symbol": "doner",
+              "x": 114.99999815158631,
+              "y": 503.0000071954727,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": [
+            {
+              "value": 2,
+              "x": 114.99999815158631,
+              "y": 243.00000347614287,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 2,
+              "x": 114.99999815158631,
+              "y": 373.00000533580777,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 2,
+              "x": 276.999995547734,
+              "y": 113.00000161647796,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ]
+        }
+      },
+      "anchoredMultiplierLabels": 1118,
+      "samples": [
+        {
+          "kind": "landing",
+          "elapsedMs": 0,
+          "durationMs": 719,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 0,
+              "row": 0,
+              "symbol": "wild",
+              "sourceRow": -5.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -647.5,
+              "targetY": 113,
+              "startMs": 139,
+              "flightMs": 290,
+              "settleMs": 64,
+              "drift": 3.0847908734576777,
+              "lean": 0.05580634129745886,
+              "phase": 5.920323177018227,
+              "curve": 0.9630623243469746,
+              "shake": 1.3070388676598668,
+              "progress": 0,
+              "settleProgress": 0,
+              "x": 115,
+              "y": -647.5,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 1,
+              "symbol": "bomb",
+              "sourceRow": -4.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -517.5,
+              "targetY": 243,
+              "startMs": 138,
+              "flightMs": 288,
+              "settleMs": 75,
+              "drift": 2.9489102042512965,
+              "lean": 0.03236204501986504,
+              "phase": 1.43965606089358,
+              "curve": 0.9656259217811749,
+              "shake": 1.2239356571808457,
+              "progress": 0,
+              "settleProgress": 0,
+              "x": 115,
+              "y": -517.5,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "wild",
+              "x": 114.99999815158631,
+              "y": -647.5000092625618,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "bomb",
+              "x": 114.99999815158631,
+              "y": -517.5000074028968,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": []
+        },
+        {
+          "kind": "landing",
+          "elapsedMs": 356.8999999880798,
+          "durationMs": 719,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 0,
+              "row": 0,
+              "symbol": "wild",
+              "sourceRow": -5.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -647.5,
+              "targetY": 113,
+              "startMs": 139,
+              "flightMs": 290,
+              "settleMs": 64,
+              "drift": 3.0847908734576777,
+              "lean": 0.05580634129745886,
+              "phase": 5.920323177018227,
+              "curve": 0.9630623243469746,
+              "shake": 1.3070388676598668,
+              "progress": 0.7513793103037234,
+              "settleProgress": 0,
+              "x": 115.91627585189381,
+              "y": 41.59179077614715,
+              "rotation": -0.03547676468475388,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 1,
+              "symbol": "bomb",
+              "sourceRow": -4.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -517.5,
+              "targetY": 243,
+              "startMs": 138,
+              "flightMs": 288,
+              "settleMs": 75,
+              "drift": 2.9489102042512965,
+              "lean": 0.03236204501986504,
+              "phase": 1.43965606089358,
+              "curve": 0.9656259217811749,
+              "shake": 1.2239356571808457,
+              "progress": 0.7600694444030549,
+              "settleProgress": 0,
+              "x": 116.47784849239922,
+              "y": 177.48693198168746,
+              "rotation": 0.016078691533028468,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "wild",
+              "x": 115.91627316127293,
+              "y": 41.59178984058078,
+              "rotation": -0.03547676576157283,
+              "scaleX": 0.9999999839650555,
+              "scaleY": 1.0000000142668968
+            },
+            {
+              "symbol": "bomb",
+              "x": 116.47784999550834,
+              "y": 177.4869410155335,
+              "rotation": 0.01607869202138724,
+              "scaleX": 0.9999999839346905,
+              "scaleY": 1.000000014297262
+            }
+          ],
+          "multiplierPaints": []
+        },
+        {
+          "kind": "landing",
+          "elapsedMs": 706.8999999880798,
+          "durationMs": 719,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 5,
+              "row": 0,
+              "symbol": "scatter",
+              "sourceRow": -5.85,
+              "stationary": false,
+              "targetX": 925,
+              "startY": -647.5,
+              "targetY": 113,
+              "startMs": 335,
+              "flightMs": 304,
+              "settleMs": 70,
+              "drift": 3.23391152145341,
+              "lean": 0.054093235445208845,
+              "phase": 6.050372340099304,
+              "curve": 1.0361819508764893,
+              "shake": 1.30012685386464,
+              "progress": 1,
+              "settleProgress": 0.9699999998297114,
+              "x": 924.9999594630544,
+              "y": 113,
+              "rotation": -9.97735147800021e-07,
+              "scaleX": 1.0001693949658936,
+              "scaleY": 0.9998560142789905
+            },
+            {
+              "reel": 5,
+              "row": 1,
+              "symbol": "female",
+              "sourceRow": -4.85,
+              "stationary": false,
+              "targetX": 925,
+              "startY": -517.5,
+              "targetY": 243,
+              "startMs": 332,
+              "flightMs": 304,
+              "settleMs": 66,
+              "drift": 3.0527291203849014,
+              "lean": 0.0575157519527711,
+              "phase": 3.1040067171503885,
+              "curve": 1.0165532473241912,
+              "shake": 1.2755907534621655,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 925,
+              "y": 243,
+              "rotation": -2.646797825354388e-19,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "scatter",
+              "x": 924.9999240971694,
+              "y": 113.00000161647796,
+              "rotation": -9.977351781094963e-07,
+              "scaleX": 1.0001693803245661,
+              "scaleY": 0.9998560094812771
+            },
+            {
+              "symbol": "female",
+              "x": 924.9999851323247,
+              "y": 243.00000347614287,
+              "rotation": -2.646797905759547e-19,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": []
+        },
+        {
+          "kind": "cascade",
+          "elapsedMs": 0,
+          "durationMs": 418,
+          "cascade": 0,
+          "cells": [
+            {
+              "reel": 0,
+              "row": 0,
+              "symbol": "doner",
+              "sourceRow": -2.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -257.5,
+              "targetY": 113,
+              "startMs": 41,
+              "flightMs": 219,
+              "settleMs": 66,
+              "drift": 1.6008520723786206,
+              "lean": 0.03601362451724708,
+              "phase": 4.266024517616008,
+              "curve": 0.9627897119335831,
+              "shake": 1.2480469864793122,
+              "progress": 0,
+              "settleProgress": 0,
+              "x": 115,
+              "y": -257.5,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 1,
+              "symbol": "wild",
+              "sourceRow": -1.85,
+              "stationary": false,
+              "targetX": 115,
+              "startY": -127.5,
+              "targetY": 243,
+              "startMs": 34,
+              "flightMs": 223,
+              "settleMs": 61,
+              "drift": 2.618773724115454,
+              "lean": 0.056420401626266534,
+              "phase": 3.0025923014729075,
+              "curve": 0.9820368940685876,
+              "shake": 2.275411927420646,
+              "progress": 0,
+              "settleProgress": 0,
+              "x": 115,
+              "y": -127.5,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 3,
+              "symbol": "doner",
+              "sourceRow": 3,
+              "stationary": true,
+              "targetX": 115,
+              "startY": 503,
+              "targetY": 503,
+              "startMs": 0,
+              "flightMs": 0,
+              "settleMs": 0,
+              "drift": 2.91411275411956,
+              "lean": 0.06143015321856364,
+              "phase": 3.044166047266293,
+              "curve": 0.9652417925558985,
+              "shake": 1.3894551389850676,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 503,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "doner",
+              "x": 114.99999815158631,
+              "y": -257.500003683567,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "wild",
+              "x": 114.99999815158631,
+              "y": -127.50000182390211,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "doner",
+              "x": 114.99999815158631,
+              "y": 503.0000071954727,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": [
+            {
+              "value": 2,
+              "x": 114.99999815158631,
+              "y": 243.00000347614287,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 2,
+              "x": 114.99999815158631,
+              "y": 373.00000533580777,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 2,
+              "x": 276.999995547734,
+              "y": 113.00000161647796,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ]
+        },
+        {
+          "kind": "cascade",
+          "elapsedMs": 365.69999998212006,
+          "durationMs": 382,
+          "cascade": 1,
+          "cells": [
+            {
+              "reel": 4,
+              "row": 0,
+              "symbol": "dj",
+              "sourceRow": -2.85,
+              "stationary": false,
+              "targetX": 763,
+              "startY": -257.5,
+              "targetY": 113,
+              "startMs": 67,
+              "flightMs": 225,
+              "settleMs": 80,
+              "drift": 2.2857957150554284,
+              "lean": 0.04512071332708001,
+              "phase": 2.8780688828012657,
+              "curve": 1.0505057021300308,
+              "shake": 1.2331824506632982,
+              "progress": 1,
+              "settleProgress": 0.9212499997765008,
+              "x": 762.9984347067593,
+              "y": 113,
+              "rotation": -4.061798290547501e-05,
+              "scaleX": 1.0011570786179373,
+              "scaleY": 0.9990164831747533
+            },
+            {
+              "reel": 4,
+              "row": 1,
+              "symbol": "book",
+              "sourceRow": -1.85,
+              "stationary": false,
+              "targetX": 763,
+              "startY": -127.5,
+              "targetY": 243,
+              "startMs": 59,
+              "flightMs": 222,
+              "settleMs": 62,
+              "drift": 2.9985900887986645,
+              "lean": 0.054943446543067695,
+              "phase": 0.09558800941855926,
+              "curve": 0.9623400073708036,
+              "shake": 1.9353534084744752,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 763,
+              "y": 243,
+              "rotation": -6.421974897278763e-19,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            {
+              "reel": 0,
+              "row": 3,
+              "symbol": "doner",
+              "sourceRow": 3,
+              "stationary": true,
+              "targetX": 115,
+              "startY": 503,
+              "targetY": 503,
+              "startMs": 0,
+              "flightMs": 0,
+              "settleMs": 0,
+              "drift": 2.2657401294447483,
+              "lean": 0.04345318447146565,
+              "phase": 2.492817707223441,
+              "curve": 0.9642627040413209,
+              "shake": 2.0862854523584247,
+              "progress": 1,
+              "settleProgress": 1,
+              "x": 115,
+              "y": 503,
+              "rotation": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          ],
+          "paints": [
+            {
+              "symbol": "dj",
+              "x": 762.99840082214,
+              "y": 113.00000161647796,
+              "rotation": -4.061798413937936e-05,
+              "scaleX": 1.0011570292726202,
+              "scaleY": 0.9990164780476062
+            },
+            {
+              "symbol": "book",
+              "x": 762.999987736177,
+              "y": 243.00000347614287,
+              "rotation": -6.421975092367301e-19,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "symbol": "doner",
+              "x": 114.99999815158631,
+              "y": 503.0000071954727,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ],
+          "multiplierPaints": [
+            {
+              "value": 4,
+              "x": 114.99999815158631,
+              "y": 243.00000347614287,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 4,
+              "x": 114.99999815158631,
+              "y": 373.00000533580777,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            },
+            {
+              "value": 4,
+              "x": 276.999995547734,
+              "y": 113.00000161647796,
+              "rotation": 0,
+              "scaleX": 0.9999999839268374,
+              "scaleY": 1.0000000143051146
+            }
+          ]
+        }
+      ]
+    }
   },
   "runtimeErrors": [],
   "failedRequests": [],
   "externalImages": [],
   "productionSmoke": {
-    "generatedAt": "2026-10-08T07:29:06.233Z",
-    "packageVersion": "5.4.0",
+    "generatedAt": "2026-10-08T10:11:48.178Z",
+    "packageVersion": "5.5.0",
     "config": "studentski-duck-5",
     "passed": true,
     "sourceHashes": {
@@ -1260,9 +2740,10 @@
       "src/engine/evaluator.ts": "277a83a354275920f9f46caa50eee3f996f187cdea37657b91dbca61f82f1b86",
       "src/engine/rng.ts": "029519d1be2b0a27acecf6f5c4f728685fd8e44db86abd782f7cd20ded45cbf4",
       "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
-      "src/render/renderer.ts": "4091b48f9a4b58d5ea7921721c8627285291cbdeae4ca901eee716836c190a54",
+      "src/render/renderer.ts": "707f730b606f5109f99c3d386ba75b937fe6460669d00e164c229e9f93a2643f",
+      "src/render/drop-motion.ts": "da5b6a9c61404fd1591587444a9b05f4233b955641ff4d84480668515f3e411b",
       "src/render/bonus-trigger.ts": "a75a11ed2b79cc7624fbeeedb83b2acc32eab69d019f27c872eb608f5c82fab6",
-      "src/render/art-v2.ts": "8555ef88349c5f56ae2c5130b9804f47d43d663d1e1071b90203c6d2583365a7",
+      "src/render/art-v2.ts": "194dae71f4fca86bcc10079baf9c7993d1b152c9868ef58a878713e240f9e206",
       "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
       "src/main.ts": "38d5eec804e93c5a5e31c44093c282e7963d9582ec593b9ea4cdb5492b7590f0"
     },
@@ -1281,10 +2762,10 @@
   },
   "galleryValidation": {
     "receiptPath": "docs/screenshots/gallery/receipt.json",
-    "receiptSha256": "e1e23d1994f6c6c400e1acac3db9eb1689373e2df5cdd4277ea5d7dfafce517a",
-    "capturedAt": "2026-10-08T07:35:07.532Z",
+    "receiptSha256": "a3b325e7d977d2b7e04ccfe040548cc186cedf743e2c1540624bdf80b2cb3407",
+    "capturedAt": "2026-10-08T10:12:48.333Z",
     "screenshotsVerified": 14,
-    "sourceHashesVerified": 52,
+    "sourceHashesVerified": 53,
     "allEngineReceiptsVerified": true,
     "maxWinExamples": [
       {
@@ -1297,7 +2778,7 @@
         "betCents": 20,
         "costCents": 60000,
         "payoutCents": 600000,
-        "visibleAmount": "6000,00 €"
+        "visibleAmount": "6000,00\u00a0\u20ac"
       },
       {
         "id": "max-win-en",
@@ -1309,7 +2790,7 @@
         "betCents": 20,
         "costCents": 60000,
         "payoutCents": 600000,
-        "visibleAmount": "€6,000.00"
+        "visibleAmount": "\u20ac6,000.00"
       }
     ]
   }

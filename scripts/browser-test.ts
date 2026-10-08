@@ -9,9 +9,9 @@ import { createServer, type ViteDevServer } from 'vite';
 import { CONFIG, PAYING_SYMBOLS, STORAGE_KEY, createSession, startRound, playCompleteRound, advanceRound, dismissPresentation, selectBet, setMode, type BonusTier, type BonusUpgrade, type Grid, type Mode, type RoundChoice, type Session, type SpinPresentation } from '../src/engine';
 import { t } from '../src/i18n';
 
-interface MotionCell { reel: number; row: number; symbol: string; startY: number; y: number; targetY: number; progress: number; rotation: number; sourceRow?: number }
+interface MotionCell { reel: number; row: number; symbol: string; startY: number; x: number; y: number; targetY: number; progress: number; rotation: number; sourceRow?: number; startMs: number; flightMs: number; settleProgress: number; scaleX: number; scaleY: number; stationary: boolean }
 interface MotionView { kind: 'landing' | 'cascade'; elapsedMs: number; durationMs: number; previousAlpha?: number; cells: MotionCell[] }
-interface MotionFrame extends MotionView { cascade: number; paints: {symbol: string; x: number; y: number; rotation: number}[] }
+interface MotionFrame extends MotionView { cascade: number; paints: {symbol: string; x: number; y: number; rotation: number; scaleX: number; scaleY: number}[]; multiplierPaints: {value: number; x: number; y: number; rotation: number; scaleX: number; scaleY: number}[] }
 interface AtlasCell { x: number; y: number; width: number; height: number }
 interface AtlasManifest { image: string; width: number; height: number; cells: Record<string, AtlasCell>; scenes?: AtlasManifest }
 
@@ -220,7 +220,29 @@ async function observeArtworkAndDrops(page: Page) {
   await page.evaluate(() => {
     window.__restoreImageSpy?.(); window.__motionTrace = []; window.__paintedArt = []; window.__paintedArtURLs = [];
     const original = CanvasRenderingContext2D.prototype.drawImage;
-    window.__restoreImageSpy = () => { CanvasRenderingContext2D.prototype.drawImage = original; delete window.__restoreImageSpy; };
+    const strokeText = CanvasRenderingContext2D.prototype.strokeText;
+    const motionFrame = { read() {
+      const board = window.__slot.board(), motion = board.motion;
+      if (!motion) return undefined;
+      let frame = window.__motionTrace!.at(-1);
+      if (!frame || frame.kind !== motion.kind || frame.elapsedMs !== motion.elapsedMs || frame.cascade !== board.cascade) {
+        frame = {...motion, cells: motion.cells.map(cell => ({...cell})), cascade: board.cascade, paints: [], multiplierPaints: []};
+        window.__motionTrace!.push(frame);
+      }
+      return frame;
+    }};
+    window.__restoreImageSpy = () => { CanvasRenderingContext2D.prototype.drawImage = original; CanvasRenderingContext2D.prototype.strokeText = strokeText; delete window.__restoreImageSpy; };
+    CanvasRenderingContext2D.prototype.strokeText = function(text, x, y, maxWidth) {
+      if (this.canvas.id === 'reels' && /^×\d+$/.test(text)) {
+        const frame = motionFrame.read();
+        if (frame) {
+          const matrix = this.getTransform(), horizontal = this.canvas.width / 1040, vertical = this.canvas.height / 730;
+          frame.multiplierPaints.push({value: Number(text.slice(1)), x: (matrix.a * x + matrix.c * y + matrix.e) / horizontal, y: (matrix.b * x + matrix.d * y + matrix.f) / vertical, rotation: Math.atan2(matrix.b / vertical, matrix.a / horizontal), scaleX: Math.hypot(matrix.a / horizontal, matrix.b / vertical), scaleY: Math.hypot(matrix.c / horizontal, matrix.d / vertical)});
+        }
+      }
+      if (maxWidth === undefined) strokeText.call(this, text, x, y);
+      else strokeText.call(this, text, x, y, maxWidth);
+    };
     CanvasRenderingContext2D.prototype.drawImage = function(image: CanvasImageSource, ...args: number[]) {
       if (this.canvas.id === 'reels' && image instanceof HTMLImageElement && /\/art-v[23]\//.test(image.src)) {
         if (!window.__paintedArtURLs!.includes(image.src)) window.__paintedArtURLs!.push(image.src);
@@ -228,16 +250,11 @@ async function observeArtworkAndDrops(page: Page) {
         const matrix = this.getTransform();
         const paintedX = matrix.e / (this.canvas.width / 1040), paintedY = matrix.f / (this.canvas.height / 730);
         if (paintedX >= 34 && paintedX <= 1006 && paintedY >= 48 && paintedY <= 698 && !window.__paintedArt!.includes(symbol)) window.__paintedArt!.push(symbol);
-        const board = window.__slot.board(), motion = board.motion;
-        if (motion) {
-          let frame = window.__motionTrace!.at(-1);
-          if (!frame || frame.kind !== motion.kind || frame.elapsedMs !== motion.elapsedMs || frame.cascade !== board.cascade) {
-            frame = {...motion, cells: motion.cells.map(cell => ({...cell})), cascade: board.cascade, paints: []};
-            window.__motionTrace!.push(frame);
-          }
+        const frame = motionFrame.read();
+        if (frame) {
           // Every paying-symbol atlas crop and feature SVG shares the translated origin.
           // Read the actual canvas transform to independently verify the motion diagnostics.
-          frame.paints.push({symbol, x: paintedX, y: paintedY, rotation: Math.atan2(matrix.b / (this.canvas.height / 730), matrix.a / (this.canvas.width / 1040))});
+          frame.paints.push({symbol, x: paintedX, y: paintedY, rotation: Math.atan2(matrix.b / (this.canvas.height / 730), matrix.a / (this.canvas.width / 1040)), scaleX: Math.hypot(matrix.a / (this.canvas.width / 1040), matrix.b / (this.canvas.height / 730)), scaleY: Math.hypot(matrix.c / (this.canvas.width / 1040), matrix.d / (this.canvas.height / 730))});
         }
       }
       (original as (...parameters: unknown[]) => void).apply(this, [image, ...args]);
@@ -247,7 +264,7 @@ async function observeArtworkAndDrops(page: Page) {
 async function assertDrops(page: Page, view: SpinPresentation, label: string) {
   const trace = await page.evaluate(() => window.__motionTrace ?? []);
   const renderedURLs = await page.evaluate(() => window.__paintedArtURLs ?? []);
-  assert.ok(renderedURLs.length > 0 && renderedURLs.every(url => new URL(url).searchParams.get('v') === '5.4'), 'the actual canvas loads the revised artwork through versioned asset URLs');
+  assert.ok(renderedURLs.length > 0 && renderedURLs.every(url => new URL(url).searchParams.get('v') === '5.5'), 'the actual canvas loads the revised artwork through versioned asset URLs');
   const landing = trace.filter(frame => frame.kind === 'landing');
   assert.ok(landing.length >= (label === "turbo" ? 7 : 15), `real ${label} landing frames are observed`);
   assert.ok(landing[0].durationMs <= (label === 'turbo' ? 850 : 1500), 'configured fall completes faster than the prior version');
@@ -256,13 +273,20 @@ async function assertDrops(page: Page, view: SpinPresentation, label: string) {
   for (const frame of trace) {
     assert.equal(frame.cells.length, 30, 'each committed destination has exactly one moving symbol');
     for (const cell of frame.cells) {
-      assert.ok(Number.isFinite(cell.y) && cell.progress >= 0 && cell.progress <= 1);
-      assert.ok(Math.abs(cell.rotation) <= .056, 'fall wobble stays subtle');
-      if(cell.progress === 1)assert.ok(Math.abs(cell.rotation)<.00001,'settled symbols are upright');
+      assert.ok(Number.isFinite(cell.x) && Number.isFinite(cell.y) && cell.progress >= 0 && cell.progress <= 1);
+      const centerX = 34 + (cell.reel + .5) * cellWidth;
+      assert.ok(Math.abs(cell.x - centerX) <= 4, 'the independent sideways shake remains small and inside its reel');
+      assert.ok(Math.abs(cell.rotation) <= .08, 'fall and landing wobble stay subtle');
+      assert.ok(cell.scaleX >= .9 && cell.scaleX <= 1.1 && cell.scaleY >= .9 && cell.scaleY <= 1.1, 'landing compression preserves symbol legibility');
+      assert.ok(cell.settleProgress >= 0 && cell.settleProgress <= 1 && Number.isFinite(cell.startMs) && Number.isFinite(cell.flightMs));
+      if (cell.progress === 1 && cell.settleProgress === 1 || cell.stationary) {
+        assert.ok(Math.abs(cell.rotation) < .00001 && Math.abs(cell.x - centerX) < .00001, 'completed landings return exactly to their upright cell anchor');
+        assert.equal(cell.scaleX, 1); assert.equal(cell.scaleY, 1);
+      }
       assert.ok(cell.startY <= cell.y + .001 && cell.y <= cell.targetY + .001, `the symbol only falls toward its destination: ${JSON.stringify(cell)}`);
       const expected = frame.kind === 'landing' ? view.initialGrid : view.cascadeSteps[frame.cascade].refilledGrid;
       assert.equal(cell.symbol, expected?.[cell.reel]?.[cell.row], 'the painted identity is the committed destination symbol throughout its fall');
-      assert.ok(frame.paints.some(paint => paint.symbol === visual(cell.symbol) && Math.abs(paint.x - (34 + (cell.reel + .5) * cellWidth)) < .01 && Math.abs(paint.y - cell.y) < .01 && Math.abs(paint.rotation - cell.rotation)<.001), `the actual canvas paints this cell at the diagnosed position: ${JSON.stringify(cell)}`);
+      assert.ok(frame.paints.some(paint => paint.symbol === visual(cell.symbol) && Math.abs(paint.x - cell.x) < .01 && Math.abs(paint.y - cell.y) < .01 && Math.abs(paint.rotation - cell.rotation) < .001 && Math.abs(paint.scaleX - cell.scaleX) < .001 && Math.abs(paint.scaleY - cell.scaleY) < .001), `the actual canvas paints this cell with its own position, rotation and compression: ${JSON.stringify(cell)}`);
       if (frame.kind === 'landing' || (cell.sourceRow ?? -1) < 0) assert.ok(cell.startY < boardTop, 'new symbols enter from above the board');
       else {
         const step = view.cascadeSteps[frame.cascade];
@@ -270,6 +294,20 @@ async function assertDrops(page: Page, view: SpinPresentation, label: string) {
         assert.equal(cell.symbol, step.resolvedGrid[cell.reel][cell.sourceRow!], 'a surviving symbol keeps its real pre-collapse identity');
         assert.ok(cell.sourceRow! <= cell.row, 'surviving symbols only move downward');
       }
+      if (cell.stationary) {
+        assert.equal(cell.sourceRow, cell.row); assert.equal(cell.y, cell.targetY);
+        assert.equal(cell.progress, 1, 'a survivor already in its destination stays still');
+      }
+    }
+    for (const label of frame.multiplierPaints) {
+      assert.ok(Array.from({length: 6}, (_, reel) => 34 + (reel + .5) * cellWidth).some(x => Math.abs(label.x - x) < .01), 'position numbers keep the actual fixed reel center instead of following sprite shake');
+      assert.ok(Array.from({length: 5}, (_, row) => boardTop + (row + .5) * 130).some(y => Math.abs(label.y - y) < .01 || Math.abs(label.y - (y + 43)) < .01), 'position numbers remain painted at their tile anchors');
+      assert.ok(Math.abs(label.rotation) < .00001 && Math.abs(label.scaleX - 1) < .00001 && Math.abs(label.scaleY - 1) < .00001, 'position numbers do not rock or squash with falling artwork');
+      assert.ok(label.value > 1 && label.value <= CONFIG.positionMultiplierLimit);
+    }
+    for (let reel = 0; reel < 6; reel++) {
+      const column = frame.cells.filter(cell => cell.reel === reel).sort((a, b) => a.row - b.row);
+      for (let row = 1; row < column.length; row++) assert.ok(column[row].y - column[row - 1].y >= 107.89, 'independent cells keep their actual order and do not collide while falling');
     }
   }
   const groups = new Map<string, MotionFrame[]>();
@@ -283,10 +321,30 @@ async function assertDrops(page: Page, view: SpinPresentation, label: string) {
       assert.ok(frames[index].cells[cell].y + .001 >= frames[index - 1].cells[cell].y, 'motion never wraps, teleports or falls from below');
     }
   }
-  assert.ok(trace.some(frame=>frame.cells.some(cell=>Math.abs(cell.rotation)>.01)),'actual falling symbols have damped angular movement');
+  assert.ok(trace.some(frame => frame.cells.some(cell => cell.progress > 0 && cell.progress < 1 && Math.abs(cell.rotation) > .015)), 'actual falling symbols have damped angular movement');
+  assert.ok(trace.some(frame => frame.cells.some(cell => cell.progress > 0 && cell.progress < 1 && Math.abs(cell.x - (34 + (cell.reel + .5) * cellWidth)) > .2)), 'actual falling symbols have their own slight sideways shake');
   const cascading = trace.filter(frame => frame.kind === 'cascade');
   assert.ok(cascading.length >= (label === "turbo" ? 4 : 8), 'the same top-down motion is observed during a real refill');
-  timingEvidence[`${label}-top-down-drops`] = {frames: trace.length, landingFrames: landing.length, cascadeFrames: cascading.length, durationMs: landing[0].durationMs, samples: [landing[0], landing[Math.floor(landing.length / 2)], landing.at(-1), cascading[0], cascading.at(-1)]};
+  const independence = (frames: MotionFrame[], name: string) => {
+    const moving = frames[0].cells.filter(cell => !cell.stationary);
+    assert.ok(new Set(moving.map(cell => cell.startMs)).size >= 3, `${name} cells have separate launch moments`);
+    assert.ok(new Set(moving.map(cell => cell.flightMs)).size >= 3, `${name} cells have separate travel durations`);
+    assert.ok(frames.some(frame => {
+      for (let reel = 0; reel < 6; reel++) {
+        const airborne = frame.cells.filter(cell => cell.reel === reel && cell.progress > .1 && cell.progress < .9);
+        if (airborne.length >= 2 && new Set(airborne.map(cell => cell.flightMs)).size >= 2 && Math.max(...airborne.map(cell => cell.rotation)) - Math.min(...airborne.map(cell => cell.rotation)) > .008) return true;
+      }
+      return false;
+    }), `${name} visibly separates cells inside the same reel rather than moving a rigid column`);
+    const impacts = frames.filter(frame => frame.cells.some(cell => !cell.stationary && cell.progress === 1 && cell.settleProgress > 0 && cell.settleProgress < 1 && Math.abs(cell.scaleX - cell.scaleY) > .012));
+    assert.ok(impacts.length > 0, `${name} paints a brief independent compression after contact`);
+    return {distinctStarts: new Set(moving.map(cell => cell.startMs)).size, distinctFlights: new Set(moving.map(cell => cell.flightMs)).size, contactFrames: impacts.length, contactSample: impacts[Math.floor(impacts.length / 2)]};
+  };
+  const independentLanding = independence(landing, 'landing');
+  const firstCascadeIndex = cascading[0].cascade;
+  const independentCascade = independence(cascading.filter(frame => frame.cascade === firstCascadeIndex), 'cascade');
+  assert.ok(cascading.some(frame => frame.multiplierPaints.length), 'real multiplied positions are observed during collapse and remain fixed while the symbols move');
+  timingEvidence[`${label}-top-down-drops`] = {frames: trace.length, landingFrames: landing.length, cascadeFrames: cascading.length, durationMs: landing[0].durationMs, independentLanding, independentCascade, anchoredMultiplierLabels: trace.reduce((sum, frame) => sum + frame.multiplierPaints.length, 0), samples: [landing[0], landing[Math.floor(landing.length / 2)], landing.at(-1), cascading[0], cascading.at(-1)]};
   await page.evaluate(() => window.__restoreImageSpy?.());
 }
 async function observeBeerEffects(page: Page) {
@@ -506,7 +564,7 @@ try {
     assert.ok(decoded.every(image => image.width > 100 && image.height > 100), JSON.stringify(decoded));
     assert.deepEqual(Object.keys(atlasManifest.cells).sort(), [...PAYING_SYMBOLS].sort(), 'the atlas manifest maps every regular paying symbol exactly once');
     const illustrations = await desktop.evaluate(async manifests => Promise.all(manifests.map(async manifest => {
-      const image = new Image(); image.src = `/art-v3/${manifest.image}?v=5.4`; await image.decode();
+      const image = new Image(); image.src = `/art-v3/${manifest.image}?v=5.5`; await image.decode();
       const canvas = document.createElement('canvas'); canvas.width = 100; canvas.height = 100;
       const ctx = canvas.getContext('2d')!;
       const cells = Object.entries(manifest.cells).map(([symbol, cell]) => {
@@ -582,6 +640,39 @@ try {
     await shot(desktop, 'desktop-english');
   });
 
+  await check('Every grid cell ignores mouse hover while clicking a busy board still skips the same paid receipt', desktop, async () => {
+    await reset(desktop, 94411);
+    const canvas = desktop.locator('#reels'), bounds = (await canvas.boundingBox())!;
+    assert.ok(bounds);
+    const before = await snapshot(desktop);
+    const pixels = () => canvas.evaluate(element => {
+      const canvas = element as HTMLCanvasElement;
+      const data = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data;
+      let hash = 2166136261;
+      for (let index = 0; index < data.length; index++) hash = Math.imul(hash ^ data[index], 16777619) >>> 0;
+      return hash;
+    });
+    await desktop.mouse.move(0, 0); await desktop.waitForTimeout(120);
+    const originalPixels = await pixels();
+    for (let reel = 0; reel < 6; reel++) for (let row = 0; row < 5; row++) {
+      await desktop.mouse.move(bounds.x + (34 + (reel + .5) * 162) / 1040 * bounds.width, bounds.y + (48 + (row + .5) * 130) / 730 * bounds.height);
+      await desktop.waitForTimeout(90);
+      assert.equal(await pixels(), originalPixels, `the actual pixels remain unchanged over grid cell ${reel}:${row}`);
+      assert.equal(await canvas.getAttribute('title') ?? '', '', 'the canvas never exposes a native symbol tooltip');
+      assert.equal(await desktop.locator('[role="tooltip"]:visible').count(), 0);
+      assert.equal(await canvas.evaluate(element => getComputedStyle(element).cursor), 'default', 'grid cells never offer a hover or pointer cursor');
+    }
+    assert.deepEqual(await snapshot(desktop), before, 'hovering all thirty cells consumes no money or RNG');
+    await desktop.evaluate(() => window.__slot.setTurbo(false));
+    await desktop.locator('#spin').click();
+    await desktop.waitForFunction(() => document.getElementById('reels')?.dataset.animation === 'spin');
+    assert.equal(await desktop.evaluate(() => window.__slot.busy()), true);
+    await canvas.click({position: {x: bounds.width * .5, y: bounds.height * .5}});
+    await finish(desktop);
+    assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(94411), {kind: 'mode', mode: 'standard'}), 'the existing board click skips visuals without rolling or charging again');
+    timingEvidence.gridHover = {checkedCells: 30, canvasPixelHash: originalPixels, cursor: 'default', unchangedIdleReceipt: true, preservedBusyClickReceipt: true};
+  });
+
   await check(`Paytable lists ${PAYING_SYMBOLS.length} physical-count awards and complete translated rules`, desktop, async () => {
     await desktop.locator('#paytable').click();
     assert.equal(await desktop.locator('.sg-paytable tbody tr').count(), PAYING_SYMBOLS.length);
@@ -597,7 +688,7 @@ try {
       assert.ok(displayScale >= 1 && displayScale <= 1.3, 'paytable zoom uses the transparent margins while preserving one selected cell');
       assert.ok(Math.abs(Number(await painted.locator('image').getAttribute('x')) - (-cell.x * displayScale - (displayScale - 1) * cell.width / 2)) < .01);
       assert.ok(Math.abs(Number(await painted.locator('image').getAttribute('y')) - (-cell.y * displayScale - (displayScale - 1) * cell.height / 2)) < .01);
-      assert.equal(await painted.locator('image').getAttribute('href'), `/art-v3/${atlasManifest.image}?v=5.4`, 'paytable art matches the actual reel illustration');
+      assert.equal(await painted.locator('image').getAttribute('href'), `/art-v3/${atlasManifest.image}?v=5.5`, 'paytable art matches the actual reel illustration');
     }
     assert.equal(await desktop.locator('.sg-special-symbols article').count(), 6);
     await shot(desktop, 'desktop-paytable');
@@ -690,7 +781,7 @@ try {
       assert.equal(await sceneArt.getAttribute('viewBox'), `0 0 ${sceneCell.width} ${sceneCell.height}`, 'each bonus displays exactly its original painted scene tile');
       assert.equal(await sceneArt.locator('image').getAttribute('x'), String(-sceneCell.x));
       assert.equal(await sceneArt.locator('image').getAttribute('y'), String(-sceneCell.y));
-      assert.equal(await sceneArt.locator('image').getAttribute('href'), `/art-v3/${atlasManifest.scenes!.image}?v=5.4`);
+      assert.equal(await sceneArt.locator('image').getAttribute('href'), `/art-v3/${atlasManifest.scenes!.image}?v=5.5`);
       assert.equal(await desktop.locator('.upgrade-tag.unlocked').count(), upgrades);
       const intro = await desktop.evaluate(() => window.__slot.bonusPresentation());
       assert.equal(intro?.phase, 'result');
@@ -1027,7 +1118,10 @@ try {
       assert.ok(landed && revealOnly.length >= 2 && boosted.length >= 2, `the actual canvas paints landed badge, revealed regular symbol with old values, and the final boosted symbol: ${JSON.stringify({landed: !!landed, revealOnlyFrames: revealOnly.length, boostedFrames: boosted.length})}`);
       const firstReveal = revealOnly[0], lastReveal = revealOnly.at(-1)!, firstBoost = boosted[0];
       assert.ok(landed.time < firstReveal.time && lastReveal.time < firstBoost.time, 'the revealed paying symbol is a separate visible phase before any applied boost');
-      assert.ok(lastReveal.time - firstReveal.time >= (turbo ? 60 : 100), 'the reveal-only interval spans readable browser frames at both speeds');
+      // A painted reveal stays on screen until the next effect paint. Measuring
+      // only first-to-last reveal samples drops its final displayed frame.
+      const visibleRevealHoldMs = firstEffectTime - firstReveal.time;
+      assert.ok(visibleRevealHoldMs >= (turbo ? 60 : 100), `the actual reveal remains visible before application at both speeds: ${visibleRevealHoldMs} ms`);
       assert.ok(revealOnly.every(frame => JSON.stringify(frame.boardGrid) === JSON.stringify(event.gridAfter)), 'the reveal publishes its actual regular symbol while retaining every old multiplier');
       assert.ok(revealOnly.every(frame => frame.energy === Math.max(...step.positionMultipliers.flat()).toLocaleString('en-GB')), 'the highest-multiplier panel keeps the old value throughout reveal');
       assert.ok(activeEffects.every(effect => effect.time > lastReveal.time), 'beer throws, impacts and the source boost label begin only after the visible reveal-only phase');
@@ -1042,7 +1136,7 @@ try {
       }
       assert.equal(await desktop.locator('#energy').innerText(), Math.max(...event.positionMultipliersAfter!.flat()).toLocaleString('en-GB'), 'the highest-multiplier panel catches up when the boost completes');
       assert.deepEqual(await snapshot(desktop), committed, 'both visual phases consume no RNG and create no award');
-      timingEvidence[`${kind}-${speed.toLowerCase()}-reveal-before-boost`] = {source: event.source, symbol: event.symbol, factor: event.factor, oldSourceMultiplier, newSourceMultiplier, revealedAtProgress: firstReveal.progress, revealOnlyDurationMs: Math.round(lastReveal.time - firstReveal.time), firstEffectProgress: Math.min(...activeEffects.map(effect => effect.progress)), boostedAtProgress: firstBoost.progress, recordedTargets: event.targets, actualBottles: trace.filter(effect => effect.kind === 'bottle').length, revealOnlyFrames: revealOnly.length};
+      timingEvidence[`${kind}-${speed.toLowerCase()}-reveal-before-boost`] = {source: event.source, symbol: event.symbol, factor: event.factor, oldSourceMultiplier, newSourceMultiplier, revealedAtProgress: firstReveal.progress, revealOnlyDurationMs: Math.round(lastReveal.time - firstReveal.time), visibleRevealHoldMs: Math.round(visibleRevealHoldMs), firstEffectProgress: Math.min(...activeEffects.map(effect => effect.progress)), boostedAtProgress: firstBoost.progress, recordedTargets: event.targets, actualBottles: trace.filter(effect => effect.kind === 'bottle').length, revealOnlyFrames: revealOnly.length};
       await finish(desktop); await desktop.evaluate(() => window.__restoreBeerSpy?.());
       assert.deepEqual(await snapshot(desktop), playCompleteRound(createSession(seed), {kind:'mode',mode:'standard'}), 'skipping the remainder settles the identical pure-engine receipt');
     });

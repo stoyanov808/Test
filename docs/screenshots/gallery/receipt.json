@@ -1,8 +1,8 @@
 {
-  "presentationVersion": "5.4.0",
+  "presentationVersion": "5.5.0",
   "configVersion": "studentski-duck-5",
   "schemaVersion": 5,
-  "capturedAt": "2026-10-08T07:35:07.532Z",
+  "capturedAt": "2026-10-08T10:12:48.333Z",
   "viewport": {
     "width": 1440,
     "height": 1000,
@@ -26,7 +26,7 @@
   ],
   "sourceHashes": {
     "index.html": "ff0fd82334ea51b0e79a9b6702d7ff6cf59a381c482e2f1f30561b1895af64e4",
-    "package.json": "9359591d295f73e180239a2adecb70950cb69a80ef1604585e06b0412ce0ced0",
+    "package.json": "8f59279ba18b2082be2a30ce022ebf118031467d20357a978dd7715b7c91bde8",
     "public/art-v2/README.md": "e07deabfc39a8798799af229cec1d88a69806a6a6e9e75f3ac827ac92e9296d7",
     "public/art-v2/beer.svg": "cf186fe862c105d52d3c9dab6244ac9836e6dead699f8d15cd168c3ad1cf0224",
     "public/art-v2/bomb.svg": "902b6d8ddb9456e4cabcef15724e9f7cb8a466f709198afc7b702e57befe7096",
@@ -70,11 +70,12 @@
     "src/main.ts": "38d5eec804e93c5a5e31c44093c282e7963d9582ec593b9ea4cdb5492b7590f0",
     "src/menus.css": "54b7022b626a166a98b2977325f6dcee44a7e9f505eb7411947830a570cacf83",
     "src/menus.ts": "9d3b57f350c9a79565172815fd77bd4944470cf7fab45e9407262a37be926062",
-    "src/render/art-v2.ts": "8555ef88349c5f56ae2c5130b9804f47d43d663d1e1071b90203c6d2583365a7",
+    "src/render/art-v2.ts": "194dae71f4fca86bcc10079baf9c7993d1b152c9868ef58a878713e240f9e206",
     "src/render/bonus-trigger.ts": "a75a11ed2b79cc7624fbeeedb83b2acc32eab69d019f27c872eb608f5c82fab6",
     "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
+    "src/render/drop-motion.ts": "da5b6a9c61404fd1591587444a9b05f4233b955641ff4d84480668515f3e411b",
     "src/render/index.ts": "cf8c66a896a83e46bf1eb429df69a363a7f317c4deb69125f0fc52652618b0ec",
-    "src/render/renderer.ts": "4091b48f9a4b58d5ea7921721c8627285291cbdeae4ca901eee716836c190a54",
+    "src/render/renderer.ts": "707f730b606f5109f99c3d386ba75b937fe6460669d00e164c229e9f93a2643f",
     "src/style.css": "4f7d5d834b98ed7df9ed6ad581c571750e71dbbc6b686af7f7b28bcb1f701e4c",
     "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
   },
@@ -83,7 +84,7 @@
       "id": "normal-2-reveal",
       "title": "Normal xWays: revealed symbol before the local boost",
       "file": "normal-2-reveal.png",
-      "sha256": "d1aec682dfded31de16f8a83131cf79cd0a6f533a92ef35ec9728d75647d8fc4",
+      "sha256": "d0ed98bad7499bdfa8a9d282d814e29e021472b7647868206b37770f613ddbd1",
       "seed": 1,
       "choice": {
         "kind": "mode",
@@ -127,7 +128,7 @@
         "cascade": 1,
         "modifier": {
           "kind": "xways",
-          "progress": 0.4079999999999998,
+          "progress": 0.39888888889551205,
           "phase": "revealed",
           "revealedSymbol": "doner",
           "source": {
@@ -301,7 +302,7 @@
       "id": "normal-2-boost",
       "title": "Normal xWays: one local ×2 beer/foam impact",
       "file": "normal-2-boost.png",
-      "sha256": "09a8e88dd2a763f28f95b396cbc89a7ae9674842e36352fd87bd4f9d22b41fec",
+      "sha256": "e909c9712932ec6a215a3f358f3db1ae9e067c4eae27dbf447bea6c587bc417c",
       "seed": 1,
       "choice": {
         "kind": "mode",
@@ -345,7 +346,7 @@
         "cascade": 1,
         "modifier": {
           "kind": "xways",
-          "progress": 0.7096666666567317,
+          "progress": 0.7045555555489328,
           "phase": "applying",
           "revealedSymbol": "doner",
           "source": {
@@ -519,7 +520,7 @@
       "id": "normal-4-boost",
       "title": "Normal xWays: ×4 local variation",
       "file": "normal-4-boost.png",
-      "sha256": "7a3569f0edfd6771aa0263f02e789324126f87a261433b987253415af7d506b8",
+      "sha256": "db6f153bcd074a42d7c86f386a3a81592d897e8cadcd9671f4159991d79ba0bb",
       "seed": 1,
       "choice": {
         "kind": "mode",
@@ -563,7 +564,7 @@
         "cascade": 0,
         "modifier": {
           "kind": "xways",
-          "progress": 0.7183333333267122,
+          "progress": 0.7167777777777762,
           "phase": "applying",
           "revealedSymbol": "dj",
           "source": {
@@ -737,7 +738,7 @@
       "id": "normal-8-boost",
       "title": "Normal xWays: ×8 local variation",
       "file": "normal-8-boost.png",
-      "sha256": "359179a9aa5188eea0b9c6ff088b87152b7aaa206efaaabac26f6934fe478d1f",
+      "sha256": "a84b7b23e2ca5ca47acdffe2fbe4a23fc9b5f4f743c8baae492c80bc388afb1c",
       "seed": 1,
       "choice": {
         "kind": "mode",
@@ -781,7 +782,7 @@
         "cascade": 0,
         "modifier": {
           "kind": "xways",
-          "progress": 0.7144444444411339,
+          "progress": 0.7332222222089776,
           "phase": "applying",
           "revealedSymbol": "dj",
           "source": {
@@ -955,7 +956,7 @@
       "id": "upgraded-reveal",
       "title": "Upgraded xWays: reveal before beer transmission",
       "file": "upgraded-reveal.png",
-      "sha256": "98a64385c3fe10ee8e20f7fa8361053e5babc6eff202f1f90f6c5eb2ea90c3b8",
+      "sha256": "4b667abd5b04b8ee83dba3bb164b245cbc2128087dee61984a5f2016dd14a52a",
       "seed": 55,
       "choice": {
         "kind": "mode",
@@ -999,7 +1000,7 @@
         "cascade": 0,
         "modifier": {
           "kind": "infectious",
-          "progress": 0.39633928571162347,
+          "progress": 0.4087499999840345,
           "phase": "revealed",
           "revealedSymbol": "book",
           "source": {
@@ -1299,7 +1300,7 @@
       "id": "upgraded-spread",
       "title": "Naturally upgraded xWays: beer spreading to recorded book targets",
       "file": "upgraded-spread.png",
-      "sha256": "2bf22f551bd4cd6541918d9f055005d2367b203f151a1112fe28acb451c23608",
+      "sha256": "4ee43c6cfd90de321975d88561096d6bb4c71df368755b83f3ddc85557d75303",
       "seed": 55,
       "choice": {
         "kind": "mode",
@@ -1343,7 +1344,7 @@
         "cascade": 0,
         "modifier": {
           "kind": "infectious",
-          "progress": 0.8291071428571416,
+          "progress": 0.8329464285554617,
           "phase": "applying",
           "revealedSymbol": "book",
           "source": {
@@ -1643,7 +1644,7 @@
       "id": "dorm-wheel",
       "title": "Dorm wheel: 1 distinct guaranteed upgrade(s)",
       "file": "dorm-wheel.png",
-      "sha256": "fc649dec50b7b67b64805080663eae1dd725595b711022224cf30e7365843ad4",
+      "sha256": "771f627b880bb11019e3fe4ac4220ace9de7afdcda773e02aaa7c09c57e58aaf",
       "seed": 1,
       "choice": {
         "kind": "buy",
@@ -1707,7 +1708,7 @@
       "id": "friday-wheel",
       "title": "Friday wheel: 2 distinct guaranteed upgrade(s)",
       "file": "friday-wheel.png",
-      "sha256": "bdbb4781331cd0eeb644e08375e3065201db850c3955d9e5ad26a39770712405",
+      "sha256": "4ae63c1617c044ac494021739e9f0d0743f4de8760d1297b9f9b124177504690",
       "seed": 1,
       "choice": {
         "kind": "buy",
@@ -1773,7 +1774,7 @@
       "id": "december-wheel",
       "title": "December wheel: 3 distinct guaranteed upgrade(s)",
       "file": "december-wheel.png",
-      "sha256": "949eb4be3541bf0fcaecc62ba1db45a48a3af3e96ee04298b6283594089bb0b9",
+      "sha256": "35bda64f73bc9ecccbc4768c0ce83a9ee91558e67d5d57c0aa4447e7ee655fc9",
       "seed": 1,
       "choice": {
         "kind": "buy",
@@ -1841,7 +1842,7 @@
       "id": "december-growth",
       "title": "December bonus: persistent ×256 positions and a recorded scatter-win award",
       "file": "december-growth.png",
-      "sha256": "6ed1c167d25a9415f5af0cead77a7d994d1aaff0b8b992ce1a78bf67daf4a595",
+      "sha256": "d94ae3023fc8fbf02fa222747a62e426eae280db919cd5bc2630ea6c3aaf3754",
       "seed": 3,
       "choice": {
         "kind": "buy",
@@ -1905,7 +1906,7 @@
       "id": "day64-large-win",
       "title": "Day 64: legitimate €138.24 award on a €0.20 base stake",
       "file": "day64-large-win.png",
-      "sha256": "7738630791a91ee5562e666469ac9a3c77150218632455ead0d3737a55055588",
+      "sha256": "b4be5f3aa9ee7e00cdc2c3c2323a22f482dc6d9b1516d2f743aea0b2f2a43732",
       "seed": 27,
       "choice": {
         "kind": "mode",
@@ -2022,7 +2023,7 @@
       "id": "extra-spin-offer",
       "title": "Optional Extra Spin: €3.09 quote after a €5.12 base-round award",
       "file": "extra-spin-offer.png",
-      "sha256": "5ca62c7e6927de0614318ee03b2f3aa01c4b18497a18c8a531edb2963923b449",
+      "sha256": "d2f4504291473d101c537f0a2c5098b1ef5bd7a015cf7b700303947ccd4c0c5a",
       "seed": 55,
       "choice": {
         "kind": "mode",
@@ -2127,7 +2128,7 @@
       "id": "max-win-bg",
       "title": "Bulgarian max-win screen: actual 30,000× cap",
       "file": "max-win-bg.png",
-      "sha256": "48bb3c6d22fc0197a6960af22a052c204c2852d9affabdddfc9c409d851ffc01",
+      "sha256": "a5065b0dabaffef1ef58a66a0c9c77f0c524ed3ff5b745453c385bba7dcbcfd6",
       "seed": 3,
       "choice": {
         "kind": "mode",
@@ -2195,7 +2196,7 @@
       "id": "max-win-en",
       "title": "English max-win screen: actual 30,000× cap",
       "file": "max-win-en.png",
-      "sha256": "bfd84b5fc70c02be5869b37d7677ff455757faca985693e9e1ec375670acf8bc",
+      "sha256": "b09d0abdca49cf0657ad98952b7414755ea1a34bd532166f06bb0b871e65167d",
       "seed": 3,
       "choice": {
         "kind": "mode",
