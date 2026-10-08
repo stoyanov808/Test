@@ -18,11 +18,13 @@ interface PartialBoardView {
 interface SpinView { target: BoardView; previous: Grid; elapsed: number; stops: number[]; starts: number[]; flight: number; rowDelay: number; clearDuration: number; duration: number; stopped: Set<number> }
 interface TumbleView { from: Grid; to: Grid; removed: Set<string>; progress: number; duration: number; flight: number; columnDelay: number; rowDelay: number }
 interface MovingCell { reel: number; row: number; symbol: SymbolId; startY: number; y: number; targetY: number; progress: number; sourceRow: number; rotation: number }
-interface EffectView { event: ModifierEvent; progress: number; before: BoardView; splashed: Set<string> }
+interface EffectView { event: ModifierEvent; progress: number; before: BoardView; splashed: Map<string, number>; splashDuration: number }
 interface Particle { x: number; y: number; vx: number; vy: number; spin: number; size: number; color: string; born: number; lifetime: number; fluid?: boolean }
 
 const REELS = 6, ROWS = 5, WIDTH = 1040, HEIGHT = 730;
-const NORMAL_REVEAL_AT = .22;
+const BADGE_REVEAL_AT = .32;
+const NORMAL_BOOST_AT = .56;
+const INFECTION_THROW_AT = .48;
 const AREA = { x: 34, y: 48, w: 972, h: 650 };
 const CELL_W = AREA.w / REELS, CELL_H = AREA.h / ROWS, INK = '#201c28';
 const SCENES: Record<string, { wood: string; shade: string; tint: string; accent: string }> = {
@@ -42,6 +44,9 @@ const seeded = (n: number) => { const value = Math.sin(n * 127.1 + 19.7) * 43758
 const matrix = (value: number) => Array.from({ length: REELS }, () => Array(ROWS).fill(value) as number[]);
 const copyGrid = (grid: Grid): Grid => grid.map(column => [...column]);
 const copyMatrix = (values: number[][]): number[][] => values.map(column => [...column]);
+function badgeImpactAt(event: ModifierEvent, targetIndex: number): number {
+  return event.kind === 'xways' ? NORMAL_BOOST_AT : INFECTION_THROW_AT + .30 + Math.max(0, targetIndex) * .10 / Math.max(1, event.targets.length - 1);
+}
 function centre(cell: CellPosition) { return { x: AREA.x + (cell.reel + .5) * CELL_W, y: AREA.y + (cell.row + .5) * CELL_H }; }
 function polygon(ctx: CanvasRenderingContext2D, points: number[], fill: string, stroke = INK, width = 3) {
   ctx.beginPath(); ctx.moveTo(points[0], points[1]);
@@ -117,7 +122,10 @@ export class SlotRenderer {
       kind: 'cascade' as const, elapsedMs: this.tumble.progress * this.tumble.duration,
       durationMs: this.tumble.duration, cells: this.tumbleCells(),
     } : null;
-    return { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), cascade: this.cascadeIndex, motion, modifier: this.effect ? {kind: this.effect.event.kind, progress: this.effect.progress, source: {...this.effect.event.source}, targets: this.effect.event.targets.map(target => ({...target})), visualTargets: this.beerVisualTargets(this.effect.event)} : null };
+    const event = this.effect?.event;
+    const badge = event?.kind === 'xways' || event?.kind === 'infectious';
+    const phase = badge && this.effect ? this.effect.progress < BADGE_REVEAL_AT ? 'opening' : this.effect.progress < (event.kind === 'xways' ? NORMAL_BOOST_AT : INFECTION_THROW_AT) ? 'revealed' : 'applying' : null;
+    return { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), cascade: this.cascadeIndex, motion, modifier: this.effect ? {kind: this.effect.event.kind, progress: this.effect.progress, phase, revealedSymbol: badge ? event.symbol : undefined, source: {...this.effect.event.source}, targets: this.effect.event.targets.map(target => ({...target})), visualTargets: this.beerVisualTargets(this.effect.event)} : null };
   }
   private publishStep(payoutCents = 0) { this.options.onStep?.({ ...this.snapshot(), payoutCents }); }
   private label(symbol: SymbolId) { const name = `symbol.${symbol}`, value = this.options.translate?.(name); return value && value !== name ? value : SYMBOL_LABELS[symbol] ?? symbol; }
@@ -268,25 +276,43 @@ export class SlotRenderer {
     this.active = false; this.canvas.dataset.animation = 'idle'; this.draw(performance.now());
   }
   private async animateModifier(event: ModifierEvent, turbo: boolean) {
-    this.effect = { event, progress: 0, before: { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), wins: [] }, splashed: new Set() };
+    this.effect = { event, progress: 0, before: { grid: copyGrid(this.current.grid), positionMultipliers: copyMatrix(this.current.positionMultipliers), wins: [] }, splashed: new Map(), splashDuration: turbo ? 160 : 280 };
     this.canvas.dataset.animation = event.kind; this.options.onEvent?.(event.kind, event.shotsAdded ?? event.factor);
     const source = centre(event.source);
     if (event.kind === 'bomb') for (const target of event.targets) { const pos = centre(target); this.emit(pos.x, pos.y, 14, '#eaa756', 750); }
     if (event.kind === 'shot') this.emit(source.x, source.y, 12, '#f8e9ac', 600);
     const duration = event.kind === 'infectious' ? 1120 : event.kind === 'bomb' ? 780 : event.kind === 'shot' ? 740 : 900;
     let revealed = false;
+    const applied = new Set<string>();
     await this.animate(turbo ? Math.round(duration * .55) : duration, p => {
       if (!this.effect) return;
       this.effect.progress = p;
-      if (event.kind === 'xways' && !revealed && p >= NORMAL_REVEAL_AT) {
-        // Publish the already settled source reveal and boost at the same hit,
-        // so the symbol, local number and highest-multiplier panel agree.
+      if (event.kind !== 'xways' && event.kind !== 'infectious') return;
+      if (!revealed && p >= BADGE_REVEAL_AT) {
+        // Open the badge into its recorded regular symbol first. Retain the old
+        // position values for a visible beat before any multiplier is applied.
         revealed = true;
         if (event.gridAfter) this.current.grid = copyGrid(event.gridAfter);
-        if (event.positionMultipliersAfter) this.current.positionMultipliers = copyMatrix(event.positionMultipliersAfter);
         this.publishStep();
       }
+      let boosted = false;
+      event.targets.forEach((target, index) => {
+        if (p < badgeImpactAt(event, index) || applied.has(key(target))) return;
+        applied.add(key(target));
+        if (event.positionMultipliersAfter) this.current.positionMultipliers[target.reel][target.row] = event.positionMultipliersAfter[target.reel][target.row];
+        boosted = true;
+      });
+      if (boosted) this.publishStep();
     });
+    if ((event.kind === 'xways' || event.kind === 'infectious') && !this.skipRequested && !this.destroyed) {
+      // A slow frame must not age an impact before it was ever visible. Paint
+      // any remaining hits, then let their short foam tails finish before the
+      // next badge opens. Skip still settles immediately without this hold.
+      this.draw(performance.now());
+      const lastImpact = Math.max(...this.effect!.splashed.values());
+      const remaining = lastImpact + this.effect!.splashDuration - performance.now();
+      if (remaining > 0) await this.animate(remaining, () => {});
+    }
     if (event.gridAfter) this.current.grid = copyGrid(event.gridAfter);
     if (event.positionMultipliersAfter) this.current.positionMultipliers = copyMatrix(event.positionMultipliersAfter);
     this.effect = null; this.publishStep();
@@ -385,12 +411,18 @@ export class SlotRenderer {
             if (event!.kind === 'bomb' && p > .45) { scale *= 1 - ease((p - .45) / .55); alpha *= 1 - clamp((p - .45) / .55); }
             else if ((event!.kind === 'xways' || event!.kind === 'infectious') && event!.gridAfter?.[reel]?.[row]) {
               const source = key(event!.source) === cellKey;
-              // The badge opens before it sends a multiplier. A receiving cell
-              // changes only when that visible transmission reaches it.
               const targetIndex = event!.targets.findIndex(target => key(target) === cellKey);
-              const impact = event!.kind === 'xways' ? NORMAL_REVEAL_AT : .52 + Math.max(0, targetIndex) * .10 / Math.max(1, event!.targets.length - 1);
-              const revealAt = event!.kind === 'xways' ? NORMAL_REVEAL_AT : .30;
-              if (source && p >= revealAt || !source && p >= impact) {
+              const impact = badgeImpactAt(event!, targetIndex);
+              if (source && p < BADGE_REVEAL_AT) {
+                const opening = clamp((p - .10) / (BADGE_REVEAL_AT - .10));
+                const transition = fallEase(opening);
+                // The speaker rocks open, then the selected paying symbol
+                // expands into place. Its position number remains unchanged.
+                this.drawSymbol(symbol, pos.x, pos.y, time, 1.04 - transition * .30, alpha * (1 - transition), Math.sin(p * 42) * .055 * (1 - transition));
+                if (opening > 0) this.drawSymbol(event!.gridAfter[reel][row], pos.x, pos.y, time, .64 + transition * .36, alpha * transition, -.035 * (1 - transition));
+                this.drawMultiplier(mult, pos.x, pos.y, false); continue;
+              }
+              if (source && p >= BADGE_REVEAL_AT || !source && p >= impact) {
                 this.drawSymbol(event!.gridAfter[reel][row], pos.x, pos.y, time, .97 + Math.sin(p * Math.PI) * .08, alpha, source ? .018 * Math.sin(p * 24) : 0);
                 this.drawMultiplier(p >= impact ? event!.positionMultipliersAfter?.[reel]?.[row] ?? mult : mult, pos.x, pos.y, false); continue;
               }
@@ -486,11 +518,15 @@ export class SlotRenderer {
       const points: number[] = []; for (let i = 0; i < 12; i++) { const angle = i * Math.PI / 6, r = radius * (i % 2 ? .61 : 1); points.push(source.x + Math.cos(angle) * r, source.y + Math.sin(angle) * r); }
       polygon(ctx, points, '#f3c471', '#8c463b', 5); ctx.restore();
     } else { const radius = CELL_H * (.35 + Math.sin(p * Math.PI) * .25); ctx.save(); ctx.globalAlpha = Math.sin(p * Math.PI); ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(source.x, source.y, radius, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-    if ((event.kind === 'xways' && p >= NORMAL_REVEAL_AT) || (event.kind === 'infectious' && p > .2)) {
+    if ((event.kind === 'xways' || event.kind === 'infectious') && p >= BADGE_REVEAL_AT) {
       ctx.save(); ctx.translate(source.x, source.y); ctx.rotate(Math.sin(p * 15) * .018);
-      if (p < .3 && event.symbol) outlinedText(ctx, this.label(event.symbol), 0, event.source.row === ROWS - 1 ? 43 : 61, 21, color, INK, 5);
-      const multiplier = event.kind === 'xways' ? event.positionMultipliersAfter?.[event.source.reel]?.[event.source.row] ?? event.factor ?? 2 : event.factor ?? 2;
-      outlinedText(ctx, `×${multiplier}`, 0, (event.source.row === 0 ? -35 : -53) - Math.sin(p * Math.PI) * 8, 42, color, INK, 7); ctx.restore();
+      const applying = p >= (event.kind === 'xways' ? NORMAL_BOOST_AT : INFECTION_THROW_AT);
+      if (!applying && event.symbol) outlinedText(ctx, this.label(event.symbol), 0, event.source.row === ROWS - 1 ? 43 : 61, 21, color, INK, 5);
+      if (applying) {
+        const multiplier = event.kind === 'xways' ? event.positionMultipliersAfter?.[event.source.reel]?.[event.source.row] ?? event.factor ?? 2 : event.factor ?? 2;
+        outlinedText(ctx, `×${multiplier}`, 0, (event.source.row === 0 ? -35 : -53) - Math.sin(p * Math.PI) * 8, 42, color, INK, 7);
+      }
+      ctx.restore();
     }
     if (event.kind === 'shot' && p > .45) outlinedText(ctx, `+${event.shotsAdded ?? 1} ${this.translate('render.extrashot', 'ЗАВЪРТАНЕ')}`, source.x, source.y - 44 - p * 30, 28, '#f8e2a0', INK, 5);
     if (event.kind === 'infectious') for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5 + time * .001; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(source.x + Math.cos(a) * 43, source.y + Math.sin(a) * 43, 4, 0, Math.PI * 2); ctx.fill(); }
@@ -501,16 +537,16 @@ export class SlotRenderer {
   }
   private drawBeerThrows(event: ModifierEvent, progress: number) {
     if (event.kind === 'xways') {
-      // Duck Hunters normal xWays opens and boosts its own cell. One local
-      // beer/foam hit marks that reveal; no unpaid matching cell is splashed.
-      if (progress >= NORMAL_REVEAL_AT) this.drawBeerSplash(event.source, (progress - NORMAL_REVEAL_AT) / (1 - NORMAL_REVEAL_AT), `source:${key(event.source)}`);
+      // Normal xWays opens first, then boosts only its own cell with one local
+      // beer/foam hit. No unpaid matching cell is splashed.
+      if (progress >= NORMAL_BOOST_AT) this.drawBeerSplash(event.source, `source:${key(event.source)}`);
       return;
     }
     const targets = this.beerVisualTargets(event);
     targets.forEach((target, index) => {
-      const start = .17 + index * .10 / Math.max(1, targets.length - 1), impact = start + .35;
-      this.drawBeerFlight(event.source, target, clamp((progress - start) / .35));
-      if (progress >= impact) this.drawBeerSplash(target, (progress - impact) / (1 - impact), `target:${key(target)}`);
+      const start = INFECTION_THROW_AT + index * .10 / Math.max(1, targets.length - 1), impact = badgeImpactAt(event, index);
+      this.drawBeerFlight(event.source, target, clamp((progress - start) / .30));
+      if (progress >= impact) this.drawBeerSplash(target, `target:${key(target)}`);
     });
   }
   private drawBeerFlight(sourceCell: CellPosition, target: CellPosition, t: number) {
@@ -529,11 +565,14 @@ export class SlotRenderer {
     ctx.strokeStyle='#f8d29a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(-7,22);ctx.stroke();ctx.restore();
   }
   /** Filled beer, a foam crown and hanging droplets make the impact readable. */
-  private drawBeerSplash(target: CellPosition, rawLife: number, identity: string) {
-    const life=clamp(rawLife),pos=centre(target),ctx=this.ctx;
-    if(this.effect&&!this.effect.splashed.has(identity)){
-      this.effect.splashed.add(identity);this.emit(pos.x,pos.y,16,'#d79a36',720,false,true);this.emit(pos.x,pos.y-10,12,'#fff0cb',760,false,true);
+  private drawBeerSplash(target: CellPosition, identity: string) {
+    if (!this.effect) return;
+    const now = performance.now(), pos=centre(target), ctx=this.ctx;
+    if(!this.effect.splashed.has(identity)){
+      this.effect.splashed.set(identity, now);this.emit(pos.x,pos.y,16,'#d79a36',720,false,true);this.emit(pos.x,pos.y-10,12,'#fff0cb',760,false,true);
     }
+    const life=clamp((now - this.effect.splashed.get(identity)!) / this.effect.splashDuration);
+    if (life >= 1) return;
     ctx.save();ctx.translate(pos.x,pos.y);ctx.globalAlpha=life<.32?1:1-ease((life-.32)/.68);
     const burst=ease(Math.min(1,life*5)),points:number[]=[];
     for(let i=0;i<24;i++){const a=i*Math.PI/12,r=(i%2?27:48+seeded(i+37)*20)*(0.55+burst*.65);points.push(Math.cos(a)*r,Math.sin(a)*r);}

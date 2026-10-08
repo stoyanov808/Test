@@ -1,6 +1,6 @@
 {
   "name": "studentski-grad",
-  "version": "5.3.0",
+  "version": "5.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "tsx --test tests/*.test.ts",
     "simulate": "tsx scripts/simulate.ts",
-    "test:browser": "tsx scripts/browser-test.ts"
+    "test:browser": "tsx scripts/browser-test.ts",
+    "capture:gallery": "tsx scripts/capture-gallery.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

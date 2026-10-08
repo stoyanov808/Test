@@ -1,9 +1,10 @@
 {
-  "presentationVersion": "5.3.0",
+  "presentationVersion": "5.4.0",
   "mathematicsVersion": "studentski-duck-5",
-  "browserGeneratedAt": "2026-10-08T06:59:22.706Z",
+  "browserGeneratedAt": "2026-10-08T07:38:25.169Z",
   "engineTestsPassed": 62,
-  "browserChecksPassed": 43,
+  "productionBuildPassed": true,
+  "browserChecksPassed": 48,
   "browserChecksFailed": 0,
   "browserSourceHashes": {
     "index.html": "ff0fd82334ea51b0e79a9b6702d7ff6cf59a381c482e2f1f30561b1895af64e4",
@@ -34,7 +35,7 @@
     "public/art-v3/manifest.json": "3973d935cfecadc611b7d5bb04fe5f390a8cef5e756360e25fc2ce3e276d6291",
     "public/art-v3/scene-atlas.png": "a7c6ca6ca22e8424a13fc9054932a9214f83b0c3785b5a88fa5377f5896d90a7",
     "public/art-v3/symbol-atlas.png": "beae7ea7016c46a56553b408f00e73836188afcede2ea492519cd6bb14559e2a",
-    "scripts/browser-test.ts": "fa7607eb2b9a71f1eb772e0941e0c8110cf631dbcc44f4ff7a7b3c85e61efa51",
+    "scripts/browser-test.ts": "a62be3724019a8acb16e4ee3d133dc02e723225904fdfd0c6894853d778c7617",
     "src/audio.ts": "29807275831a3e06f70536b401861ea1cb282de3ee263a0faf949f7b74bc796f",
     "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
     "src/engine/config.ts": "e139911399a038a1df509fbbe3c01b6577e5051ca9797b0ff0dac6658e70333d",
@@ -48,11 +49,11 @@
     "src/main.ts": "38d5eec804e93c5a5e31c44093c282e7963d9582ec593b9ea4cdb5492b7590f0",
     "src/menus.css": "54b7022b626a166a98b2977325f6dcee44a7e9f505eb7411947830a570cacf83",
     "src/menus.ts": "9d3b57f350c9a79565172815fd77bd4944470cf7fab45e9407262a37be926062",
-    "src/render/art-v2.ts": "4a42222213eff7374bdda71df12a402e0b19ee8559ff8dc8fb102155e40879b6",
+    "src/render/art-v2.ts": "8555ef88349c5f56ae2c5130b9804f47d43d663d1e1071b90203c6d2583365a7",
     "src/render/bonus-trigger.ts": "a75a11ed2b79cc7624fbeeedb83b2acc32eab69d019f27c872eb608f5c82fab6",
     "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
     "src/render/index.ts": "cf8c66a896a83e46bf1eb429df69a363a7f317c4deb69125f0fc52652618b0ec",
-    "src/render/renderer.ts": "d821f2ef0f60988202517915bbac1a0344f5e5851bbad93acc3a7eae3e805911",
+    "src/render/renderer.ts": "4091b48f9a4b58d5ea7921721c8627285291cbdeae4ca901eee716836c190a54",
     "src/style.css": "4f7d5d834b98ed7df9ed6ad581c571750e71dbbc6b686af7f7b28bcb1f701e4c",
     "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
   },
@@ -143,6 +144,26 @@
     },
     {
       "name": "Multiple normal badges on one drop share one revealed symbol and visibly boost their own exact sources",
+      "passed": true
+    },
+    {
+      "name": "Normal xWays visibly reveals before its boost or beer throws at Normal speed",
+      "passed": true
+    },
+    {
+      "name": "Normal xWays visibly reveals before its boost or beer throws at Turbo speed",
+      "passed": true
+    },
+    {
+      "name": "Upgraded xWays visibly reveals before its boost or beer throws at Normal speed",
+      "passed": true
+    },
+    {
+      "name": "Upgraded xWays visibly reveals before its boost or beer throws at Turbo speed",
+      "passed": true
+    },
+    {
+      "name": "Reload during either xWays reveal preserves its receipt and skips to the identical complete outcome",
       "passed": true
     },
     {
@@ -825,10 +846,10 @@
         }
       ],
       "actualBottles": 0,
-      "sourceImpactRadius": 12.588444189437421,
+      "sourceImpactRadius": 12.622427648442681,
       "returningSymbols": 0,
       "sourceBadgeProgress": 0,
-      "sourceRevealProgress": 0.2246666666600423
+      "sourceRevealProgress": 0.10800000000993248
     },
     "normalNoMatchBeer": {
       "source": {
@@ -837,7 +858,7 @@
       },
       "visualTargets": [],
       "actualBottles": 0,
-      "sourceImpactRadius": 12.509149451645957
+      "sourceImpactRadius": 12.622427648442681
     },
     "normalBoostedSource": {
       "source": {
@@ -847,8 +868,182 @@
       "oldMultiplier": 2,
       "factor": 8,
       "newMultiplier": 16,
-      "actualLabelFrames": 30
+      "actualLabelFrames": 16
     },
+    "xways-normal-reveal-before-boost": {
+      "source": {
+        "reel": 0,
+        "row": 1
+      },
+      "symbol": "dj",
+      "factor": 8,
+      "oldSourceMultiplier": 1,
+      "newSourceMultiplier": 8,
+      "revealedAtProgress": 0.32855555555886695,
+      "revealOnlyDurationMs": 195,
+      "firstEffectProgress": 0.5692222222255401,
+      "boostedAtProgress": 0.5692222222255401,
+      "recordedTargets": [
+        {
+          "reel": 0,
+          "row": 1
+        }
+      ],
+      "actualBottles": 0,
+      "revealOnlyFrames": 11
+    },
+    "xways-turbo-reveal-before-boost": {
+      "source": {
+        "reel": 0,
+        "row": 1
+      },
+      "symbol": "dj",
+      "factor": 8,
+      "oldSourceMultiplier": 1,
+      "newSourceMultiplier": 8,
+      "revealedAtProgress": 0.3484848485089253,
+      "revealOnlyDurationMs": 100,
+      "firstEffectProgress": 0.5842424242664952,
+      "boostedAtProgress": 0.5842424242664952,
+      "recordedTargets": [
+        {
+          "reel": 0,
+          "row": 1
+        }
+      ],
+      "actualBottles": 0,
+      "revealOnlyFrames": 6
+    },
+    "infectious-normal-reveal-before-boost": {
+      "source": {
+        "reel": 0,
+        "row": 0
+      },
+      "symbol": "book",
+      "factor": 4,
+      "oldSourceMultiplier": 1,
+      "newSourceMultiplier": 4,
+      "revealedAtProgress": 0.3321428571508347,
+      "revealOnlyDurationMs": 142,
+      "firstEffectProgress": 0.4809821428651308,
+      "boostedAtProgress": 0.8827678571508452,
+      "recordedTargets": [
+        {
+          "reel": 0,
+          "row": 0
+        },
+        {
+          "reel": 0,
+          "row": 1
+        },
+        {
+          "reel": 0,
+          "row": 3
+        },
+        {
+          "reel": 1,
+          "row": 1
+        },
+        {
+          "reel": 2,
+          "row": 0
+        },
+        {
+          "reel": 2,
+          "row": 4
+        },
+        {
+          "reel": 3,
+          "row": 0
+        },
+        {
+          "reel": 4,
+          "row": 1
+        },
+        {
+          "reel": 5,
+          "row": 0
+        }
+      ],
+      "actualBottles": 162,
+      "revealOnlyFrames": 9
+    },
+    "infectious-turbo-reveal-before-boost": {
+      "source": {
+        "reel": 0,
+        "row": 0
+      },
+      "symbol": "book",
+      "factor": 4,
+      "oldSourceMultiplier": 1,
+      "newSourceMultiplier": 4,
+      "revealedAtProgress": 0.3285714285859474,
+      "revealOnlyDurationMs": 71,
+      "firstEffectProgress": 0.4910714285859332,
+      "boostedAtProgress": 0.8967532467677656,
+      "recordedTargets": [
+        {
+          "reel": 0,
+          "row": 0
+        },
+        {
+          "reel": 0,
+          "row": 1
+        },
+        {
+          "reel": 0,
+          "row": 3
+        },
+        {
+          "reel": 1,
+          "row": 1
+        },
+        {
+          "reel": 2,
+          "row": 0
+        },
+        {
+          "reel": 2,
+          "row": 4
+        },
+        {
+          "reel": 3,
+          "row": 0
+        },
+        {
+          "reel": 4,
+          "row": 1
+        },
+        {
+          "reel": 5,
+          "row": 0
+        }
+      ],
+      "actualBottles": 91,
+      "revealOnlyFrames": 5
+    },
+    "revealReload": [
+      {
+        "kind": "xways",
+        "source": {
+          "reel": 0,
+          "row": 1
+        },
+        "receiptId": "round-1:1",
+        "rngState": 518928221,
+        "balanceCents": 999982
+      },
+      {
+        "kind": "infectious",
+        "source": {
+          "reel": 0,
+          "row": 0
+        },
+        "receiptId": "round-1:1",
+        "rngState": 4144337926,
+        "balanceCents": 1000052
+      }
+    ],
     "beerThrows": {
       "targets": [
         {
@@ -888,8 +1083,91 @@
           "row": 0
         }
       ],
-      "actualBottles": 210,
-      "actualImpacts": 2016
+      "actualBottles": 181,
+      "actualImpacts": 1584,
+      "splashDurations": [
+        {
+          "target": {
+            "reel": 0,
+            "row": 0
+          },
+          "visibleFrames": 10,
+          "highOpacityDurationMs": 150,
+          "totalDurationMs": 266
+        },
+        {
+          "target": {
+            "reel": 0,
+            "row": 1
+          },
+          "visibleFrames": 10,
+          "highOpacityDurationMs": 150,
+          "totalDurationMs": 266
+        },
+        {
+          "target": {
+            "reel": 0,
+            "row": 3
+          },
+          "visibleFrames": 10,
+          "highOpacityDurationMs": 150,
+          "totalDurationMs": 267
+        },
+        {
+          "target": {
+            "reel": 1,
+            "row": 1
+          },
+          "visibleFrames": 10,
+          "highOpacityDurationMs": 150,
+          "totalDurationMs": 267
+        },
+        {
+          "target": {
+            "reel": 2,
+            "row": 0
+          },
+          "visibleFrames": 10,
+          "highOpacityDurationMs": 150,
+          "totalDurationMs": 267
+        },
+        {
+          "target": {
+            "reel": 2,
+            "row": 4
+          },
+          "visibleFrames": 10,
+          "highOpacityDurationMs": 150,
+          "totalDurationMs": 267
+        },
+        {
+          "target": {
+            "reel": 3,
+            "row": 0
+          },
+          "visibleFrames": 11,
+          "highOpacityDurationMs": 152,
+          "totalDurationMs": 266
+        },
+        {
+          "target": {
+            "reel": 4,
+            "row": 1
+          },
+          "visibleFrames": 11,
+          "highOpacityDurationMs": 150,
+          "totalDurationMs": 267
+        },
+        {
+          "target": {
+            "reel": 5,
+            "row": 0
+          },
+          "visibleFrames": 11,
+          "highOpacityDurationMs": 149,
+          "totalDurationMs": 266
+        }
+      ]
     },
     "bonusRemainingCounter": {
       "seed": 5,
@@ -902,69 +1180,69 @@
     "normalReels": [
       {
         "phase": "spin",
-        "duration": 1372.4000000059605
+        "duration": 1380.7000000029802
       },
       {
         "phase": "bomb",
-        "duration": 1565.5999999940395
+        "duration": 1582.7000000029802
       },
       {
         "phase": "clear",
-        "duration": 432.40000000596046
+        "duration": 434.69999998807907
       },
       {
         "phase": "cascade",
-        "duration": 718.5
+        "duration": 715.7000000029802
       },
       {
         "phase": "xways",
-        "duration": 919.5
+        "duration": 916.9000000059605
       },
       {
         "phase": "win",
-        "duration": 912.4000000059605
+        "duration": 915.3999999910593
       },
       {
         "phase": "clear",
-        "duration": 432.69999998807907
+        "duration": 432.6000000089407
       },
       {
         "phase": "cascade",
-        "duration": 719.9000000059605
+        "duration": 720.2000000029802
       }
     ],
     "turboReels": [
       {
         "phase": "spin",
-        "duration": 748.7000000029802
+        "duration": 747.7999999970198
       },
       {
         "phase": "bomb",
-        "duration": 865.9000000059605
+        "duration": 884.2999999970198
       },
       {
         "phase": "clear",
-        "duration": 248.70000000298023
+        "duration": 247.40000000596046
       },
       {
         "phase": "cascade",
-        "duration": 435.09999999403954
+        "duration": 445.09999999403954
       },
       {
         "phase": "xways",
-        "duration": 499.5
+        "duration": 506.70000000298023
       },
       {
         "phase": "win",
-        "duration": 382.40000000596046
+        "duration": 382.79999999701977
       },
       {
         "phase": "clear",
-        "duration": 249.5
+        "duration": 251.6000000089407
       },
       {
         "phase": "cascade",
-        "duration": 437.19999998807907
+        "duration": 446.09999999403954
       }
     ]
   },
@@ -972,8 +1250,8 @@
   "failedRequests": [],
   "externalImages": [],
   "productionSmoke": {
-    "generatedAt": "2026-10-08T06:56:57.971Z",
-    "packageVersion": "5.3.0",
+    "generatedAt": "2026-10-08T07:29:06.233Z",
+    "packageVersion": "5.4.0",
     "config": "studentski-duck-5",
     "passed": true,
     "sourceHashes": {
@@ -982,9 +1260,9 @@
       "src/engine/evaluator.ts": "277a83a354275920f9f46caa50eee3f996f187cdea37657b91dbca61f82f1b86",
       "src/engine/rng.ts": "029519d1be2b0a27acecf6f5c4f728685fd8e44db86abd782f7cd20ded45cbf4",
       "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
-      "src/render/renderer.ts": "d821f2ef0f60988202517915bbac1a0344f5e5851bbad93acc3a7eae3e805911",
+      "src/render/renderer.ts": "4091b48f9a4b58d5ea7921721c8627285291cbdeae4ca901eee716836c190a54",
       "src/render/bonus-trigger.ts": "a75a11ed2b79cc7624fbeeedb83b2acc32eab69d019f27c872eb608f5c82fab6",
-      "src/render/art-v2.ts": "4a42222213eff7374bdda71df12a402e0b19ee8559ff8dc8fb102155e40879b6",
+      "src/render/art-v2.ts": "8555ef88349c5f56ae2c5130b9804f47d43d663d1e1071b90203c6d2583365a7",
       "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
       "src/main.ts": "38d5eec804e93c5a5e31c44093c282e7963d9582ec593b9ea4cdb5492b7590f0"
     },
@@ -1000,5 +1278,39 @@
     },
     "reloadLedgerUnchanged": true,
     "errors": []
+  },
+  "galleryValidation": {
+    "receiptPath": "docs/screenshots/gallery/receipt.json",
+    "receiptSha256": "e1e23d1994f6c6c400e1acac3db9eb1689373e2df5cdd4277ea5d7dfafce517a",
+    "capturedAt": "2026-10-08T07:35:07.532Z",
+    "screenshotsVerified": 14,
+    "sourceHashesVerified": 52,
+    "allEngineReceiptsVerified": true,
+    "maxWinExamples": [
+      {
+        "id": "max-win-bg",
+        "choice": {
+          "kind": "mode",
+          "mode": "god"
+        },
+        "seed": 3,
+        "betCents": 20,
+        "costCents": 60000,
+        "payoutCents": 600000,
+        "visibleAmount": "6000,00 €"
+      },
+      {
+        "id": "max-win-en",
+        "choice": {
+          "kind": "mode",
+          "mode": "god"
+        },
+        "seed": 3,
+        "betCents": 20,
+        "costCents": 60000,
+        "payoutCents": 600000,
+        "visibleAmount": "€6,000.00"
+      }
+    ]
   }
 }

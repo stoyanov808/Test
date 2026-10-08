@@ -1,0 +1,2263 @@
+{
+  "presentationVersion": "5.4.0",
+  "configVersion": "studentski-duck-5",
+  "schemaVersion": 5,
+  "capturedAt": "2026-10-08T07:35:07.532Z",
+  "viewport": {
+    "width": 1440,
+    "height": 1000,
+    "deviceScaleFactor": 1
+  },
+  "method": "Actual application, real UI purchases and production seeded engine; read-only animation-frame holds for screenshots. No boards, payouts, cap flags or overlays are injected. Selected seeds demonstrate possibilities, not frequency or RTP.",
+  "capBaseBetMultiple": 30000,
+  "accountingVerified": true,
+  "runtimeErrors": [],
+  "failedLocalRequests": [],
+  "externalImageRequests": [],
+  "assetProvenance": [
+    {
+      "path": "public/art-v3/README.md",
+      "description": "Original OpenAI-generated painted raster symbols and Studentski Grad scenes; no publisher sprites or downloaded photographs."
+    },
+    {
+      "path": "public/art-v2/README.md",
+      "description": "Original authored SVG feature signs and vectors."
+    }
+  ],
+  "sourceHashes": {
+    "index.html": "ff0fd82334ea51b0e79a9b6702d7ff6cf59a381c482e2f1f30561b1895af64e4",
+    "package.json": "9359591d295f73e180239a2adecb70950cb69a80ef1604585e06b0412ce0ced0",
+    "public/art-v2/README.md": "e07deabfc39a8798799af229cec1d88a69806a6a6e9e75f3ac827ac92e9296d7",
+    "public/art-v2/beer.svg": "cf186fe862c105d52d3c9dab6244ac9836e6dead699f8d15cd168c3ad1cf0224",
+    "public/art-v2/bomb.svg": "902b6d8ddb9456e4cabcef15724e9f7cb8a466f709198afc7b702e57befe7096",
+    "public/art-v2/book.svg": "468ab7fb4252bac5bed803232ca141b5a268008aa1f3616427fec043a9265150",
+    "public/art-v2/bouncer.svg": "bc6c7aaf4b216cf752ac4ee7902ad5c6a22b75da3a4dc9fceb50d7195bc22c98",
+    "public/art-v2/coffee.svg": "85416f46ebae65a7acb2483fa8e87bda66c294b79eb59338588a881573333499",
+    "public/art-v2/couple.svg": "0eecbc36f02ac7bb6088446ef8ed03a83d496d5e3b8e7a03826dede0def12824",
+    "public/art-v2/dj.svg": "a59680b80eef0c27c2708c8de1cefe5269c6a6ab829c5336ddc99f33cc8e6ce5",
+    "public/art-v2/doner.svg": "eaa401c97bbeca2b4b4517cedbb8046adae6717365ffb6a9d09bac34fce63bfe",
+    "public/art-v2/female.svg": "e978faefc40245c654e5ba66ee48f37bb76dee9214ae83b0f5773a598a550988",
+    "public/art-v2/infectious-upgraded.svg": "8a0382e8994baca4bbdf0c9ce75e891eef1a5ac1800f8542b799ce7c864b294e",
+    "public/art-v2/infectious.svg": "8a0382e8994baca4bbdf0c9ce75e891eef1a5ac1800f8542b799ce7c864b294e",
+    "public/art-v2/male.svg": "f1c52039ce9c35da23c88732b93ef6eeed39a81d4fa657e89abcb99b639bc8cb",
+    "public/art-v2/noodles.svg": "8a0987b56b01f1283873367383c5f867626643340e0294fb4b73f7405c7ecad0",
+    "public/art-v2/party-shuttle.svg": "dadbe28ca4c1f48387fc0810ba2a95dd6ae703c3044e237eaca2cb1ea8cdaed0",
+    "public/art-v2/scatter.svg": "c69de858e23758519c4546e4444dacff531cc051388cacd1699889ecdb328870",
+    "public/art-v2/scene-base.svg": "9fa8099c39fdce85ad6e3e09ec687f531d63819a72a84d92df9f13838e36a2f2",
+    "public/art-v2/scene-december.svg": "d48f20a010e1701d39f4141294a676d5e87e400564694f9cad40b514eabbc710",
+    "public/art-v2/scene-dorm.svg": "6d5dec9d9aa98983f9287b34bd073188ab9e73131547a202ea7e23ad99627f38",
+    "public/art-v2/scene-friday.svg": "0d75b2f19cffa6e5b3ce2666c94cdb1ae8c7cc6ca870b2df35316cf436c139d8",
+    "public/art-v2/shot.svg": "1836320d97ed258df3f662a169326eb7a4f5e1e4480456f1a6085b2f2958f76b",
+    "public/art-v2/vip.svg": "e989efac6785638feae827d0ba22779273d953b2881dfce3fb02c93914903ddc",
+    "public/art-v2/wild-tall.svg": "1587854007ca373cdd64390cfcd7cd11ddc033dda4cf405cdb512f0dea004825",
+    "public/art-v2/wild.svg": "58f952541e3440618968b94be492d8b5145715751290eba8d06a57485c83e4ce",
+    "public/art-v2/xways.svg": "2051a68d44d5f25ebc324e4829b6eb27f73662a52472bbe02f3dbed6dc7b66b8",
+    "public/art-v3/README.md": "6f6a866057f7014054de9ae55c1dde2a0af5f146a4088d11de05231752432839",
+    "public/art-v3/manifest.json": "3973d935cfecadc611b7d5bb04fe5f390a8cef5e756360e25fc2ce3e276d6291",
+    "public/art-v3/scene-atlas.png": "a7c6ca6ca22e8424a13fc9054932a9214f83b0c3785b5a88fa5377f5896d90a7",
+    "public/art-v3/symbol-atlas.png": "beae7ea7016c46a56553b408f00e73836188afcede2ea492519cd6bb14559e2a",
+    "scripts/capture-gallery.ts": "2514b70da28695c868d11d4f9b1b730b72b43cd0397409bebb3ac72737144729",
+    "src/audio.ts": "29807275831a3e06f70536b401861ea1cb282de3ee263a0faf949f7b74bc796f",
+    "src/engine/accounting.ts": "1d93a04ee765998b46ac05795df81cc8a2a0e9ade03f93cd8da5fd101dc6ce6d",
+    "src/engine/config.ts": "e139911399a038a1df509fbbe3c01b6577e5051ca9797b0ff0dac6658e70333d",
+    "src/engine/engine.ts": "c446e1b5c7416a6d3fbda4726cca1f96d3a9e96d2453ef386a967f93b2fc34b7",
+    "src/engine/evaluator.ts": "277a83a354275920f9f46caa50eee3f996f187cdea37657b91dbca61f82f1b86",
+    "src/engine/index.ts": "ee8c6afeae6dc2cdfda4811c976018f61cfa2b930fe7d215dde3e383f712d01a",
+    "src/engine/persistence.ts": "cf373b37712efe3418c4ceb3fd4667f6ec0777b5d8a6a1a68b1ceb8bed231c91",
+    "src/engine/rng.ts": "029519d1be2b0a27acecf6f5c4f728685fd8e44db86abd782f7cd20ded45cbf4",
+    "src/engine/types.ts": "e79766a2a6c5e0192175a2e631408130e5078ef7e0179cb8f758c792ff675e9c",
+    "src/i18n.ts": "d365ab1da8cad874787761ddb6d87d95c860ab6bad440483bbc7971415c6f920",
+    "src/main.ts": "38d5eec804e93c5a5e31c44093c282e7963d9582ec593b9ea4cdb5492b7590f0",
+    "src/menus.css": "54b7022b626a166a98b2977325f6dcee44a7e9f505eb7411947830a570cacf83",
+    "src/menus.ts": "9d3b57f350c9a79565172815fd77bd4944470cf7fab45e9407262a37be926062",
+    "src/render/art-v2.ts": "8555ef88349c5f56ae2c5130b9804f47d43d663d1e1071b90203c6d2583365a7",
+    "src/render/bonus-trigger.ts": "a75a11ed2b79cc7624fbeeedb83b2acc32eab69d019f27c872eb608f5c82fab6",
+    "src/render/bonus-wheel.ts": "02567554d5f180eb54f19bc56c08edcb6c2cbc7887d6e25627b9dd9e742c399a",
+    "src/render/index.ts": "cf8c66a896a83e46bf1eb429df69a363a7f317c4deb69125f0fc52652618b0ec",
+    "src/render/renderer.ts": "4091b48f9a4b58d5ea7921721c8627285291cbdeae4ca901eee716836c190a54",
+    "src/style.css": "4f7d5d834b98ed7df9ed6ad581c571750e71dbbc6b686af7f7b28bcb1f701e4c",
+    "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
+  },
+  "screenshots": [
+    {
+      "id": "normal-2-reveal",
+      "title": "Normal xWays: revealed symbol before the local boost",
+      "file": "normal-2-reveal.png",
+      "sha256": "d1aec682dfded31de16f8a83131cf79cd0a6f533a92ef35ec9728d75647d8fc4",
+      "seed": 1,
+      "choice": {
+        "kind": "mode",
+        "mode": "standard"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 20,
+      "payoutCents": 2,
+      "payoutBaseBetMultiple": 0.1,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "standard"
+        },
+        "betCents": 20,
+        "costCents": 20,
+        "payoutCents": 2,
+        "spins": 1,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 999982,
+      "engineFinalRngState": 518928221,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "xways",
+        "cascade": 1,
+        "modifier": {
+          "kind": "xways",
+          "progress": 0.4079999999999998,
+          "phase": "revealed",
+          "revealedSymbol": "doner",
+          "source": {
+            "reel": 4,
+            "row": 0
+          },
+          "targets": [
+            {
+              "reel": 4,
+              "row": 0
+            }
+          ],
+          "visualTargets": []
+        },
+        "highestPositionMultiplier": 8,
+        "wheel": null,
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": null
+      },
+      "recordedModifier": {
+        "kind": "xways",
+        "source": {
+          "reel": 4,
+          "row": 0
+        },
+        "targets": [
+          {
+            "reel": 4,
+            "row": 0
+          }
+        ],
+        "factor": 2,
+        "symbol": "doner",
+        "gridAfter": [
+          [
+            "bouncer",
+            "dj",
+            "female",
+            "coffee",
+            "beer"
+          ],
+          [
+            "female",
+            "female",
+            "male",
+            "dj",
+            "coffee"
+          ],
+          [
+            "bouncer",
+            "beer",
+            "noodles",
+            "female",
+            "noodles"
+          ],
+          [
+            "male",
+            "dj",
+            "doner",
+            "dj",
+            "coffee"
+          ],
+          [
+            "doner",
+            "beer",
+            "noodles",
+            "dj",
+            "male"
+          ],
+          [
+            "doner",
+            "bouncer",
+            "noodles",
+            "doner",
+            "scatter"
+          ]
+        ],
+        "positionMultipliersAfter": [
+          [
+            2,
+            8,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            4,
+            1,
+            2
+          ],
+          [
+            1,
+            1,
+            2,
+            1,
+            1
+          ],
+          [
+            2,
+            2,
+            1,
+            1,
+            1
+          ],
+          [
+            2,
+            1,
+            2,
+            1,
+            1
+          ],
+          [
+            1,
+            2,
+            1,
+            1,
+            2
+          ]
+        ]
+      },
+      "priorPositionMultipliers": [
+        [
+          2,
+          8,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          4,
+          1,
+          2
+        ],
+        [
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        [
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          1,
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "id": "normal-2-boost",
+      "title": "Normal xWays: one local ×2 beer/foam impact",
+      "file": "normal-2-boost.png",
+      "sha256": "09a8e88dd2a763f28f95b396cbc89a7ae9674842e36352fd87bd4f9d22b41fec",
+      "seed": 1,
+      "choice": {
+        "kind": "mode",
+        "mode": "standard"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 20,
+      "payoutCents": 2,
+      "payoutBaseBetMultiple": 0.1,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "standard"
+        },
+        "betCents": 20,
+        "costCents": 20,
+        "payoutCents": 2,
+        "spins": 1,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 999982,
+      "engineFinalRngState": 518928221,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "xways",
+        "cascade": 1,
+        "modifier": {
+          "kind": "xways",
+          "progress": 0.7096666666567317,
+          "phase": "applying",
+          "revealedSymbol": "doner",
+          "source": {
+            "reel": 4,
+            "row": 0
+          },
+          "targets": [
+            {
+              "reel": 4,
+              "row": 0
+            }
+          ],
+          "visualTargets": []
+        },
+        "highestPositionMultiplier": 8,
+        "wheel": null,
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": null
+      },
+      "recordedModifier": {
+        "kind": "xways",
+        "source": {
+          "reel": 4,
+          "row": 0
+        },
+        "targets": [
+          {
+            "reel": 4,
+            "row": 0
+          }
+        ],
+        "factor": 2,
+        "symbol": "doner",
+        "gridAfter": [
+          [
+            "bouncer",
+            "dj",
+            "female",
+            "coffee",
+            "beer"
+          ],
+          [
+            "female",
+            "female",
+            "male",
+            "dj",
+            "coffee"
+          ],
+          [
+            "bouncer",
+            "beer",
+            "noodles",
+            "female",
+            "noodles"
+          ],
+          [
+            "male",
+            "dj",
+            "doner",
+            "dj",
+            "coffee"
+          ],
+          [
+            "doner",
+            "beer",
+            "noodles",
+            "dj",
+            "male"
+          ],
+          [
+            "doner",
+            "bouncer",
+            "noodles",
+            "doner",
+            "scatter"
+          ]
+        ],
+        "positionMultipliersAfter": [
+          [
+            2,
+            8,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            4,
+            1,
+            2
+          ],
+          [
+            1,
+            1,
+            2,
+            1,
+            1
+          ],
+          [
+            2,
+            2,
+            1,
+            1,
+            1
+          ],
+          [
+            2,
+            1,
+            2,
+            1,
+            1
+          ],
+          [
+            1,
+            2,
+            1,
+            1,
+            2
+          ]
+        ]
+      },
+      "priorPositionMultipliers": [
+        [
+          2,
+          8,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          4,
+          1,
+          2
+        ],
+        [
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        [
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          1,
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "id": "normal-4-boost",
+      "title": "Normal xWays: ×4 local variation",
+      "file": "normal-4-boost.png",
+      "sha256": "7a3569f0edfd6771aa0263f02e789324126f87a261433b987253415af7d506b8",
+      "seed": 1,
+      "choice": {
+        "kind": "mode",
+        "mode": "standard"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 20,
+      "payoutCents": 2,
+      "payoutBaseBetMultiple": 0.1,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "standard"
+        },
+        "betCents": 20,
+        "costCents": 20,
+        "payoutCents": 2,
+        "spins": 1,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 999982,
+      "engineFinalRngState": 518928221,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "xways",
+        "cascade": 0,
+        "modifier": {
+          "kind": "xways",
+          "progress": 0.7183333333267122,
+          "phase": "applying",
+          "revealedSymbol": "dj",
+          "source": {
+            "reel": 1,
+            "row": 2
+          },
+          "targets": [
+            {
+              "reel": 1,
+              "row": 2
+            }
+          ],
+          "visualTargets": []
+        },
+        "highestPositionMultiplier": 8,
+        "wheel": null,
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": null
+      },
+      "recordedModifier": {
+        "kind": "xways",
+        "source": {
+          "reel": 1,
+          "row": 2
+        },
+        "targets": [
+          {
+            "reel": 1,
+            "row": 2
+          }
+        ],
+        "factor": 4,
+        "symbol": "dj",
+        "gridAfter": [
+          [
+            "wild",
+            "dj",
+            "female",
+            "coffee",
+            "beer"
+          ],
+          [
+            "female",
+            "male",
+            "dj",
+            "coffee",
+            "book"
+          ],
+          [
+            "beer",
+            "noodles",
+            "book",
+            "female",
+            "noodles"
+          ],
+          [
+            "book",
+            "book",
+            "doner",
+            "dj",
+            "coffee"
+          ],
+          [
+            "beer",
+            "noodles",
+            "book",
+            "dj",
+            "male"
+          ],
+          [
+            "noodles",
+            "book",
+            "doner",
+            "scatter",
+            "book"
+          ]
+        ],
+        "positionMultipliersAfter": [
+          [
+            1,
+            8,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            4,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "priorPositionMultipliers": [
+        [
+          1,
+          8,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "normal-8-boost",
+      "title": "Normal xWays: ×8 local variation",
+      "file": "normal-8-boost.png",
+      "sha256": "359179a9aa5188eea0b9c6ff088b87152b7aaa206efaaabac26f6934fe478d1f",
+      "seed": 1,
+      "choice": {
+        "kind": "mode",
+        "mode": "standard"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 20,
+      "payoutCents": 2,
+      "payoutBaseBetMultiple": 0.1,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "standard"
+        },
+        "betCents": 20,
+        "costCents": 20,
+        "payoutCents": 2,
+        "spins": 1,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 999982,
+      "engineFinalRngState": 518928221,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "xways",
+        "cascade": 0,
+        "modifier": {
+          "kind": "xways",
+          "progress": 0.7144444444411339,
+          "phase": "applying",
+          "revealedSymbol": "dj",
+          "source": {
+            "reel": 0,
+            "row": 1
+          },
+          "targets": [
+            {
+              "reel": 0,
+              "row": 1
+            }
+          ],
+          "visualTargets": []
+        },
+        "highestPositionMultiplier": 8,
+        "wheel": null,
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": null
+      },
+      "recordedModifier": {
+        "kind": "xways",
+        "source": {
+          "reel": 0,
+          "row": 1
+        },
+        "targets": [
+          {
+            "reel": 0,
+            "row": 1
+          }
+        ],
+        "factor": 8,
+        "symbol": "dj",
+        "gridAfter": [
+          [
+            "wild",
+            "dj",
+            "female",
+            "coffee",
+            "beer"
+          ],
+          [
+            "female",
+            "male",
+            "xways",
+            "coffee",
+            "book"
+          ],
+          [
+            "beer",
+            "noodles",
+            "book",
+            "female",
+            "noodles"
+          ],
+          [
+            "book",
+            "book",
+            "doner",
+            "dj",
+            "coffee"
+          ],
+          [
+            "beer",
+            "noodles",
+            "book",
+            "dj",
+            "male"
+          ],
+          [
+            "noodles",
+            "book",
+            "doner",
+            "scatter",
+            "book"
+          ]
+        ],
+        "positionMultipliersAfter": [
+          [
+            1,
+            8,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "priorPositionMultipliers": [
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "upgraded-reveal",
+      "title": "Upgraded xWays: reveal before beer transmission",
+      "file": "upgraded-reveal.png",
+      "sha256": "98a64385c3fe10ee8e20f7fa8361053e5babc6eff202f1f90f6c5eb2ea90c3b8",
+      "seed": 55,
+      "choice": {
+        "kind": "mode",
+        "mode": "standard"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 20,
+      "payoutCents": 512,
+      "payoutBaseBetMultiple": 25.6,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "standard"
+        },
+        "betCents": 20,
+        "costCents": 20,
+        "payoutCents": 512,
+        "spins": 1,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 1000492,
+      "engineFinalRngState": 1411040940,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "infectious",
+        "cascade": 0,
+        "modifier": {
+          "kind": "infectious",
+          "progress": 0.39633928571162347,
+          "phase": "revealed",
+          "revealedSymbol": "book",
+          "source": {
+            "reel": 3,
+            "row": 0
+          },
+          "targets": [
+            {
+              "reel": 0,
+              "row": 2
+            },
+            {
+              "reel": 1,
+              "row": 0
+            },
+            {
+              "reel": 1,
+              "row": 3
+            },
+            {
+              "reel": 2,
+              "row": 0
+            },
+            {
+              "reel": 2,
+              "row": 2
+            },
+            {
+              "reel": 3,
+              "row": 0
+            },
+            {
+              "reel": 3,
+              "row": 3
+            }
+          ],
+          "visualTargets": [
+            {
+              "reel": 0,
+              "row": 2
+            },
+            {
+              "reel": 1,
+              "row": 0
+            },
+            {
+              "reel": 1,
+              "row": 3
+            },
+            {
+              "reel": 2,
+              "row": 0
+            },
+            {
+              "reel": 2,
+              "row": 2
+            },
+            {
+              "reel": 3,
+              "row": 0
+            },
+            {
+              "reel": 3,
+              "row": 3
+            }
+          ]
+        },
+        "highestPositionMultiplier": 8,
+        "wheel": null,
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": {
+          "betCents": 20,
+          "costCents": 309,
+          "positionMultipliers": [
+            [
+              4,
+              1,
+              32,
+              1,
+              1
+            ],
+            [
+              64,
+              2,
+              2,
+              8,
+              1
+            ],
+            [
+              32,
+              2,
+              256,
+              1,
+              1
+            ],
+            [
+              8,
+              1,
+              1,
+              16,
+              1
+            ],
+            [
+              2,
+              2,
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          ],
+          "sourceRoundId": "round-1",
+          "alreadyPaidCents": 512
+        }
+      },
+      "recordedModifier": {
+        "kind": "infectious",
+        "source": {
+          "reel": 3,
+          "row": 0
+        },
+        "targets": [
+          {
+            "reel": 0,
+            "row": 2
+          },
+          {
+            "reel": 1,
+            "row": 0
+          },
+          {
+            "reel": 1,
+            "row": 3
+          },
+          {
+            "reel": 2,
+            "row": 0
+          },
+          {
+            "reel": 2,
+            "row": 2
+          },
+          {
+            "reel": 3,
+            "row": 0
+          },
+          {
+            "reel": 3,
+            "row": 3
+          }
+        ],
+        "factor": 4,
+        "symbol": "book",
+        "gridAfter": [
+          [
+            "wild",
+            "male",
+            "book",
+            "noodles",
+            "noodles"
+          ],
+          [
+            "book",
+            "bouncer",
+            "female",
+            "book",
+            "doner"
+          ],
+          [
+            "book",
+            "female",
+            "book",
+            "male",
+            "bouncer"
+          ],
+          [
+            "book",
+            "bouncer",
+            "beer",
+            "book",
+            "bouncer"
+          ],
+          [
+            "beer",
+            "beer",
+            "male",
+            "doner",
+            "beer"
+          ],
+          [
+            "noodles",
+            "female",
+            "dj",
+            "coffee",
+            "noodles"
+          ]
+        ],
+        "positionMultipliersAfter": [
+          [
+            1,
+            1,
+            4,
+            1,
+            1
+          ],
+          [
+            4,
+            1,
+            1,
+            4,
+            1
+          ],
+          [
+            4,
+            1,
+            32,
+            1,
+            1
+          ],
+          [
+            4,
+            1,
+            1,
+            4,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "priorPositionMultipliers": [
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          8,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "upgraded-spread",
+      "title": "Naturally upgraded xWays: beer spreading to recorded book targets",
+      "file": "upgraded-spread.png",
+      "sha256": "2bf22f551bd4cd6541918d9f055005d2367b203f151a1112fe28acb451c23608",
+      "seed": 55,
+      "choice": {
+        "kind": "mode",
+        "mode": "standard"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 20,
+      "payoutCents": 512,
+      "payoutBaseBetMultiple": 25.6,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "standard"
+        },
+        "betCents": 20,
+        "costCents": 20,
+        "payoutCents": 512,
+        "spins": 1,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 1000492,
+      "engineFinalRngState": 1411040940,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "infectious",
+        "cascade": 0,
+        "modifier": {
+          "kind": "infectious",
+          "progress": 0.8291071428571416,
+          "phase": "applying",
+          "revealedSymbol": "book",
+          "source": {
+            "reel": 3,
+            "row": 0
+          },
+          "targets": [
+            {
+              "reel": 0,
+              "row": 2
+            },
+            {
+              "reel": 1,
+              "row": 0
+            },
+            {
+              "reel": 1,
+              "row": 3
+            },
+            {
+              "reel": 2,
+              "row": 0
+            },
+            {
+              "reel": 2,
+              "row": 2
+            },
+            {
+              "reel": 3,
+              "row": 0
+            },
+            {
+              "reel": 3,
+              "row": 3
+            }
+          ],
+          "visualTargets": [
+            {
+              "reel": 0,
+              "row": 2
+            },
+            {
+              "reel": 1,
+              "row": 0
+            },
+            {
+              "reel": 1,
+              "row": 3
+            },
+            {
+              "reel": 2,
+              "row": 0
+            },
+            {
+              "reel": 2,
+              "row": 2
+            },
+            {
+              "reel": 3,
+              "row": 0
+            },
+            {
+              "reel": 3,
+              "row": 3
+            }
+          ]
+        },
+        "highestPositionMultiplier": 8,
+        "wheel": null,
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": {
+          "betCents": 20,
+          "costCents": 309,
+          "positionMultipliers": [
+            [
+              4,
+              1,
+              32,
+              1,
+              1
+            ],
+            [
+              64,
+              2,
+              2,
+              8,
+              1
+            ],
+            [
+              32,
+              2,
+              256,
+              1,
+              1
+            ],
+            [
+              8,
+              1,
+              1,
+              16,
+              1
+            ],
+            [
+              2,
+              2,
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          ],
+          "sourceRoundId": "round-1",
+          "alreadyPaidCents": 512
+        }
+      },
+      "recordedModifier": {
+        "kind": "infectious",
+        "source": {
+          "reel": 3,
+          "row": 0
+        },
+        "targets": [
+          {
+            "reel": 0,
+            "row": 2
+          },
+          {
+            "reel": 1,
+            "row": 0
+          },
+          {
+            "reel": 1,
+            "row": 3
+          },
+          {
+            "reel": 2,
+            "row": 0
+          },
+          {
+            "reel": 2,
+            "row": 2
+          },
+          {
+            "reel": 3,
+            "row": 0
+          },
+          {
+            "reel": 3,
+            "row": 3
+          }
+        ],
+        "factor": 4,
+        "symbol": "book",
+        "gridAfter": [
+          [
+            "wild",
+            "male",
+            "book",
+            "noodles",
+            "noodles"
+          ],
+          [
+            "book",
+            "bouncer",
+            "female",
+            "book",
+            "doner"
+          ],
+          [
+            "book",
+            "female",
+            "book",
+            "male",
+            "bouncer"
+          ],
+          [
+            "book",
+            "bouncer",
+            "beer",
+            "book",
+            "bouncer"
+          ],
+          [
+            "beer",
+            "beer",
+            "male",
+            "doner",
+            "beer"
+          ],
+          [
+            "noodles",
+            "female",
+            "dj",
+            "coffee",
+            "noodles"
+          ]
+        ],
+        "positionMultipliersAfter": [
+          [
+            1,
+            1,
+            4,
+            1,
+            1
+          ],
+          [
+            4,
+            1,
+            1,
+            4,
+            1
+          ],
+          [
+            4,
+            1,
+            32,
+            1,
+            1
+          ],
+          [
+            4,
+            1,
+            1,
+            4,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "priorPositionMultipliers": [
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          8,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "dorm-wheel",
+      "title": "Dorm wheel: 1 distinct guaranteed upgrade(s)",
+      "file": "dorm-wheel.png",
+      "sha256": "fc649dec50b7b67b64805080663eae1dd725595b711022224cf30e7365843ad4",
+      "seed": 1,
+      "choice": {
+        "kind": "buy",
+        "bonus": "dorm"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 1400,
+      "payoutCents": 6520,
+      "payoutBaseBetMultiple": 326,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 7,
+      "bonusTier": "dorm",
+      "bonusUpgrades": [
+        "infectious"
+      ],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "buy",
+          "bonus": "dorm"
+        },
+        "betCents": 20,
+        "costCents": 1400,
+        "payoutCents": 6520,
+        "spins": 7,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": "dorm",
+        "bonusUpgrades": [
+          "infectious"
+        ],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 1005120,
+      "engineFinalRngState": 3379987243,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "idle",
+        "cascade": 0,
+        "modifier": null,
+        "highestPositionMultiplier": 1,
+        "wheel": {
+          "tier": "dorm",
+          "phase": "ready",
+          "upgrades": "infectious",
+          "pointers": "1"
+        },
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": null
+      }
+    },
+    {
+      "id": "friday-wheel",
+      "title": "Friday wheel: 2 distinct guaranteed upgrade(s)",
+      "file": "friday-wheel.png",
+      "sha256": "bdbb4781331cd0eeb644e08375e3065201db850c3955d9e5ad26a39770712405",
+      "seed": 1,
+      "choice": {
+        "kind": "buy",
+        "bonus": "friday"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 4000,
+      "payoutCents": 2,
+      "payoutBaseBetMultiple": 0.1,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 8,
+      "bonusTier": "friday",
+      "bonusUpgrades": [
+        "infectious",
+        "bomb"
+      ],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "buy",
+          "bonus": "friday"
+        },
+        "betCents": 20,
+        "costCents": 4000,
+        "payoutCents": 2,
+        "spins": 8,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": "friday",
+        "bonusUpgrades": [
+          "infectious",
+          "bomb"
+        ],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 996002,
+      "engineFinalRngState": 1251597861,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "idle",
+        "cascade": 0,
+        "modifier": null,
+        "highestPositionMultiplier": 1,
+        "wheel": {
+          "tier": "friday",
+          "phase": "ready",
+          "upgrades": "infectious,bomb",
+          "pointers": "2"
+        },
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": null
+      }
+    },
+    {
+      "id": "december-wheel",
+      "title": "December wheel: 3 distinct guaranteed upgrade(s)",
+      "file": "december-wheel.png",
+      "sha256": "949eb4be3541bf0fcaecc62ba1db45a48a3af3e96ee04298b6283594089bb0b9",
+      "seed": 1,
+      "choice": {
+        "kind": "buy",
+        "bonus": "december"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 12000,
+      "payoutCents": 0,
+      "payoutBaseBetMultiple": 0,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 10,
+      "bonusTier": "december",
+      "bonusUpgrades": [
+        "infectious",
+        "bomb",
+        "shots"
+      ],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "buy",
+          "bonus": "december"
+        },
+        "betCents": 20,
+        "costCents": 12000,
+        "payoutCents": 0,
+        "spins": 10,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": "december",
+        "bonusUpgrades": [
+          "infectious",
+          "bomb",
+          "shots"
+        ],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 988000,
+      "engineFinalRngState": 1236492719,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "idle",
+        "cascade": 0,
+        "modifier": null,
+        "highestPositionMultiplier": 1,
+        "wheel": {
+          "tier": "december",
+          "phase": "ready",
+          "upgrades": "infectious,bomb,shots",
+          "pointers": "3"
+        },
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": null
+      }
+    },
+    {
+      "id": "december-growth",
+      "title": "December bonus: persistent ×256 positions and a recorded scatter-win award",
+      "file": "december-growth.png",
+      "sha256": "6ed1c167d25a9415f5af0cead77a7d994d1aaff0b8b992ce1a78bf67daf4a595",
+      "seed": 3,
+      "choice": {
+        "kind": "buy",
+        "bonus": "december"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 12000,
+      "payoutCents": 2056,
+      "payoutBaseBetMultiple": 102.8,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 10,
+      "bonusTier": "december",
+      "bonusUpgrades": [
+        "infectious",
+        "bomb",
+        "shots"
+      ],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "buy",
+          "bonus": "december"
+        },
+        "betCents": 20,
+        "costCents": 12000,
+        "payoutCents": 2056,
+        "spins": 10,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": "december",
+        "bonusUpgrades": [
+          "infectious",
+          "bomb",
+          "shots"
+        ],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 990056,
+      "engineFinalRngState": 2665259914,
+      "capture": {
+        "presentationId": "round-1:4",
+        "animation": "win",
+        "cascade": 0,
+        "modifier": null,
+        "highestPositionMultiplier": 256,
+        "wheel": null,
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": null
+      },
+      "intermediateVisualDelaysSkipped": true
+    },
+    {
+      "id": "day64-large-win",
+      "title": "Day 64: legitimate €138.24 award on a €0.20 base stake",
+      "file": "day64-large-win.png",
+      "sha256": "7738630791a91ee5562e666469ac9a3c77150218632455ead0d3737a55055588",
+      "seed": 27,
+      "choice": {
+        "kind": "mode",
+        "mode": "wild"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 1800,
+      "payoutCents": 13824,
+      "payoutBaseBetMultiple": 691.2,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "wild"
+        },
+        "betCents": 20,
+        "costCents": 1800,
+        "payoutCents": 13824,
+        "spins": 1,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 1012024,
+      "engineFinalRngState": 296965988,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "idle",
+        "cascade": 1,
+        "modifier": null,
+        "highestPositionMultiplier": 512,
+        "wheel": null,
+        "overlay": "STUDENTSKI NIGHTS\nTHE RECTOR IS BUYING!\n€138.24\n\nI have lectures tomorrow.\n\nCONTINUE",
+        "overlayAmount": "€138.24",
+        "celebrationArtwork": [
+          {
+            "opacity": 1,
+            "scale": "1"
+          },
+          {
+            "opacity": 1,
+            "scale": "1"
+          },
+          {
+            "opacity": 1,
+            "scale": "1"
+          }
+        ],
+        "extraSpinOffer": {
+          "betCents": 20,
+          "costCents": 2606,
+          "positionMultipliers": [
+            [
+              128,
+              64,
+              64,
+              64,
+              64
+            ],
+            [
+              512,
+              128,
+              64,
+              64,
+              64
+            ],
+            [
+              128,
+              128,
+              128,
+              512,
+              64
+            ],
+            [
+              64,
+              64,
+              128,
+              64,
+              64
+            ],
+            [
+              64,
+              256,
+              64,
+              64,
+              64
+            ],
+            [
+              64,
+              256,
+              128,
+              64,
+              64
+            ]
+          ],
+          "sourceRoundId": "round-1",
+          "alreadyPaidCents": 13824
+        }
+      }
+    },
+    {
+      "id": "extra-spin-offer",
+      "title": "Optional Extra Spin: €3.09 quote after a €5.12 base-round award",
+      "file": "extra-spin-offer.png",
+      "sha256": "5ca62c7e6927de0614318ee03b2f3aa01c4b18497a18c8a531edb2963923b449",
+      "seed": 55,
+      "choice": {
+        "kind": "mode",
+        "mode": "standard"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 20,
+      "payoutCents": 512,
+      "payoutBaseBetMultiple": 25.6,
+      "maxWin": false,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "standard"
+        },
+        "betCents": 20,
+        "costCents": 20,
+        "payoutCents": 512,
+        "spins": 1,
+        "maxWin": false,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 1000492,
+      "engineFinalRngState": 1411040940,
+      "capture": {
+        "presentationId": null,
+        "animation": "idle",
+        "cascade": 3,
+        "modifier": null,
+        "highestPositionMultiplier": 256,
+        "wheel": null,
+        "overlay": null,
+        "overlayAmount": null,
+        "celebrationArtwork": [],
+        "extraSpinOffer": {
+          "betCents": 20,
+          "costCents": 309,
+          "positionMultipliers": [
+            [
+              4,
+              1,
+              32,
+              1,
+              1
+            ],
+            [
+              64,
+              2,
+              2,
+              8,
+              1
+            ],
+            [
+              32,
+              2,
+              256,
+              1,
+              1
+            ],
+            [
+              8,
+              1,
+              1,
+              16,
+              1
+            ],
+            [
+              2,
+              2,
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          ],
+          "sourceRoundId": "round-1",
+          "alreadyPaidCents": 512
+        }
+      },
+      "intermediateVisualDelaysSkipped": true
+    },
+    {
+      "id": "max-win-bg",
+      "title": "Bulgarian max-win screen: actual 30,000× cap",
+      "file": "max-win-bg.png",
+      "sha256": "48bb3c6d22fc0197a6960af22a052c204c2852d9affabdddfc9c409d851ffc01",
+      "seed": 3,
+      "choice": {
+        "kind": "mode",
+        "mode": "god"
+      },
+      "language": "bg",
+      "betCents": 20,
+      "costCents": 60000,
+      "payoutCents": 600000,
+      "payoutBaseBetMultiple": 30000,
+      "maxWin": true,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "god"
+        },
+        "betCents": 20,
+        "costCents": 60000,
+        "payoutCents": 600000,
+        "spins": 1,
+        "maxWin": true,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 1540000,
+      "engineFinalRngState": 4084287742,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "idle",
+        "cascade": 0,
+        "modifier": null,
+        "highestPositionMultiplier": 8192,
+        "wheel": null,
+        "overlay": "30 000×\nСТУДЕНТСКИ Е ТВОЙ!\n6000,00 €\n\nСТУДЕНТСКИ Е ТВОЙ!\n\nПРОДЪЛЖИ",
+        "overlayAmount": "6000,00 €",
+        "celebrationArtwork": [
+          {
+            "opacity": 1,
+            "scale": "1"
+          },
+          {
+            "opacity": 1,
+            "scale": "1"
+          },
+          {
+            "opacity": 1,
+            "scale": "1"
+          }
+        ],
+        "extraSpinOffer": null
+      }
+    },
+    {
+      "id": "max-win-en",
+      "title": "English max-win screen: actual 30,000× cap",
+      "file": "max-win-en.png",
+      "sha256": "bfd84b5fc70c02be5869b37d7677ff455757faca985693e9e1ec375670acf8bc",
+      "seed": 3,
+      "choice": {
+        "kind": "mode",
+        "mode": "god"
+      },
+      "language": "en",
+      "betCents": 20,
+      "costCents": 60000,
+      "payoutCents": 600000,
+      "payoutBaseBetMultiple": 30000,
+      "maxWin": true,
+      "capCents": 600000,
+      "spins": 1,
+      "bonusTier": null,
+      "bonusUpgrades": [],
+      "shotsAwarded": 0,
+      "engineReceiptVerified": true,
+      "engineReceipt": {
+        "id": "round-1",
+        "choice": {
+          "kind": "mode",
+          "mode": "god"
+        },
+        "betCents": 20,
+        "costCents": 60000,
+        "payoutCents": 600000,
+        "spins": 1,
+        "maxWin": true,
+        "capOffsetCents": 0,
+        "sourceRoundId": "round-1",
+        "bonusTier": null,
+        "bonusUpgrades": [],
+        "shotsAwarded": 0
+      },
+      "engineInitialBalanceCents": 1000000,
+      "engineFinalBalanceCents": 1540000,
+      "engineFinalRngState": 4084287742,
+      "capture": {
+        "presentationId": "round-1:1",
+        "animation": "idle",
+        "cascade": 0,
+        "modifier": null,
+        "highestPositionMultiplier": 8192,
+        "wheel": null,
+        "overlay": "30 000×\nSTUDENTSKI IS YOURS!\n€6,000.00\n\nSTUDENTSKI IS YOURS!\n\nCONTINUE",
+        "overlayAmount": "€6,000.00",
+        "celebrationArtwork": [
+          {
+            "opacity": 1,
+            "scale": "1"
+          },
+          {
+            "opacity": 1,
+            "scale": "1"
+          },
+          {
+            "opacity": 1,
+            "scale": "1"
+          }
+        ],
+        "extraSpinOffer": null
+      }
+    }
+  ]
+}
