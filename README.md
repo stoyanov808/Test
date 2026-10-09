@@ -1,6 +1,6 @@
 # ОТ СТАРОТО
 
-A browser slot set in a Ruse courtyard, with matching ink cartoon symbols and characters, eight-frame character actions, Bulgarian/English controls and virtual euro credits. This is the default game launched by the repository commands.
+A browser slot set in an illustrated student club, with matching ink cartoon symbols and characters, eight-frame character actions, Bulgarian/English controls and virtual euro credits. This is the default game launched by the repository commands.
 
 ## Run the game
 
@@ -24,11 +24,11 @@ These commands serve the game over HTTP, including its artwork, sound controls a
 
 ## Gameplay and presentation
 
-The left character throws Wilds and retains them in his bonus. The middle character shoots Wilds, with repeated hits doubling their multiplier. The right character reveals marked winning positions as coins, modifiers and collectors. All three can appear together in **ОТ СТАРОТО**, the 2,500× super bonus. **Русенско Варено**, **ЛУКС** and **Ръба са обажда** each have their own character.
+The left character throws Wilds and retains them in his bonus. The middle character expands his whole reel into Wilds and may then shoot random eligible symbols. A regular hit creates a single-use Wild; another Wild hit doubles its multiplier. A hit on an expanded reel doubles all five Wilds and keeps that entire reel sticky until the current bonus ends. Multiple Shooters and sticky expanded reels can appear together. The right character reveals marked winning positions as coins, modifiers and collectors. All three can appear together in **ОТ СТАРОТО**, the 2,500× super bonus. **Русенско Варено**, **ЛУКС** and **Ръба са обажда** each have their own character.
 
-Nine regular symbol types reduce routine tumble chains. Active Wilds substitute toward eight matching positions and multiply regular wins. Sticky Wilds retain their position and multiplier throughout the bonus, dim after contributing to a winning tumble, and recharge on the next free spin.
+The 6×5 board uses the **19 line paths shown in the supplied Le Zeus chart**. Three to six consecutive matching symbols from the left pay the longest bracket on each line. Lines pay separately; shared winning cells clear once before the next drop. Active Wilds substitute and their visible multipliers sum into the global win factor. A line of six active Wilds pays one 200× award before that factor. Sticky Wilds retain their position and multiplier throughout the bonus, dim after contributing to a winning tumble, and recharge on the next free spin.
 
-Coin rounds reveal the whole wave before applying modifiers or collecting. A new collector absorbs the revealed values and any previous collector; collected positions clear and reveal again. The last collector stays. The terminal coin board is paid once.
+Every marked coin box reveals a value, modifier or collector when the feature triggers, including each re-reveal. The whole wave reveals before modifiers or collection. A new collector absorbs the revealed values and any previous collector; collected positions clear and reveal again. The last collector stays. The terminal coin board is paid once.
 
 God Spin places one **MAX** symbol in an actual grid. The car's shots target recorded random grid cells; hitting MAX awards the shared **19,999×** round cap. Feature buys, X Bet prices, ordinary payouts and all animations follow the settled receipt. Reload cannot charge or pay it twice.
 
@@ -36,7 +36,7 @@ The scene and compact controls fill the game window. Holding Space cannot repeat
 
 X BET · 5× CHANCE costs **3× the base bet** and increases the full bonus-trigger probability from **1/200 to 1/40**. Every offered mode has an exact **96.5% expected RTP** across all eight supported stakes, using a fixed weighted outcome catalogue and fresh Web Crypto ticket draws. This is a long-run expectation; individual sessions can return less. All credits are virtual. [The return calculation](variants/ot-staroto/docs/MATH-MODEL.md) describes the model and its limits.
 
-[Game rules and development notes](variants/ot-staroto/README.md) · [Reference and adaptation notes](variants/ot-staroto/docs/LE-BANDIT-REFERENCE.md) · [Screenshot gallery](variants/ot-staroto/docs/GALLERY.md) · [Validation](variants/ot-staroto/docs/VALIDATION.md) · [Replace sound files](variants/ot-staroto/public/audio/README.md)
+[Game rules and development notes](variants/ot-staroto/README.md) · [Payline chart reference](variants/ot-staroto/docs/LE-ZEUS-REFERENCE.md) · [Collector reference](variants/ot-staroto/docs/LE-BANDIT-REFERENCE.md) · [Screenshot gallery](variants/ot-staroto/docs/GALLERY.md) · [Validation](variants/ot-staroto/docs/VALIDATION.md) · [Replace sound files](variants/ot-staroto/public/audio/README.md)
 
 ## Verify
 

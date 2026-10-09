@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "checkedAtUTC": "2026-10-09T12:35:03.655201+00:00",
+  "modelVersion": 4,
+  "runtimeEdits": false,
+  "scope": "Independent exact rational/model/metric checks, deep receipt replay and entropy boundary checks, original user chart comparison, and read-only renderer/UI inspection. Browser release and packaging evidence are reviewed separately.",
+  "sourceHashes": {
+    "src/engine.ts": "7ed0fc5efa02a5c453febd32b07c5c751d22b7075c02419e3af20f90fd708225",
+    "src/types.ts": "326541f1fb58df10554db9ed4745f9f4773d80ce5147d892926d3cd03ae95432",
+    "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+    "src/math-model.ts": "2842948d150e9fa08dd0bdac0a6c6d8dc3f25973a18794b33689fced5da4d77a",
+    "src/math-model.json": "6f682f54985d232c8f09f3c0cd7ef136b1958aba5e81d85a148d56ff6269923e",
+    "src/main.ts": "9c0b235ab18dca7b0ac63b32bfb87dbb5e11325b3bbb282e4e16a7ab91fddd29",
+    "src/renderer.ts": "6ff12252b66a0c879ff9fec4979f97486fcbf0736ce61095d54d9e134413b022",
+    "src/art.ts": "7c0310124610a38e9ccf4ebe56314e7670bddccbcdde849bed3d9b5783b99327",
+    "src/style.css": "0502532e8a87e7d3a78618aab19886cc1d9d60c8470a6cc309cce03a7daf3390",
+    "src/audio.ts": "e7549c94413f0b28131599baedac1aa3c55706156fa135539d1ca64bf5f5e39e",
+    "src/audio-config.ts": "02930cf7ac469057e629ade6a7678502a34013f4ffe2a820e683ce89e822b383",
+    "public/art/student-club-ink.png": "584eb581d68c69d22339739b28dcf8316b5190bdc223b17c0c22d5942ec9de97",
+    "scripts/build-math-model.ts": "dd8dc5cf2c9ed53fd97c99d573a4324f8e700210458a3fc709670e3d0f7c6daa",
+    "scripts/verify-math-model.ts": "720ee14889109f94daf985b1bfcb6142e3716ac85c701268862af525e2d3238b",
+    "scripts/verify-math-outcomes.ts": "13cfc7e0737d9c6f0f0413f6fe9a32599636551ddb04cca6ee0a9a53d3f2cd7f"
+  },
+  "evidenceHashes": {
+    "docs/mathematics-proof.json": "6fdc7d06c0e06cb3aa74dcf70bb9d2cd4fdb913600fe31ff0d51e44666cd9d65",
+    "docs/research/le-zeus-payline-chart.json": "2631ca7cdc77d75e22a0dc5fccb65b6e91878bdd7d61362e6caf275e497f528d",
+    "docs/art/scene-cover-contact-sheet.png": "b28a2240f65a6faa93c38872ad391dda07ade95de5e802b3f92223fc2241da83"
+  },
+  "exactRationalProof": {
+    "status": "passed",
+    "method": "Independent Python integer and Fraction arithmetic, no repository verification functions imported",
+    "modelVersion": 4,
+    "paidModes": 10,
+    "stakes": 8,
+    "exactReturnRows": 80,
+    "targetReturn": "193/200",
+    "conditionalPools": 2,
+    "poolStakeEquations": 80,
+    "metricProbabilitiesChecked": 400,
+    "entries": 53248,
+    "completeStakeOutcomes": 425984,
+    "paylines": 19,
+    "largestIndividualOutcomeProbability": "9644419/3161832622",
+    "failures": 0,
+    "modelSha256": "6f682f54985d232c8f09f3c0cd7ef136b1958aba5e81d85a148d56ff6269923e",
+    "proofSha256": "6fdc7d06c0e06cb3aa74dcf70bb9d2cd4fdb913600fe31ff0d51e44666cd9d65",
+    "sourceHashes": {
+      "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+      "src/engine.ts": "7ed0fc5efa02a5c453febd32b07c5c751d22b7075c02419e3af20f90fd708225",
+      "src/types.ts": "326541f1fb58df10554db9ed4745f9f4773d80ce5147d892926d3cd03ae95432",
+      "src/math-model.ts": "2842948d150e9fa08dd0bdac0a6c6d8dc3f25973a18794b33689fced5da4d77a",
+      "scripts/build-math-model.ts": "dd8dc5cf2c9ed53fd97c99d573a4324f8e700210458a3fc709670e3d0f7c6daa"
+    },
+    "checkedAtUTC": "2026-10-09T12:31:27.115441+00:00",
+    "chartSha256": "2631ca7cdc77d75e22a0dc5fccb65b6e91878bdd7d61362e6caf275e497f528d",
+    "chartReview": "Independent direct visual transcription of all 19 inline diagrams; exact source/proof/evidence match. Prototype numbering follows diagram reading order.",
+    "scriptSha256": "84a5328d4b70e20f84165cd8aa325cf30be49c85a23d6213a8fbede7fe463104"
+  },
+  "deepReceiptReplay": {
+    "status": "passed",
+    "command": "node_modules/.bin/tsx /tmp/v4-math-deep-replay-audit.ts",
+    "modelVersion": 4,
+    "checks": 18,
+    "rejectedMutations": 14,
+    "productionReloadEntropyCalls": 0,
+    "fixtureChoices": [
+      {
+        "kind": "spin"
+      },
+      {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      {
+        "kind": "buy",
+        "tier": "lux"
+      }
+    ],
+    "results": [
+      {
+        "check": "ordinary unchanged complete pending and settled-history receipt replays",
+        "passed": true
+      },
+      {
+        "check": "shooter unchanged complete pending and settled-history receipt replays",
+        "passed": true
+      },
+      {
+        "check": "collector unchanged complete pending and settled-history receipt replays",
+        "passed": true
+      },
+      {
+        "check": "Changed payline number rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed winning path cell rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed shooter phase rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed shot target rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed shot-lock decision rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed expanded reel hit count rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed expanded reel multiplier rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed collector reveal kind rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed collection amount rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed collected source value rejected",
+        "passed": true
+      },
+      {
+        "check": "Appended fixture draw rejected",
+        "passed": true
+      },
+      {
+        "check": "Appended production entropy word rejected",
+        "passed": true
+      },
+      {
+        "check": "Truncated production entropy tape rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed production catalogue index rejected",
+        "passed": true
+      },
+      {
+        "check": "Production pending and settled reload use zero fresh entropy calls",
+        "passed": true
+      }
+    ],
+    "sourceHashes": {
+      "src/engine.ts": "7ed0fc5efa02a5c453febd32b07c5c751d22b7075c02419e3af20f90fd708225",
+      "src/types.ts": "326541f1fb58df10554db9ed4745f9f4773d80ce5147d892926d3cd03ae95432",
+      "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+      "src/math-model.ts": "2842948d150e9fa08dd0bdac0a6c6d8dc3f25973a18794b33689fced5da4d77a",
+      "src/math-model.json": "6f682f54985d232c8f09f3c0cd7ef136b1958aba5e81d85a148d56ff6269923e"
+    },
+    "failures": 0,
+    "reviewer": "Independent math-audit sub-agent; both pending and last-history copies mutated for each rejection check."
+  },
+  "entropyBoundary": {
+    "status": "passed",
+    "command": "node_modules/.bin/tsx /tmp/v4-math-entropy-boundary.ts",
+    "modelVersion": 4,
+    "choice": {
+      "kind": "spin"
+    },
+    "stakeCents": 20,
+    "poolWords": 2,
+    "poolTicketTotal": "11272303840",
+    "acceptedCalls": 1000,
+    "acceptedTapeLength": 1000,
+    "reloadEntropyCalls": 0,
+    "attemptedOverQuotaWords": 1001,
+    "rejectedCalls": 1000,
+    "sessionUnchangedOnFailure": true,
+    "sourceHashes": {
+      "src/engine.ts": "7ed0fc5efa02a5c453febd32b07c5c751d22b7075c02419e3af20f90fd708225",
+      "src/types.ts": "326541f1fb58df10554db9ed4745f9f4773d80ce5147d892926d3cd03ae95432",
+      "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+      "src/math-model.ts": "2842948d150e9fa08dd0bdac0a6c6d8dc3f25973a18794b33689fced5da4d77a",
+      "src/math-model.json": "6f682f54985d232c8f09f3c0cd7ef136b1958aba5e81d85a148d56ff6269923e"
+    },
+    "failures": 0,
+    "reviewer": "Independent math-audit sub-agent; captured production entropy injection for quota boundary and zero-entropy validation replay."
+  },
+  "priorRawHybridReview": {
+    "status": "passed",
+    "command": "node_modules/.bin/tsx /tmp/v4-hybrid-audit.ts",
+    "cases": {
+      "focused": 5,
+      "rounds": 3000,
+      "spins": 27088,
+      "expansions": 3468,
+      "shotPhases": 880,
+      "shotEvents": 1816,
+      "lockedShots": 268,
+      "transientShots": 1548,
+      "multipleExpansionSpins": 219,
+      "rearmedLockedReels": 1331,
+      "partialClearIds": 1582
+    },
+    "mechanicSourceHashes": {
+      "src/engine.ts": "7ed0fc5efa02a5c453febd32b07c5c751d22b7075c02419e3af20f90fd708225",
+      "src/types.ts": "326541f1fb58df10554db9ed4745f9f4773d80ce5147d892926d3cd03ae95432",
+      "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+      "src/math-model.ts": "2842948d150e9fa08dd0bdac0a6c6d8dc3f25973a18794b33689fced5da4d77a"
+    },
+    "currentMechanicSourceMatch": true,
+    "failures": 0,
+    "limits": "Executed during the prior implementation review; current engine/types/paylines/model-schema bytes match that test. Catalogue builder and full replay tooling subsequently changed and the model was regenerated; their checks are represented by the fresh exact/replay reports, not this raw test."
+  },
+  "readOnlyRuntimeInspection": {
+    "status": "passed",
+    "paylineChart": "All 19 paths independently transcribed directly from the inline 7/7/5 diagram rows and compared with source/proof/evidence; source SHA and one-/zero-based rows match. Prototype line numbers follow diagram reading order; no printed official numerals were visible.",
+    "renderer": [
+      "All landed Shooter expansions replay before the optional ordered shots.",
+      "Recorded shot impacts update one cell or all five expanded reel cells, with whole-reel lock cue and persisted multipliers.",
+      "Golden numbered win paths use committed receipt line IDs and cells.",
+      "Coin waves finish all reveals before modifiers, new collector transfers, retained-only clear and repeat.",
+      "No production board/Space event calls renderer.skip."
+    ],
+    "playerRules": "BG and EN text both describe 19 longest left-to-right lines, Wild-only exception, multiple expanding Shooters, optional one-use Wild shots, repeated-hit doubling, bonus-wide sticky full reels and base reset, guaranteed marked coin reveals and terminal-only payout.",
+    "saveMigration": "Version 4 storage imports only settled old virtual-wallet balance/bet and immediately persists a new ledger; old pending receipts remain untouched and are not replayed under changed mathematics.",
+    "visualReview": "Inspected the original club scene landscape/portrait contact sheet and actual focused column-lock renderer capture. Cream/black ink and restrained red/gold accents fit the active symbol and character illustrations; real Wild multipliers and lock cue are readable."
+  },
+  "limits": [
+    "96.5% is the expected weighted paid return, not a lower bound on individual sessions.",
+    "The exact 19 paths and displayed payout brackets are sourced from user-supplied screenshots; no claim to proprietary commercial probabilities or certification.",
+    "Temporary independent audit scripts execute against the pinned sources and write generated evidence; no runtime code was changed by these reviewers."
+  ],
+  "failures": 0
+}

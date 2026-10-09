@@ -5,7 +5,7 @@ import middlePreparation from '../public/art/character-middle-motion-a.png?url&i
 import middleAction from '../public/art/character-middle-motion-b.png?url&inline';
 import rightPreparation from '../public/art/character-right-motion-a.png?url&inline';
 import rightAction from '../public/art/character-right-motion-b.png?url&inline';
-import yard from '../public/art/ruse-yard.png?url&inline';
+import club from '../public/art/student-club-ink.png?url&inline';
 import wild from '../public/art/wild-premium.svg?url&inline';
 import scatter from '../public/art/scatter-premium.svg?url&inline';
 import max from '../public/art/max.svg?url&inline';
@@ -92,7 +92,7 @@ const cropURL = (value: ArtSprite): string => {
 // Cropped URL compatibility is lazy; it is not used to warm all 24 frames.
 const symbolURLs = new Map<SymbolId, string>();
 const frameURLs = new Map<string, string>();
-export const sceneURL = (_tier: Tier | null = null): string => yard;
+export const sceneURL = (_tier: Tier | null = null): string => club;
 export const symbolSprite = (symbol: SymbolId): ArtSprite => sprites[symbol];
 export const characterFrameCount = (character: Character): number => animationSprites[character].length;
 export const characterFrameSprite = (character: Character, index: number): ArtSprite => animationSprites[character][Math.max(0, Math.min(7, Math.floor(index)))];

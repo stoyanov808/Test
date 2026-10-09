@@ -1,6 +1,6 @@
 import { carURL, characterAnimationSprites, characterFrameCount, characterFrameSprite, coinURL, sceneURL, symbolSprite } from './art';
 import { REGULARS, TIER_CHARACTERS } from './engine';
-import type { Cell, Character, Coin, CoinCollection, Feature, Grid, Matrix, Round, Spin, SymbolId, Tier } from './types';
+import type { Cell, Character, Coin, CoinCollection, Feature, Grid, Matrix, Round, Spin, SymbolId, Tier, Win } from './types';
 
 const W = 1240, H = 900;
 const BOARD = { x: 200, y: 170, w: 840, h: 630 };
@@ -40,11 +40,13 @@ export interface MovingSymbol extends DropCell {
 }
 interface DropPlan { cells: DropCell[]; duration: number }
 interface Effect {
-  kind: 'reveal' | 'wild' | 'shot' | 'coin' | 'modifier' | 'collect' | 'coin-clear' | 'tier' | 'god' | 'scatter';
+  kind: 'reveal' | 'wild' | 'shot' | 'expansion' | 'coin' | 'modifier' | 'collect' | 'coin-clear' | 'tier' | 'god' | 'scatter';
   progress: number; source?: Cell; target?: Cell; character?: Character; from?: SymbolId; to?: SymbolId;
   label?: string; value?: number; repeated?: boolean; tier?: Tier; shot?: number; hit?: boolean; coinKind?: Coin['kind']; recipient?: Cell; recipients?: Cell[];
+  boostedReel?: number; sticky?: boolean;
   coin?: Coin; collection?: CoinCollection;
 }
+interface ReelExpansion { reel: number; source: Cell; multiplier: number; cells: Cell[] }
 export interface RendererUpdate {
   spin: Spin | null; round: Round | null; global: number; remaining: number; tier: Tier | null; totalCents: number;
 }
@@ -58,6 +60,10 @@ export interface RendererInspection extends Omit<RendererUpdate, 'spin' | 'round
   coinFlips: { coin: Coin; progress: number }[];
   characterFrames: { character: Character; index: number; count: number; progress: number }[];
   coinTransits: { source: Cell; target: Cell; progress: number; arrival: number }[];
+  winningLines: Win[]; activeLine: number | null; lineProgress: number;
+  expandedReels: ReelExpansion[]; expansionProgress: number; expansionCells: Cell[];
+  expandedReelIds: number[]; lockedReels: number[]; shooterPhase: 'expand' | 'shots' | null;
+  followUpShots: NonNullable<Feature['shotEvents']>;
 }
 export interface RendererOptions {
   /** The full-window shell can own one continuous scene behind the transparent board. */
@@ -152,6 +158,14 @@ export class GameRenderer {
   private clearing = new Set<string>();
   private clearProgress = 0;
   private highlight = new Set<string>();
+  private winningLines: Win[] = [];
+  private activeLine = -1;
+  private lineProgress = 0;
+  private expandedReels: ReelExpansion[] = [];
+  private expansionCells: Cell[] = [];
+  private expandedReelIds = new Set<number>();
+  private lockedReels = new Set<number>();
+  private followUpShots: NonNullable<Feature['shotEvents']> = [];
   private round: Round | null = null;
   private spin: Spin | null = null;
   private global = 1;
@@ -216,6 +230,12 @@ export class GameRenderer {
     this.godGrid = null;
     this.godShotMarks = [];
     this.highlight.clear();
+    this.resetLines();
+    this.expandedReels = [];
+    this.expansionCells = [];
+    this.expandedReelIds.clear();
+    this.lockedReels.clear();
+    this.followUpShots = [];
     this.clearing.clear();
     this.stage = 'idle';
     this.syncGlobal();
@@ -254,6 +274,14 @@ export class GameRenderer {
       coinFlips: this.coinFlips.map(flip => ({ coin: cloneCoin(flip.coin), progress: flip.progress })),
       characterFrames: this.activeCharacters.map(character => this.characterAnimationState(character)),
       coinTransits: this.effect?.kind === 'collect' && this.effect.collection ? this.effect.collection.sources.map((coin, index) => ({ source: { ...coin.cell }, target: { ...this.effect!.collection!.collector }, ...this.collectionTransit(this.effect!.progress, index, this.effect!.collection!.sources.length) })) : [],
+      winningLines: this.winningLines.map(win => ({ ...win, cells: win.cells.map(cell => ({ ...cell })) })),
+      activeLine: this.winningLines[this.activeLine]?.line ?? null, lineProgress: this.lineProgress,
+      expandedReels: this.expandedReels.map(expansion => ({ ...expansion, source: { ...expansion.source }, cells: expansion.cells.map(cell => ({ ...cell })) })),
+      expansionProgress: this.effect?.kind === 'expansion' ? this.effect.progress : 0,
+      expansionCells: this.expansionCells.map(cell => ({ ...cell })),
+      expandedReelIds: [...this.expandedReelIds], lockedReels: [...this.lockedReels],
+      shooterPhase: this.effect?.character === 'middle' ? this.effect.kind === 'expansion' ? 'expand' : this.effect.kind === 'shot' ? 'shots' : null : null,
+      followUpShots: this.followUpShots.map(shot => ({ ...shot, target: { ...shot.target }, hits: shot.hits.map(hit => ({ ...hit, cell: { ...hit.cell } })) })),
       global: this.global, remaining: this.remaining, tier: this.tier, totalCents: this.totalCents,
     };
   }
@@ -282,6 +310,12 @@ export class GameRenderer {
     this.remaining = 0;
     this.totalCents = 0;
     this.activeCharacters = [];
+    this.resetLines();
+    this.expandedReels = [];
+    this.expansionCells = [];
+    this.expandedReelIds.clear();
+    this.lockedReels.clear();
+    this.followUpShots = [];
     this.marks = emptyMarks();
     this.inactiveWilds.clear();
     this.godCutscene = false;
@@ -313,6 +347,11 @@ export class GameRenderer {
         this.tier = spin.tier;
         this.remaining = spin.spinsRemainingBefore;
         this.activeCharacters = tierCharacters(spin.tier);
+        this.expandedReels = [];
+        this.expansionCells = [];
+        this.followUpShots = [];
+        this.expandedReelIds = new Set(spin.initialExpandedReels);
+        this.lockedReels = new Set(spin.tier ? spin.initialExpandedReels.filter(reel => spin.initialWildMultipliers[reel].every(value => value > 0)) : []);
         this.inactiveWilds.clear();
         this.emit();
         if (spin.tier && spin.tier !== previousTier) await this.bonusIntro(spin.tier, turbo);
@@ -336,16 +375,29 @@ export class GameRenderer {
           this.grid = cloneGrid(cascade.resolvedGrid);
           this.wildMultipliers = cloneMatrix(cascade.resolvedWildMultipliers);
           this.marks = cascade.marks.map(column => [...column]);
+          this.expandedReelIds = new Set(cascade.expandedReels);
+          this.lockedReels = new Set(spin.tier ? cascade.expandedReels.filter(reel => cascade.stickyWilds[reel].every(value => value > 0)) : []);
           this.global = cascade.globalMultiplier;
           this.emit();
           if (cascade.wins.length) {
             this.stage = 'win';
+            this.winningLines = cascade.wins.map(win => ({ ...win, cells: win.cells.map(cell => ({ ...cell })) }));
+            this.activeLine = 0;
+            this.lineProgress = 0;
             this.highlight = new Set(cascade.wins.flatMap(win => win.cells).map(key));
             this.totalCents += cascade.wins.reduce((sum, win) => sum + win.payoutCents, 0);
             this.options.onSound?.('win');
             this.emit();
-            await this.animate(turbo ? 190 : 360, () => {});
+            // Readable left-to-right paths are replayed from the awarded cells. The
+            // chart is never inferred from symbol positions or invented by this view.
+            const previews = Math.min(4, this.winningLines.length);
+            await this.animate((turbo ? 240 : 420) + (previews - 1) * (turbo ? 125 : 230), p => {
+              const beat = Math.min(previews - 1, Math.floor(p * previews));
+              this.activeLine = Math.floor(beat * this.winningLines.length / previews);
+              this.lineProgress = p === 1 ? 1 : p * previews - beat;
+            });
             this.highlight.clear();
+            this.resetLines();
           }
           this.inactiveWilds = new Set(cascade.inactiveWildsAfter.map(key));
           this.syncGlobal();
@@ -363,6 +415,7 @@ export class GameRenderer {
         this.wildMultipliers = cloneMatrix(spin.finalWildMultipliers);
         this.marks = spin.marks.map(column => [...column]);
         this.inactiveWilds = new Set(spin.inactiveWilds.map(key));
+        this.expandedReelIds = new Set(spin.finalExpandedReels);
         this.totalCents = spin.roundTotalCents;
         this.remaining = spin.spinsRemainingAfter;
         this.syncGlobal();
@@ -402,6 +455,7 @@ export class GameRenderer {
       this.moving = [];
       this.effect = null;
       this.highlight.clear();
+      this.resetLines();
       this.clearing.clear();
       this.godCutscene = false;
       this.resetCoins();
@@ -431,23 +485,30 @@ export class GameRenderer {
   }
 
   private async presentFeature(feature: Feature, turbo: boolean): Promise<void> {
-    this.stage = `feature-${feature.character}`;
+    const shots = feature.character === 'middle' && feature.phase === 'shots';
+    this.stage = shots ? 'feature-middle-shots' : `feature-${feature.character}`;
     if (!this.activeCharacters.includes(feature.character)) this.activeCharacters.push(feature.character);
     this.emit();
     this.options.onSound?.('feature');
-    const from = this.grid[feature.source.reel][feature.source.row];
-    const to = feature.gridAfter[feature.source.reel][feature.source.row];
-    this.effect = { kind: 'reveal', progress: 0, source: feature.source, character: feature.character, from, to };
-    await this.animate(turbo ? 230 : 420, p => { if (this.effect) this.effect.progress = p; });
-    this.grid[feature.source.reel][feature.source.row] = to;
-    this.effect = null;
-    if (feature.character === 'left' || feature.character === 'middle') {
+    if (!shots) {
+      const from = this.grid[feature.source.reel][feature.source.row];
+      const to = feature.gridAfter[feature.source.reel][feature.source.row];
+      this.effect = { kind: 'reveal', progress: 0, source: feature.source, character: feature.character, from, to };
+      await this.animate(turbo ? 230 : 420, p => { if (this.effect) this.effect.progress = p; });
+      this.grid[feature.source.reel][feature.source.row] = to;
+      this.effect = null;
+    }
+    if (shots) {
+      await this.presentFollowUpShots(feature, turbo);
+    } else if (feature.character === 'middle') {
+      await this.presentExpansion(feature, turbo);
+    } else if (feature.character === 'left') {
       const hits = feature.hits.length ? feature.hits : feature.targets.map(cell => ({ cell, multiplier: feature.wildMultipliersAfter[cell.reel][cell.row], repeated: false }));
       for (const hit of hits) {
-        this.effect = { kind: feature.character === 'left' ? 'wild' : 'shot', progress: 0, source: feature.source, target: hit.cell, character: feature.character, value: hit.multiplier, repeated: hit.repeated };
-        this.options.onSound?.(feature.character === 'left' ? 'throw' : 'shot');
+        this.effect = { kind: 'wild', progress: 0, source: feature.source, target: hit.cell, character: 'left', value: hit.multiplier, repeated: hit.repeated };
+        this.options.onSound?.('throw');
         let impacted = false;
-        await this.animate(turbo ? feature.character === 'left' ? 260 : 225 : feature.character === 'left' ? 460 : 385, p => {
+        await this.animate(turbo ? 260 : 460, p => {
           if (this.effect) this.effect.progress = p;
           if (p >= .68 && !impacted) {
             impacted = true;
@@ -470,6 +531,78 @@ export class GameRenderer {
     this.totalCents += feature.payoutCents;
     this.emit();
     this.draw();
+  }
+
+  /** One committed shooter opens its own reel. Multiple shooters replay in
+   * receipt order, each with its own release and exact final cell multipliers. */
+  private async presentExpansion(feature: Feature, turbo: boolean): Promise<void> {
+    if (feature.expandedReel === undefined || feature.expansionMultiplier === undefined) {
+      throw new Error('An expanding shooter needs its recorded reel and multiplier.');
+    }
+    const hits = feature.hits;
+    this.stage = 'feature-middle-expand';
+    this.expansionCells = [];
+    this.effect = { kind: 'expansion', progress: 0, source: { ...feature.source }, target: { ...feature.source }, character: 'middle', value: feature.expansionMultiplier, recipients: hits.map(hit => ({ ...hit.cell })) };
+    this.options.onSound?.('shot');
+    const revealed = new Set<string>();
+    await this.animate(turbo ? 500 : 835, p => {
+      if (!this.effect) return;
+      this.effect.progress = p;
+      let changed = false;
+      for (const hit of hits) {
+        const identity = key(hit.cell);
+        if (p < this.expansionArrival(hit.cell, feature.source) || revealed.has(identity)) continue;
+        revealed.add(identity);
+        this.grid[hit.cell.reel][hit.cell.row] = 'wild';
+        this.wildMultipliers[hit.cell.reel][hit.cell.row] = hit.multiplier;
+        this.expansionCells.push({ ...hit.cell });
+        changed = true;
+      }
+      if (changed) this.syncGlobal();
+    });
+    for (const hit of hits) {
+      this.grid[hit.cell.reel][hit.cell.row] = 'wild';
+      this.wildMultipliers[hit.cell.reel][hit.cell.row] = hit.multiplier;
+    }
+    this.expandedReels.push({ reel: feature.expandedReel, source: { ...feature.source }, multiplier: feature.expansionMultiplier, cells: hits.map(hit => ({ ...hit.cell })) });
+    this.expandedReelIds.add(feature.expandedReel);
+    this.expansionCells = hits.map(hit => ({ ...hit.cell }));
+    this.effect = null;
+    this.syncGlobal();
+  }
+
+  private async presentFollowUpShots(feature: Feature, turbo: boolean): Promise<void> {
+    for (const [index, shot] of (feature.shotEvents ?? []).entries()) {
+      const column = shot.expandedReel !== undefined;
+      const hit = shot.hits.find(hit => key(hit.cell) === key(shot.target));
+      this.effect = { kind: 'shot', progress: 0, source: { ...feature.source }, target: { ...shot.target }, character: 'middle', recipients: shot.hits.map(hit => ({ ...hit.cell })), value: column ? 2 : hit?.multiplier ?? 1, repeated: hit?.repeated ?? false, boostedReel: shot.expandedReel, sticky: shot.sticky, shot: index };
+      this.options.onSound?.('shot');
+      let applied = false;
+      await this.animate(turbo ? column ? 330 : 250 : column ? 580 : 430, p => {
+        if (this.effect) this.effect.progress = p;
+        if (p < .68 || applied) return;
+        applied = true;
+        for (const hit of shot.hits) {
+          this.grid[hit.cell.reel][hit.cell.row] = 'wild';
+          this.wildMultipliers[hit.cell.reel][hit.cell.row] = hit.multiplier;
+        }
+        if (shot.sticky && shot.expandedReel !== undefined) this.lockedReels.add(shot.expandedReel);
+        this.followUpShots.push({ ...shot, target: { ...shot.target }, hits: shot.hits.map(hit => ({ ...hit, cell: { ...hit.cell } })) });
+        this.syncGlobal();
+      });
+      this.effect = null;
+    }
+  }
+
+  private expansionArrival(cell: Cell, source: Cell): number {
+    const reach = Math.max(source.row, ROWS - 1 - source.row, 1);
+    return .44 + .29 * Math.abs(cell.row - source.row) / reach;
+  }
+
+  private resetLines(): void {
+    this.winningLines = [];
+    this.activeLine = -1;
+    this.lineProgress = 0;
   }
 
   private resetCoins(): void {
@@ -765,8 +898,10 @@ export class GameRenderer {
           symbol = reveal < .5 ? this.effect.from ?? symbol : this.effect.to ?? symbol;
           sx = this.reducedMotion.matches ? 1 : Math.max(.065, Math.abs(Math.cos(smooth(reveal) * Math.PI)));
         }
-        const impactAt = this.effect?.kind === 'god' ? .4 : .68;
-        const hit = this.effect?.target && key(this.effect.target) === key(cell) && (this.effect.kind === 'wild' || this.effect.kind === 'shot' || this.effect.kind === 'god');
+        const expanding = this.effect?.kind === 'expansion' && this.effect.source && this.effect.recipients?.some(target => key(target) === key(cell));
+        const reelHit = this.effect?.kind === 'shot' && this.effect.boostedReel === reel && this.effect.recipients?.some(target => key(target) === key(cell));
+        const impactAt = expanding ? this.expansionArrival(cell, this.effect!.source!) : this.effect?.kind === 'god' ? .4 : .68;
+        const hit = expanding || reelHit || this.effect?.target && key(this.effect.target) === key(cell) && (this.effect.kind === 'wild' || this.effect.kind === 'shot' || this.effect.kind === 'god');
         const recoil = hit && !this.reducedMotion.matches ? clamp(((this.effect?.progress ?? 0) - impactAt) / (1 - impactAt)) : 1;
         const kick = Math.sin(recoil * Math.PI * 3) * (1 - recoil) ** 2;
         this.drawSymbol(symbol, position.x + kick * 4.5, position.y + kick * 2.2 - (this.reducedMotion.matches ? 0 : dissolve * 6), kick * .045, sx * (1 + Math.sin(recoil * Math.PI) * .055), removing ? 1 - dissolve * .18 : 1, this.inactiveWilds.has(key(cell)));
@@ -775,7 +910,9 @@ export class GameRenderer {
         if (removing && dissolve > .08 && dissolve < .8 && !this.reducedMotion.matches) this.clearInk(position.x, position.y, dissolve, hash(`${this.round?.id ?? 0}:${this.spin?.index ?? 0}:${key(cell)}`));
       }
     }
+    this.drawReelLocks();
     this.drawMarks();
+    this.drawWinningLines();
     this.drawGodShotMarks();
     for (const coin of this.revealedCoins) this.drawCoin(coin);
     this.drawEffect(false);
@@ -924,6 +1061,59 @@ export class GameRenderer {
     }
   }
 
+  private drawWinningLines(): void {
+    if (!this.winningLines.length) return;
+    const ctx = this.ctx;
+    const trace = (win: Win, progress: number) => {
+      const points = win.cells.map(center);
+      if (!points.length) return;
+      ctx.beginPath(); ctx.moveTo(points[0].x - CW * .40, points[0].y);
+      ctx.lineTo(points[0].x, points[0].y);
+      const distance = clamp(progress) * Math.max(1, points.length - 1);
+      for (let index = 1; index < points.length; index++) {
+        const fraction = clamp(distance - index + 1);
+        if (fraction === 0) break;
+        const from = points[index - 1], to = points[index];
+        ctx.lineTo(from.x + (to.x - from.x) * fraction, from.y + (to.y - from.y) * fraction);
+      }
+    };
+    ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    // All awarded segments remain visible, with one readable path travelling
+    // from reel one. A thin ink outline avoids covering the symbol drawings.
+    ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(224,185,111,.27)';
+    for (const win of this.winningLines) { trace(win, 1); ctx.stroke(); }
+    const active = this.winningLines[this.activeLine];
+    if (active) {
+      const progress = this.reducedMotion.matches ? 1 : smooth(clamp(this.lineProgress / .48));
+      ctx.strokeStyle = 'rgba(13,11,8,.92)'; ctx.lineWidth = 7; trace(active, progress); ctx.stroke();
+      ctx.strokeStyle = '#efd29b'; ctx.lineWidth = 2.5; trace(active, progress); ctx.stroke();
+      const first = center(active.cells[0]);
+      ctx.fillStyle = '#241c13'; ctx.strokeStyle = '#e5ba76'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(first.x - CW * .44, first.y - 14, 30, 28, 5); ctx.fill(); ctx.stroke();
+      this.inkText(String(active.line), first.x - CW * .44 + 15, first.y + 5, active.line >= 100 ? 12 : 15, '#f6d69b');
+      const final = center(active.cells.at(-1)!);
+      ctx.fillStyle = '#f5dfa6'; ctx.beginPath(); ctx.arc(final.x, final.y, progress === 1 ? 3.5 : 2, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  private drawReelLocks(): void {
+    const ctx = this.ctx;
+    for (const reel of this.lockedReels) {
+      const exhausted = Array.from({ length: ROWS }, (_, row) => this.inactiveWilds.has(`${reel}:${row}`)).every(Boolean);
+      const left = BOARD.x + reel * CW + 5, right = left + CW - 10;
+      ctx.save(); ctx.strokeStyle = exhausted ? '#887e67' : '#c3aa71'; ctx.lineWidth = 1.3; ctx.globalAlpha = exhausted ? .48 : .72;
+      ctx.strokeRect(left, BOARD.y + 5, right - left, BOARD.h - 10);
+      // A small padlock stays with the column through tumbles and later free
+      // spins. Its muted colour follows the same exhausted/recharged Wilds.
+      const x = right - 12, y = BOARD.y + 15;
+      ctx.fillStyle = '#19160e'; ctx.beginPath(); ctx.roundRect(x - 5, y - 2, 10, 9, 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y - 2, 3.5, Math.PI, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = exhausted ? '#887e67' : '#e3c992'; ctx.beginPath(); ctx.arc(x, y + 2, 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
   private characterPlacement(character: Character): { x: number; y: number; width: number; height: number } {
     if (window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches) {
       const height = Math.min(125, (this.viewportHeader?.height ?? BOARD.y) - 30);
@@ -1014,6 +1204,11 @@ export class GameRenderer {
     if (this.coinWave !== null) {
       const label = this.coinPhase === 'collect' ? this.text('СЪБИРАНЕ', 'COLLECT') : this.coinPhase === 'modifier' ? this.text('МНОЖИТЕЛ', 'MULTIPLIER') : this.coinPhase === 'award' ? this.text('ПЕЧАЛБА ОТ МОНЕТИ', 'COIN WIN') : `${this.text('РАЗКРИВАНЕ', 'REVEAL')} ${this.coinWave + 1}`;
       this.inkText(label, W / 2, BOARD.y - 14, 17, '#dfc17a');
+    } else if (this.effect?.kind === 'expansion') {
+      this.inkText(`${this.text('РАЗГЪВАЩ WILD', 'EXPANDING WILD')} ×${this.effect.value ?? 1}`, W / 2, BOARD.y - 14, 17, '#dfc17a');
+    } else if (this.effect?.kind === 'shot' && this.effect.boostedReel !== undefined) {
+      const label = this.effect.sticky ? this.text('ЗАКЛЮЧЕН БАРАБАН', 'REEL LOCKED') : this.text('МНОЖИТЕЛ НА БАРАБАНА', 'REEL BOOST');
+      this.inkText(`${label} · ×2`, W / 2, BOARD.y - 14, 17, '#dfc17a');
     }
   }
 
@@ -1051,14 +1246,18 @@ export class GameRenderer {
       ctx.restore(); return;
     }
     if (outside) {
-      if (effect.kind === 'wild' || effect.kind === 'shot' || effect.kind === 'god') this.drawProjectile(effect);
-      if ((effect.kind === 'shot' || effect.kind === 'wild') && effect.character && p > .26 && p < .39) {
+      if (effect.kind === 'wild' || effect.kind === 'shot' || effect.kind === 'expansion' || effect.kind === 'god') this.drawProjectile(effect);
+      if ((effect.kind === 'shot' || effect.kind === 'wild' || effect.kind === 'expansion') && effect.character && p > .26 && p < .39) {
         const origin = this.characterMuzzle(effect.character);
-        this.impact(origin.x, origin.y, clamp((p - .26) / .13), effect.kind === 'shot' ? '#f5dfa3' : '#c5ad6c', true);
+        this.impact(origin.x, origin.y, clamp((p - .26) / .13), effect.kind === 'wild' ? '#c5ad6c' : '#f5dfa3', true);
       }
       return;
     }
     if (effect.kind === 'coin-clear') return;
+    if (effect.kind === 'expansion') { this.drawExpansion(effect); return; }
+    if (effect.kind === 'shot' && effect.boostedReel !== undefined && effect.target && p >= .68) {
+      this.drawExpansion({ ...effect, source: effect.target, progress: .44 + clamp((p - .68) / .32) * .56 });
+    }
     if (effect.kind === 'reveal' && effect.source) {
       const pos = center(effect.source);
       ctx.save(); ctx.globalAlpha = Math.sin(p * Math.PI) * .55;
@@ -1124,14 +1323,49 @@ export class GameRenderer {
     if (effect.kind === 'wild') this.splash(end.x, end.y, impact, '#cbaa56');
     else if (effect.kind === 'shot' || god) {
       this.impact(end.x, end.y, impact, god && !effect.hit ? '#aa9781' : '#efd18b');
-      if (!god) this.inkText(`×${effect.value ?? 1}`, end.x, end.y - 27 - impact * 18, 31, '#ffe2a0');
+      if (!god) this.inkText(effect.kind === 'shot' && !effect.repeated ? 'WILD' : `×${effect.value ?? 1}`, end.x, end.y - 27 - impact * 18, 31, '#ffe2a0');
     }
+  }
+
+  private drawExpansion(effect: Effect): void {
+    if (!effect.source || effect.progress < .44) return;
+    const ctx = this.ctx, source = center(effect.source), p = effect.progress;
+    const spread = smooth(clamp((p - .44) / .30));
+    const top = source.y - (source.y - BOARD.y - 5) * spread;
+    const bottom = source.y + (BOARD.y + BOARD.h - 5 - source.y) * spread;
+    const left = BOARD.x + effect.source.reel * CW + 7, right = left + CW - 14;
+    const fade = 1 - clamp((p - .84) / .16) * .78;
+    ctx.save();
+    const glow = ctx.createLinearGradient(left, 0, right, 0);
+    glow.addColorStop(0, 'rgba(233,195,119,.16)'); glow.addColorStop(.5, 'rgba(233,195,119,.035)'); glow.addColorStop(1, 'rgba(233,195,119,.16)');
+    ctx.globalAlpha = fade; ctx.fillStyle = glow; ctx.fillRect(left, top, right - left, bottom - top);
+    const border = () => {
+      ctx.beginPath(); ctx.moveTo(left + 14, top); ctx.lineTo(left, top); ctx.lineTo(left, bottom); ctx.lineTo(left + 14, bottom);
+      ctx.moveTo(right - 14, top); ctx.lineTo(right, top); ctx.lineTo(right, bottom); ctx.lineTo(right - 14, bottom);
+    };
+    ctx.lineJoin = 'round'; ctx.strokeStyle = '#15130d'; ctx.lineWidth = 6; border(); ctx.stroke();
+    ctx.strokeStyle = '#e4c284'; ctx.lineWidth = 2.2; border(); ctx.stroke();
+    for (const cell of effect.recipients ?? []) {
+      const arrival = this.expansionArrival(cell, effect.source), after = p - arrival;
+      if (after < 0 || after >= .15) continue;
+      const at = center(cell);
+      this.impact(at.x, at.y, clamp(after / .15), '#e6c27c');
+      if (!this.reducedMotion.matches) {
+        const stroke = Math.sin(clamp(after / .15) * Math.PI) * .42;
+        ctx.globalAlpha = fade * stroke; ctx.strokeStyle = '#f6dc9d'; ctx.lineWidth = 1.2;
+        for (const side of [-1, 1]) {
+          ctx.beginPath(); ctx.moveTo(at.x + side * 32, at.y - 17); ctx.lineTo(at.x + side * 48, at.y - 29); ctx.stroke();
+        }
+        ctx.globalAlpha = fade;
+      }
+    }
+    ctx.restore();
   }
 
   /** A released object follows its hand-to-cell path in the complete scene, across the frame rail. */
   private drawProjectile(effect: Effect): void {
     if (!effect.target) return;
-    const god = effect.kind === 'god', p = effect.progress, impactAt = god ? .4 : .68, releaseAt = god ? .20 : .26;
+    const god = effect.kind === 'god', p = effect.progress, impactAt = god ? .4 : effect.kind === 'expansion' ? .44 : .68, releaseAt = god ? .20 : .26;
     if (p <= releaseAt || p >= impactAt) return;
     const ctx = this.ctx, end = center(effect.target);
     const start = god ? this.godMuzzle(effect.character ?? 'left') : effect.character ? this.characterMuzzle(effect.character) : effect.source ? center(effect.source) : { x: BOARD.x, y: end.y };

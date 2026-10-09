@@ -1,0 +1,458 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-09T08:31:30.886525+00:00",
+  "sourceDescription": "User-provided inline Le Zeus GAME INFO payline-chart screenshot, reviewed and transcribed by the primary agent on 9 October 2026.",
+  "provenance": {
+    "kind": "user-supplied inline image",
+    "directPixelReviewBy": [
+      "primary agent",
+      "independent v4_chart_review agent"
+    ],
+    "referenceSubtaskReceivedLocalImageFiles": false,
+    "localImagePaths": null,
+    "officialWebUrlContentRetrieved": false,
+    "primaryTranscriptionVerified": true,
+    "independentChartReview": "confirmed",
+    "independentReviewMethod": "Independent reviewer directly inspected the inline image and transcribed all 19 paths before comparing them with src/paylines.ts; exact match.",
+    "independentReviewConfirmedAtUTC": "2026-10-09T08:33:19.585948+00:00"
+  },
+  "grid": {
+    "reels": 6,
+    "rows": 5
+  },
+  "lineCount": 19,
+  "layoutEvidence": "Direct visual review by primary and independent reviewers confirms 19 distinct paths on complete six-column/five-row mini-grids, with one position per reel, displayed in rows of seven, seven and five diagrams.",
+  "numbering": {
+    "visibleNumerals": false,
+    "basis": "Prototype line IDs follow diagram reading order, left to right across the first row, second row, then third row; IDs are not verified official printed numerals."
+  },
+  "coordinateConvention": {
+    "rows": "Count rows from the top; each path selects one row per reel.",
+    "reelOrder": "Left to right as drawn. This coordinate convention does not independently establish winning payment direction.",
+    "rowsZeroBased": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "rowsOneBased": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "sourceImplementation": "src/paylines.ts",
+  "sourceImplementationSha256": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+  "paths": [
+    {
+      "prototypeLineId": 1,
+      "diagramRow": 1,
+      "diagramColumn": 1,
+      "rowsZeroBased": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "rowsOneBased": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "prototypeLineId": 2,
+      "diagramRow": 1,
+      "diagramColumn": 2,
+      "rowsZeroBased": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "rowsOneBased": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "prototypeLineId": 3,
+      "diagramRow": 1,
+      "diagramColumn": 3,
+      "rowsZeroBased": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "rowsOneBased": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "prototypeLineId": 4,
+      "diagramRow": 1,
+      "diagramColumn": 4,
+      "rowsZeroBased": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "rowsOneBased": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "prototypeLineId": 5,
+      "diagramRow": 1,
+      "diagramColumn": 5,
+      "rowsZeroBased": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "rowsOneBased": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "prototypeLineId": 6,
+      "diagramRow": 1,
+      "diagramColumn": 6,
+      "rowsZeroBased": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "rowsOneBased": [
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "prototypeLineId": 7,
+      "diagramRow": 1,
+      "diagramColumn": 7,
+      "rowsZeroBased": [
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "rowsOneBased": [
+        2,
+        3,
+        2,
+        3,
+        2,
+        3
+      ]
+    },
+    {
+      "prototypeLineId": 8,
+      "diagramRow": 2,
+      "diagramColumn": 1,
+      "rowsZeroBased": [
+        2,
+        3,
+        2,
+        3,
+        2,
+        3
+      ],
+      "rowsOneBased": [
+        3,
+        4,
+        3,
+        4,
+        3,
+        4
+      ]
+    },
+    {
+      "prototypeLineId": 9,
+      "diagramRow": 2,
+      "diagramColumn": 2,
+      "rowsZeroBased": [
+        3,
+        4,
+        3,
+        4,
+        3,
+        4
+      ],
+      "rowsOneBased": [
+        4,
+        5,
+        4,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "prototypeLineId": 10,
+      "diagramRow": 2,
+      "diagramColumn": 3,
+      "rowsZeroBased": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "rowsOneBased": [
+        2,
+        1,
+        2,
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "prototypeLineId": 11,
+      "diagramRow": 2,
+      "diagramColumn": 4,
+      "rowsZeroBased": [
+        2,
+        1,
+        2,
+        1,
+        2,
+        1
+      ],
+      "rowsOneBased": [
+        3,
+        2,
+        3,
+        2,
+        3,
+        2
+      ]
+    },
+    {
+      "prototypeLineId": 12,
+      "diagramRow": 2,
+      "diagramColumn": 5,
+      "rowsZeroBased": [
+        3,
+        2,
+        3,
+        2,
+        3,
+        2
+      ],
+      "rowsOneBased": [
+        4,
+        3,
+        4,
+        3,
+        4,
+        3
+      ]
+    },
+    {
+      "prototypeLineId": 13,
+      "diagramRow": 2,
+      "diagramColumn": 6,
+      "rowsZeroBased": [
+        4,
+        3,
+        4,
+        3,
+        4,
+        3
+      ],
+      "rowsOneBased": [
+        5,
+        4,
+        5,
+        4,
+        5,
+        4
+      ]
+    },
+    {
+      "prototypeLineId": 14,
+      "diagramRow": 2,
+      "diagramColumn": 7,
+      "rowsZeroBased": [
+        0,
+        1,
+        2,
+        2,
+        1,
+        0
+      ],
+      "rowsOneBased": [
+        1,
+        2,
+        3,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "prototypeLineId": 15,
+      "diagramRow": 3,
+      "diagramColumn": 1,
+      "rowsZeroBased": [
+        1,
+        2,
+        3,
+        3,
+        2,
+        1
+      ],
+      "rowsOneBased": [
+        2,
+        3,
+        4,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "prototypeLineId": 16,
+      "diagramRow": 3,
+      "diagramColumn": 2,
+      "rowsZeroBased": [
+        2,
+        3,
+        4,
+        4,
+        3,
+        2
+      ],
+      "rowsOneBased": [
+        3,
+        4,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "prototypeLineId": 17,
+      "diagramRow": 3,
+      "diagramColumn": 3,
+      "rowsZeroBased": [
+        4,
+        3,
+        2,
+        2,
+        3,
+        4
+      ],
+      "rowsOneBased": [
+        5,
+        4,
+        3,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "prototypeLineId": 18,
+      "diagramRow": 3,
+      "diagramColumn": 4,
+      "rowsZeroBased": [
+        3,
+        2,
+        1,
+        1,
+        2,
+        3
+      ],
+      "rowsOneBased": [
+        4,
+        3,
+        2,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "prototypeLineId": 19,
+      "diagramRow": 3,
+      "diagramColumn": 5,
+      "rowsZeroBased": [
+        2,
+        1,
+        0,
+        0,
+        1,
+        2
+      ],
+      "rowsOneBased": [
+        3,
+        2,
+        1,
+        1,
+        2,
+        3
+      ]
+    }
+  ],
+  "notEstablishedByChart": [
+    "Commercial payout selection or Wild/ordinary award competition",
+    "Payment direction as a rule",
+    "Multiplier ordering",
+    "Private outcome probabilities",
+    "Animation timings",
+    "Commercial RTP recalculation"
+  ]
+}

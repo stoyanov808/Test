@@ -1,0 +1,53 @@
+{
+  "modelVersion": 3,
+  "generatedAt": "2026-10-08T22:05:08.303200+00:00",
+  "command": "npm run math:check:full",
+  "exitCode": 0,
+  "outcomeEntries": 47104,
+  "supportedStakes": [
+    10,
+    20,
+    50,
+    100,
+    200,
+    500,
+    1000,
+    2000
+  ],
+  "completeOutcomesReplayed": 376832,
+  "payoutFailures": 0,
+  "capFailures": 0,
+  "triggerBranchFailures": 0,
+  "accountingFailures": 0,
+  "sourceHashes": {
+    "src/engine.ts": "70812e4324b3d20b7c12185b287dd255bad6753fcddb1428ba54b8742d91dd8e",
+    "src/types.ts": "dca3de70785c36c3e22210de83f331c9ab4ce82f6a633b2a39e79baf432bb371",
+    "src/math-model.ts": "3a4fd0ba4cf4ebd002544ded4fa1bfad6f3659a2a46f0dff6fe849314a0f5c53",
+    "src/math-model.json": "07a21e869d49d90fdac4305963cdbac12c9cef9e63936a19a9521c1289e14d4e",
+    "scripts/build-math-model.ts": "364f2d3f7af6934f91909bdfce01fa1bd6d76396580bb15eee88003215078bbd",
+    "scripts/verify-math-model.ts": "daa86c61634bb53bd5846a214a433488fc56df88b96367165aee0e466c7343e0",
+    "scripts/verify-math-outcomes.ts": "2a6f73c9b150dc57f0c318f7f11786e2462a2e02b4dfb62aaacf7aa4c490bba4"
+  },
+  "checks": [
+    "Every pool entry regenerated at every offered stake",
+    "Regenerated cent payout equals the frozen outcome",
+    "Initial bonus tier equals the frozen tier",
+    "Whole-round 19,999x cap agrees with MAX flag",
+    "Each coin feature, cascade, spin and round ledger reconciles",
+    "Base ordinary and natural-bonus branch entitlement preserved",
+    "Model/source SHA and exact 80 mode-stake RTP equations checked before and after full replay"
+  ],
+  "output": [
+    "ordinary: 65536 full stake outcomes verified",
+    "natural-bonus: 16384 full stake outcomes verified",
+    "xbet-left: 32768 full stake outcomes verified",
+    "xbet-right: 32768 full stake outcomes verified",
+    "xbet-middle: 32768 full stake outcomes verified",
+    "buy-ruse: 65536 full stake outcomes verified",
+    "buy-lux: 32768 full stake outcomes verified",
+    "buy-edge: 32768 full stake outcomes verified",
+    "buy-old: 32768 full stake outcomes verified",
+    "god: 32768 full stake outcomes verified",
+    "Full math verification passed: 376832 replayed complete outcomes, zero payout, cap, branch or accounting failures."
+  ]
+}

@@ -43,14 +43,22 @@ The previous board used six uniformly distributed ordinary symbols. On 30 indepe
 
 Mark only positions removed by real winning combinations. Do not fill the board with arbitrary gold marks to manufacture a reveal. Track distinct marked cells, mark coverage at each reveal, tumble-count percentiles, collector-chain length, ordinary-symbol return, coin return, Wild-assisted wins and return against the actual debit for every paid mode. Each reveal can be rewarding without guaranteeing a nearly full coin board.
 
-Keep the game board and small balance/bet/spin controls in a single visual composition, with the illustrated courtyard filling the stage. Give each dropping symbol its own launch offset and settling motion; reserve stronger camera movement for a shot or collection. Make coin reveals readable before the collector pulls anything inward. Exact motion durations will be measured against this prototype's browser recordings, since reference footage could not be inspected.
+Keep the game board and small balance/bet/spin controls in a single visual composition, with the illustrated scene filling the stage. Give each dropping symbol its own launch offset and settling motion; reserve stronger camera movement for a shot or collection. Make coin reveals readable before the collector pulls anything inward. Motion durations are checked against this prototype's browser recordings, since reference footage could not be inspected.
 
 For the requested God Spin, use a **MAX symbol in a real board cell** and recorded shots at individual symbols. Only a shot whose recorded target is that MAX cell may trigger the cap. The artwork and effects should show that event instead of putting a MAX label over the board. This is the user's own requested God mechanic, not an attributed Le Bandit feature.
 
 The rebuilt prototype must publish fresh mathematical and browser evidence. The first sample is a historical baseline and must not be presented as validation of changed collector or tumble rules. Neither an attractive animation nor a short sample establishes certified RTP.
 
-## Version 3 mathematics
+## Historical version 3 mathematics
 
-The 9 October 2026 revision replaces the previous open-ended outcome distribution with a fixed weighted catalogue of completely evaluated rounds. Its own [RTP calculation](MATH-MODEL.md) proves 96.5% expected return for every paid mode and supported stake. The new 3× booster changes the full bonus-entry probability from 1/200 to 1/40 while sharing the base game's conditional outcome distributions. [The previous version 2 sample](research/prototype-v2-mathematics.json) is preserved as a historical comparison.
+Version 3 replaced the previous open-ended outcome distribution with a fixed weighted catalogue of completely evaluated rounds. Its [archived return proof](research/prototype-v3-mathematics-proof.json) calculated 96.5% expected return for every paid mode and supported stake. Its 3× booster changed the full bonus-entry probability from 1/200 to 1/40 while sharing the base game's conditional outcome distributions. [The previous version 2 sample](research/prototype-v2-mathematics.json) is preserved as a historical comparison.
 
 This is the prototype's original mathematical model. It does not establish any inaccessible Le Bandit or Nolimit City probability, rule or certification. The publisher-access limits described above still apply.
+
+## Current version 4 adaptation
+
+Version 4 uses the [19 paths in the supplied Le Zeus chart](LE-ZEUS-REFERENCE.md) instead of count-anywhere wins. Only cells participating in actual paid lines become coin marks. Every marked vacancy reveals a value, modifier or collector in every wave; the full reveal finishes before modifiers and collection. A new collector absorbs monetary values and the previous collector, then stays while the cleared marked cells reveal again. Terminal values pay once.
+
+The middle character expands his own reel and may then shoot eligible symbols. Ordinary hits create single-use Wilds, repeat Wild hits double their multiplier, and hitting an expanded reel during a bonus doubles and locks all five Wilds until that bonus ends. These are the user's requested mechanics, independent of the inaccessible commercial references. The original ink club scene replaces the courtyard.
+
+The rebuilt [mathematical model](MATH-MODEL.md) proves 96.5% expected return against the full cost of each mode at eight stakes. [Current validation](VALIDATION.md) records complete replay of 425,984 stake outcomes, 57 engine tests and 111 browser checks. Finite samples and individual sessions can return less. The archived version 3 proof does not validate these changed rules.

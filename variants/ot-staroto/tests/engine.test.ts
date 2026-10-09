@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { CONFIG, TIER_CHARACTERS, TIER_ORDER, REGULARS, Rng, acknowledgeRound, bonusAward, costCents, createSession, deserializeSession, evaluate, playFixtureRound as playRound, playRound as playCryptoRound, simulateRound, uniformTicket, bonusTriggerProbability, resolveFeature, retrigger, wildGlobal } from '../src/engine';
+import { CONFIG, TIER_CHARACTERS, TIER_ORDER, REGULARS, Rng, acknowledgeRound, bonusAward, costCents, createSession, deserializeSession, evaluate, playFixtureRound as playRound, playRound as playCryptoRound, simulateRound, uniformTicket, bonusTriggerProbability, resolveFeature, resolveShooterShots, retrigger, wildGlobal, settledLegacyWallet, PAYLINES } from '../src/engine';
 import { MATH_MODEL } from '../src/math-model';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -18,20 +18,31 @@ class Scripted extends Rng {
 const rich = (seed: number): Session => createSession(seed, 100000000);
 const round = (seed: number, choice: Choice) => playRound(rich(seed), choice).pending!;
 
-test('six-reel count-anywhere pay can include cells on the sixth reel', () => {
-  const board = grid();
-  for (const [reel, row] of [[0, 0], [0, 1], [1, 1], [2, 0], [3, 1], [4, 0], [5, 2], [5, 4]]) board[reel][row] = 'crown';
-  const win = evaluate(board, matrix(), 100).find(w => w.symbol === 'crown')!;
-  assert.ok(win.count >= 8); assert.ok(win.cells.some(c => c.reel === 5)); assert.equal(win.payoutCents, Math.round(win.baseMultiplier * 100));
-});
-test('pay brackets are 8, 10 and 12+ physical matching cells', () => {
-  for (const count of [7, 8, 10, 12, 20]) {
+const straight = [[0, 0, 0, 0, 0, 0]];
+const lineEvaluate = (board: Grid, m: Matrix = matrix(), bet = 100, budget = 9_000_000_000_000, inactive: { reel: number; row: number }[] = [], lines: readonly (readonly number[])[] = straight) => evaluate(board, m, bet, budget, inactive, lines);
+test('payline runs start on the first reel, follow the path, and pay only their longest 3/4/5/6 bracket', () => {
+  for (const count of [2, 3, 4, 5, 6]) {
     const board: Grid = Array.from({ length: 6 }, () => Array(5).fill('scatter'));
-    for (let i = 0; i < count; i++) board[Math.floor(i / 5)][i % 5] = 'bottle';
-    const wins = evaluate(board, matrix(), 100);
-    assert.equal(wins.length, count < 8 ? 0 : 1);
-    if (count >= 8) assert.equal(wins[0].payoutCents, Math.round(100 * CONFIG.paytable.bottle[count >= 12 ? 12 : count >= 10 ? 10 : 8]));
+    for (let reel = 0; reel < count; reel++) board[reel][0] = 'crown';
+    const wins = lineEvaluate(board);
+    assert.equal(wins.length, count < 3 ? 0 : 1);
+    if (count >= 3) { assert.equal(wins[0].line, 1); assert.equal(wins[0].count, count); assert.equal(wins[0].payoutCents, 100 * CONFIG.paytable.crown[count as 3 | 4 | 5 | 6]); }
   }
+});
+test('payline gaps, off-path matching symbols and a run starting on reel2 never pay', () => {
+  const board: Grid = Array.from({ length: 6 }, () => Array(5).fill('crown'));
+  board[0][0] = 'scatter'; assert.equal(lineEvaluate(board).length, 0);
+  board[0][0] = 'crown'; board[2][0] = 'bottle'; assert.equal(lineEvaluate(board).length, 0);
+  assert.equal(lineEvaluate(board, matrix(), 100, undefined, [], [[0, 1, 1, 2, 2, 0]])[0].count, 6);
+});
+test('payline awards are separate even when winning paths overlap, with an exact whole-round budget', () => {
+  const board: Grid = Array.from({ length: 6 }, () => Array(5).fill('scatter'));
+  for (let reel = 0; reel < 4; reel++) board[reel][0] = 'bottle';
+  board[3][1] = 'bottle';
+  const wins = lineEvaluate(board, matrix(), 100, undefined, [], [[0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0]]);
+  assert.equal(wins.length, 2); assert.deepEqual(wins.map(w => w.line), [1, 2]); assert.deepEqual(wins.map(w => w.count), [4, 4]); assert.equal(wins.reduce((n, w) => n + w.payoutCents, 0), 60);
+  assert.equal(new Set(wins.flatMap(w => w.cells).map(c => `${c.reel}:${c.row}`)).size, 5);
+  assert.equal(lineEvaluate(board, matrix(), 100, 7, [], [[0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0]]).reduce((n, w) => n + w.payoutCents, 0), 7);
 });
 test('visible Wild multipliers sum rather than multiply and empty grids have ×1', () => {
   const board = grid(), multipliers = matrix();
@@ -39,29 +50,31 @@ test('visible Wild multipliers sum rather than multiply and empty grids have ×1
   board[0][0] = board[3][4] = 'wild'; multipliers[0][0] = 2; multipliers[3][4] = 8;
   assert.equal(wildGlobal(board, multipliers), 10);
 });
-test('Wilds fully substitute with one real matching symbol and pure Wilds never invent a payout', () => {
+test('payline Wilds substitute through the run but require a real symbol and inactive Wilds break it', () => {
   const board: Grid = Array.from({ length: 6 }, () => Array(5).fill('wild'));
-  const multipliers: Matrix = Array.from({ length: 6 }, () => Array(5).fill(1));
-  assert.equal(evaluate(board, multipliers, 20).length, 0);
-  board[5][4] = 'crown'; multipliers[5][4] = 0;
-  const wins = evaluate(board, multipliers, 20);
-  assert.equal(wins.length, 1); assert.equal(wins[0].symbol, 'crown');
-  assert.equal(wins[0].count, 30); assert.equal(wins[0].globalMultiplier, 29);
-  assert.equal(wins[0].payoutCents, Math.round(20 * CONFIG.paytable.crown[12] * 29));
-  const sparse: Grid = Array.from({ length: 6 }, () => Array(5).fill('scatter'));
-  for (let i = 0; i < 6; i++) sparse[Math.floor(i / 5)][i % 5] = 'bottle';
-  sparse[2][0] = 'wild'; sparse[2][1] = 'wild';
-  const m = matrix(); m[2][0] = 1; m[2][1] = 2;
-  assert.equal(evaluate(sparse, m, 100)[0].payoutCents, CONFIG.paytable.bottle[8] * 300);
+  const m: Matrix = Array.from({ length: 6 }, () => Array(5).fill(1));
+  assert.equal(lineEvaluate(board, m)[0].symbol, 'wild'); assert.equal(lineEvaluate(board, m)[0].payoutCents, 100 * CONFIG.wildLinePay * 30);
+  board[5][0] = 'crown'; m[5][0] = 0;
+  const win = lineEvaluate(board, m)[0]; assert.equal(win.symbol, 'crown'); assert.equal(win.count, 6); assert.equal(win.globalMultiplier, 29);
+  assert.equal(win.payoutCents, 100 * CONFIG.paytable.crown[6] * 29);
+  assert.equal(lineEvaluate(board, m, 100, undefined, [{ reel: 2, row: 0 }]).length, 0);
 });
-test('normal shooter creates three to seven shots and repeated hits double 1,2,4', () => {
-  const context = fixture('edge'); context.grid[0][0] = 'middle';
-  const result = resolveFeature('middle', { reel: 0, row: 0 }, context, new Scripted([.1, 0, 0, 0, 0]));
-  assert.equal(result.feature.hits.length, 3);
-  assert.deepEqual(result.feature.hits.map(hit => hit.multiplier), [1, 2, 4]);
-  assert.deepEqual(result.feature.hits.map(hit => hit.repeated), [false, true, true]);
-  assert.equal(result.feature.globalMultiplier, 4);
-  assert.equal(result.sticky.flat().reduce((a, b) => a + b), 0);
+test('expanding shooter becomes all five Wilds on its own reel and never picks random cells', () => {
+  const context = fixture('edge'); context.grid[2][3] = 'middle';
+  const result = resolveFeature('middle', { reel: 2, row: 3 }, context, new Scripted([0]));
+  assert.equal(result.feature.expandedReel, 2); assert.equal(result.feature.expansionMultiplier, 1);
+  assert.deepEqual(result.feature.targets, [0, 1, 2, 3, 4].map(row => ({ reel: 2, row })));
+  assert.deepEqual(result.grid[2], Array(5).fill('wild')); assert.deepEqual(result.multipliers[2], Array(5).fill(1));
+  assert.equal(result.feature.globalMultiplier, 5); assert.equal(result.sticky.flat().reduce((a, b) => a + b), 0);
+  for (const reel of [0, 1, 3, 4, 5]) assert.deepEqual(result.grid[reel], context.grid[reel]);
+});
+test('two expanding shooters independently expand distinct reels and sum their visible Wild multipliers', () => {
+  const context = fixture(); context.grid[1][2] = 'middle'; context.grid[4][0] = 'middle';
+  const a = resolveFeature('middle', { reel: 1, row: 2 }, context, new Scripted([0]));
+  const b = resolveFeature('middle', { reel: 4, row: 0 }, { ...context, grid: a.grid, multipliers: a.multipliers, sticky: a.sticky, marks: a.marks }, new Scripted([.8]));
+  assert.deepEqual(b.grid[1], Array(5).fill('wild')); assert.deepEqual(b.grid[4], Array(5).fill('wild'));
+  assert.equal(a.feature.expansionMultiplier, 1); assert.equal(b.feature.expansionMultiplier, 2); assert.equal(b.feature.globalMultiplier, 15);
+  assert.equal(b.sticky.flat().reduce((a, b) => a + b), 0);
 });
 test('left throws one to three distinct Wilds and never reveals coins', () => {
   const context = fixture('ruse'); context.grid[0][0] = 'left';
@@ -78,61 +91,62 @@ test('base left Wilds are transient and all-feature left Wilds are sticky', () =
     assert.equal(result.sticky.flat().reduce((a, b) => a + b), tier === null ? 0 : 1);
   }
 });
-test('shooter can double an existing sticky Wild while its new targets stay transient', () => {
-  const context = fixture('old'); context.grid[0][0] = 'middle'; context.grid[0][1] = 'wild'; context.multipliers[0][1] = context.sticky[0][1] = 1;
-  const result = resolveFeature('middle', { reel: 0, row: 0 }, context, new Scripted([0, 0, 0, 0, 0, .99, .99]));
-  assert.equal(result.sticky[0][1], 4); assert.equal(result.sticky[5][4], 0);
+test('expanding shooter upgrades planted left Wilds in place and new shooter Wilds stay transient', () => {
+  const context = fixture('old'); context.grid[0][0] = 'middle'; context.grid[0][1] = 'wild'; context.multipliers[0][1] = context.sticky[0][1] = 3;
+  const result = resolveFeature('middle', { reel: 0, row: 0 }, context, new Scripted([.8]));
+  assert.equal(result.feature.expansionMultiplier, 2); assert.equal(result.sticky[0][1], 6); assert.equal(result.multipliers[0][1], 6);
+  assert.equal(result.sticky[0][2], 0); assert.equal(result.feature.hits[1].repeated, true);
 });
 test('right consumes only marked boxes; other characters preserve those marks', () => {
   const context = fixture('lux'); context.grid[0][0] = 'right'; context.marks[2][3] = true;
   const result = resolveFeature('right', { reel: 0, row: 0 }, context, new Scripted([0, .1, 0]));
   assert.deepEqual(result.feature.targets, [{ reel: 2, row: 3 }]);
-  assert.equal(result.feature.coins[0].kind, 'value'); assert.equal(result.feature.coins[0].value, 1); assert.equal(result.feature.payoutCents, 20);
+  assert.equal(result.feature.coins[0].kind, 'value'); assert.equal(result.feature.coins[0].value, .2); assert.equal(result.feature.payoutCents, 4);
   assert.equal(result.marks[2][3], false); assert.equal(result.feature.hits.length, 0);
   for (const c of ['left', 'middle'] as Character[]) assert.equal(resolveFeature(c, { reel: 0, row: 0 }, context, new Rng(5)).marks[2][3], true);
 });
 test('all coins reveal before modifiers and collectors absorb their final monetary amounts once', () => {
   const context = fixture('lux'); context.grid[0][0] = 'right';
   [0, 1, 2, 3].forEach(row => { context.marks[1][row] = true; });
-  // reveal 500×, local ×2, global ×2, collector; second wave is all empty.
+  // reveal 500×, local ×2, global ×2, collector; all three second-wave vacancies reveal .2×.
   const result = resolveFeature('right', { reel: 0, row: 0 }, context,
-    new Scripted([.1, .1, .9999, .03, 0, .018, 0, .001, 0, .8, .8, .8]));
+    new Scripted([.1, .1, .9999, .03, 0, .014, 0, .001, 0, .8, 0, .8, 0, .8, 0]));
   const wave = result.feature.coinWaves[0];
   assert.deepEqual(wave.coins.map(c => c.kind), ['value', 'multiplier', 'global', 'collector']);
   assert.equal(wave.coins[0].payoutCents, 20 * 500); // Raw reveal, before any modifier.
   assert.deepEqual(wave.modifierEvents.map(e => e.factor), [2, 2]);
   assert.equal(wave.collections[0].sources[0].payoutCents, 20 * 500 * 2 * 2);
   assert.equal(wave.collections[0].valueAfterCents, 40000);
-  assert.equal(result.feature.payoutCents, 40000); // Never pay both source and collector.
-  assert.equal(result.feature.coins.reduce((sum, c) => sum + c.payoutCents, 0), 40000);
+  assert.equal(result.feature.payoutCents, 40012); // Never pay both source and collector.
+  assert.equal(result.feature.coins.reduce((sum, c) => sum + c.payoutCents, 0), 40012);
   assert.equal(result.feature.globalMultiplier, 1);
 });
 test('new collectors clear noncollectors and reveal again while the last collector stays dormant', () => {
   const context = fixture('lux'); context.grid[0][0] = 'right';
   [0, 1, 2].forEach(row => { context.marks[1][row] = true; });
   const result = resolveFeature('right', { reel: 0, row: 0 }, context,
-    new Scripted([.1, .1, 0, .001, .1, .2, .1, .5, .8]));
+    new Scripted([.1, .1, 0, .001, .1, 0, .1, 0, .8, 0]));
   const waves = result.feature.coinWaves;
   assert.equal(waves.length, 2); assert.equal(waves[0].repeat, true); assert.equal(waves[1].repeat, false);
   assert.deepEqual(waves[0].cleared, [{ reel: 1, row: 0 }, { reel: 1, row: 2 }]);
-  assert.equal(waves[0].retainedCollectors[0].payoutCents, 60);
-  assert.equal(waves[1].existingCollectors[0].payoutCents, 60);
+  assert.equal(waves[0].retainedCollectors[0].payoutCents, 8);
+  assert.equal(waves[1].existingCollectors[0].payoutCents, 8);
   assert.equal(waves[1].collections.length, 0);
-  assert.equal(result.feature.payoutCents, 160);
+  assert.equal(result.feature.payoutCents, 16);
 });
 test('a subsequent collector absorbs the previous collector without replaying or double-paying it', () => {
   const context = fixture('lux'); context.grid[0][0] = 'right';
   [0, 1, 2].forEach(row => { context.marks[1][row] = true; });
   const result = resolveFeature('right', { reel: 0, row: 0 }, context,
-    new Scripted([.1, .1, 0, .001, .1, .2, .001, .1, .5, .1, 0, .8]));
+    new Scripted([.1, .1, 0, .001, .1, 0, .001, .1, 0, .1, 0, .8, 0]));
   const waves = result.feature.coinWaves;
   assert.equal(waves.length, 3);
   const absorption = waves[1].collections[0];
   assert.ok(absorption.sources.some(c => c.kind === 'collector' && c.cell.row === 1));
-  assert.equal(absorption.valueAfterCents, 160);
+  assert.equal(absorption.valueAfterCents, 12);
   assert.deepEqual(waves[1].retainedCollectors[0].cell, { reel: 1, row: 0 });
   assert.ok(waves[1].cleared.some(c => c.row === 1));
-  assert.equal(result.feature.payoutCents, 180);
+  assert.equal(result.feature.payoutCents, 20);
 });
 test('coin and regular wins obey remaining whole-round cent budget', () => {
   const context = fixture('lux'); context.grid[0][0] = 'right'; context.marks[2][2] = true;
@@ -216,16 +230,23 @@ test('sticky Wilds pay every matching win in one batch, rest for that spin and r
   }
   assert.ok(exhaustedChecks > 20 && rearmedChecks > 10);
 });
-test('shooter bonus Wilds reset at next spin, with no fixed sticky upgrade', () => {
-  let changed = 0;
-  for (let seed = 1; seed <= 20; seed++) {
+test('unlocked shooter Wilds reset while shot-locked entire reels remain planted and rearm next free spin', () => {
+  let transient = 0, locked = 0;
+  for (let seed = 1; seed <= 30; seed++) {
     const receipt = round(seed, { kind: 'buy', tier: 'edge' });
-    for (let i = 1; i < receipt.spins.length; i++) if (receipt.spins[i].tier === 'edge') {
-      assert.equal(receipt.spins[i].initialWildMultipliers.flat().reduce((a, b) => a + b), 0);
-      changed += receipt.spins[i - 1].cascades.flatMap(c => c.features).filter(f => f.character === 'middle').reduce((sum, f) => sum + f.hits.length, 0);
+    for (let i = 1; i < receipt.spins.length; i++) {
+      const previous = receipt.spins[i - 1], spin = receipt.spins[i];
+      for (const reel of spin.initialExpandedReels) {
+        assert.deepEqual(spin.initialGrid[reel], Array(5).fill('wild'));
+        assert.ok(spin.initialWildMultipliers[reel].every(n => n > 0));
+        assert.deepEqual(spin.cascades[0].inactiveWilds, []); locked++;
+      }
+      for (const f of previous.cascades.flatMap(c => c.features).filter(f => f.phase === 'expand')) if (!spin.initialExpandedReels.includes(f.expandedReel!)) {
+        assert.equal(spin.initialWildMultipliers[f.expandedReel!].every(n => n === 0), true); transient++;
+      }
     }
   }
-  assert.ok(changed > 0);
+  assert.ok(transient > 0 && locked > 0);
 });
 test('right bonus marks accumulate wins and survive until right reveal consumes them', () => {
   let coinReveals = 0, carried = 0;
@@ -438,10 +459,10 @@ test('every selected fixture receipt identifies and matches its verified cent ou
   }
 });
 
-test('v2 pending receipts cannot be silently replayed under v3 mathematics', () => {
+test('old pending receipts cannot be silently replayed under v4 mathematics', () => {
   const legacy = { ...rich(19), version: 2 };
   assert.equal(deserializeSession(JSON.stringify(legacy)), null);
-  assert.equal(createSession(19).version, 3);
+  assert.equal(createSession(19).version, 4);
 });
 
 test('a failed entropy source stops within the replay draw budget and leaves credits untouched', () => {
@@ -452,4 +473,119 @@ test('a failed entropy source stops within the replay draw budget and leaves cre
     assert.throws(() => playCryptoRound(session, { kind: 'spin' }), /Entropy safety limit/);
     assert.equal(calls, 1000); assert.deepEqual(session, before);
   } finally { Object.defineProperty(crypto, 'getRandomValues', { configurable: true, writable: true, value: original }); }
+});
+
+test('guaranteed coin reveal gives every marked vacancy a real coin or effect, never an empty box', () => {
+  for (let seed = 1; seed <= 60; seed++) {
+    const context = fixture('lux'); context.grid[0][0] = 'right';
+    for (let reel = 0; reel < 6; reel++) for (let row = 0; row < 5; row++) context.marks[reel][row] = true;
+    const result = resolveFeature('right', { reel: 0, row: 0 }, context, new Rng(seed * 0x31af));
+    assert.equal(result.feature.targets.length, 30);
+    for (const wave of result.feature.coinWaves) {
+      assert.ok(wave.coins.every(c => c.kind !== 'empty'));
+      const complete = new Set([...wave.coins, ...wave.existingCollectors].map(c => `${c.cell.reel}:${c.cell.row}`));
+      assert.equal(complete.size, 30);
+    }
+    assert.equal(result.feature.payoutCents, result.feature.coins.reduce((n, c) => n + c.payoutCents, 0));
+  }
+});
+test('legacy settled-wallet carry validates version, pending state, header, bounded history and ledger', () => {
+  const previous = { ...createSession(319, 128543), version: 3 };
+  assert.deepEqual(settledLegacyWallet(JSON.stringify(previous)), { balanceCents: 128543, betCents: 20 });
+  for (const changed of [{ ...previous, pending: {} }, { ...previous, balanceCents: -.1 }, { ...previous, betCents: 11 }, { ...previous, sequence: 1 }, { ...previous, history: Array(13).fill({}) }]) assert.equal(settledLegacyWallet(JSON.stringify(changed)), null);
+  assert.equal(settledLegacyWallet('{bad'), null);
+});
+
+test('six-Wild payline pays one explicit200x Wild award, never nine invented natural-symbol awards', () => {
+  const board: Grid = Array.from({ length: 6 }, () => Array(5).fill('wild'));
+  const m: Matrix = Array.from({ length: 6 }, () => Array(5).fill(1));
+  const wins = lineEvaluate(board, m); assert.equal(wins.length, 1); assert.equal(wins[0].symbol, 'wild'); assert.equal(wins[0].count, 6); assert.equal(wins[0].baseMultiplier, 200); assert.equal(wins[0].payoutCents, 600000);
+  board[5][0] = 'scatter'; assert.equal(lineEvaluate(board, m).length, 0);
+});
+
+test('depleted payline budget does not declare or remove unpaid combinations', () => {
+  const board: Grid = Array.from({ length: 6 }, () => Array(5).fill('crown'));
+  assert.deepEqual(lineEvaluate(board, matrix(), 100, 0), []);
+  const wins = lineEvaluate(board, matrix(), 100, 1, [], [[0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1]]);
+  assert.equal(wins.length, 1); assert.equal(wins[0].payoutCents, 1);
+});
+
+test('expanding shooter drops separate scatters and unresolved badges before recorded initial boards', () => {
+  for (const choice of [{ kind: 'spin' }, { kind: 'xbet', character: 'left' }, { kind: 'xbet', character: 'right' }, { kind: 'xbet', character: 'middle' }, { kind: 'buy', tier: 'old' }] as Choice[]) for (let seed = 1; seed <= 100; seed++) {
+    const receipt = simulateRound(seed * 0x4ea715, 20, choice);
+    if (choice.kind === 'xbet') assert.ok(receipt.spins[0].initialGrid.flat().includes(choice.character));
+    for (const spin of receipt.spins) for (const column of spin.initialGrid) if (column.includes('middle')) {
+      assert.equal(column.filter(s => s === 'middle').length, 1);
+      assert.equal(column.some(s => s === 'scatter' || s === 'left' || s === 'right'), false);
+    }
+  }
+});
+test('multiple expanding reels are reachable in a real raw base drop without a guaranteed-entry override', () => {
+  const receipt = simulateRound(437711782, 20, { kind: 'spin' });
+  const middle = receipt.spins[0].cascades.flatMap(c => c.features).filter(f => f.character === 'middle' && f.phase === 'expand');
+  assert.ok(new Set(middle.map(f => f.expandedReel)).size >= 2);
+  for (const f of middle) assert.deepEqual(f.gridAfter[f.expandedReel!], Array(5).fill('wild'));
+});
+test('multiple expanding reels retain positive catalogue weight in base and shooter/super bonuses', () => {
+  for (const name of ['ordinary', 'buy-edge', 'buy-old']) {
+    const pool = MATH_MODEL.pools[name];
+    assert.ok(pool.expansionCounts.some(n => n >= 2), name);
+    for (const spec of pool.weights) {
+      const boosted = new Set(spec.indices);
+      const multiTickets = pool.expansionCounts.reduce((sum, count, index) => sum + (count >= 2 ? BigInt(spec.baseline) + (boosted.has(index) ? BigInt(spec.extra) : 0n) : 0n), 0n);
+      assert.ok(multiTickets > 0n);
+    }
+  }
+});
+
+test('every referenced payline pays its complete path and a gap prevents that same line award', () => {
+  assert.equal(PAYLINES.length, 19);
+  assert.equal(new Set(PAYLINES.map(line => line.join(','))).size, 19);
+  for (const [index, path] of PAYLINES.entries()) {
+    const board: Grid = Array.from({ length: 6 }, () => Array(5).fill('scatter'));
+    for (const [reel, row] of path.entries()) board[reel][row] = 'ring';
+    const full = evaluate(board, matrix(), 100).find(w => w.line === index + 1);
+    assert.ok(full, `line${index + 1}`); assert.equal(full.count, 6);
+    assert.deepEqual(full.cells, path.map((row, reel) => ({ reel, row })));
+    assert.equal(full.payoutCents, 100 * CONFIG.paytable.ring[6]);
+    board[2][path[2]] = 'cash';
+    assert.equal(evaluate(board, matrix(), 100).some(w => w.line === index + 1), false, `gap on line${index + 1}`);
+  }
+});
+
+test('follow-up shooter phase is optional and regular/repeated ordinary hits produce1x then2x then4x', () => {
+  const context = fixture();
+  assert.equal(resolveShooterShots({ reel: 2, row: 3 }, context, new Scripted([.99])), null);
+  const result = resolveShooterShots({ reel: 2, row: 3 }, context, new Scripted([0, .99, 0, 0, 0]))!;
+  assert.equal(result.feature.phase, 'shots'); assert.equal(result.feature.shotEvents!.length, 3);
+  assert.deepEqual(result.feature.shotEvents!.map(s => s.hits[0].multiplier), [1, 2, 4]);
+  assert.deepEqual(result.feature.shotEvents!.map(s => s.hits[0].repeated), [false, true, true]);
+  assert.ok(result.feature.shotEvents!.every(s => s.hits.length === 1 && s.expandedReel === undefined && !s.sticky));
+  assert.equal(result.sticky[0][0], 0);
+});
+test('a follow-up expanded-reel hit doubles all five exact multipliers and locks the entire reel only in a bonus', () => {
+  for (const tier of [null, 'edge'] as const) {
+    const context = fixture(tier); context.grid[2][3] = 'middle';
+    const expansion = resolveFeature('middle', { reel: 2, row: 3 }, context, new Scripted([0]));
+    const result = resolveShooterShots({ reel: 2, row: 3 }, { ...context, ...expansion }, new Scripted([0, 0, 10.5 / 30]))!;
+    const shot = result.feature.shotEvents![0]; assert.equal(shot.expandedReel, 2); assert.equal(shot.sticky, tier !== null);
+    assert.deepEqual(shot.hits.map(h => h.cell), Array.from({ length: 5 }, (_, row) => ({ reel: 2, row })));
+    assert.deepEqual(result.multipliers[2], Array(5).fill(2)); assert.deepEqual(result.sticky[2], Array(5).fill(tier === null ? 0 : 2));
+    assert.deepEqual(result.grid[2], Array(5).fill('wild'));
+  }
+});
+test('all expansions are available before follow-up shots can boost a different expanded reel', () => {
+  const context = fixture('old'); context.grid[1][2] = 'middle'; context.grid[4][0] = 'middle';
+  const a = resolveFeature('middle', { reel: 1, row: 2 }, context, new Scripted([0]));
+  const b = resolveFeature('middle', { reel: 4, row: 0 }, { ...context, ...a }, new Scripted([.8]));
+  const shots = resolveShooterShots({ reel: 1, row: 2 }, { ...context, ...b }, new Scripted([0, 0, 23.5 / 30]))!;
+  assert.equal(shots.feature.shotEvents![0].expandedReel, 4); assert.deepEqual(shots.multipliers[4], Array(5).fill(4)); assert.deepEqual(shots.sticky[4], Array(5).fill(4));
+  assert.deepEqual(shots.sticky[1], Array(5).fill(0));
+});
+test('follow-up shots exclude unresolved badges, scatter invitations and MAX cells', () => {
+  const context = fixture('old');
+  context.grid[0][0] = 'scatter'; context.grid[0][1] = 'left'; context.grid[0][2] = 'right'; context.grid[0][3] = 'max';
+  const result = resolveShooterShots({ reel: 3, row: 0 }, context, new Scripted([0, .99, 0, 0, 0]))!;
+  assert.deepEqual(result.feature.targets, Array(3).fill({ reel: 0, row: 4 }));
+  assert.deepEqual(result.grid[0].slice(0, 4), context.grid[0].slice(0, 4));
 });

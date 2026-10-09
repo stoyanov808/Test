@@ -1,32 +1,32 @@
 {
-  "generatedAt": "2026-10-09T07:42:45.573817+00:00",
+  "generatedAt": "2026-10-09T12:45:06.559606+00:00",
   "variant": "ot-staroto",
-  "sourceVersion": 3,
+  "sourceVersion": 4,
   "publication": "Server-based prototype, source and test distribution in variants/ot-staroto.",
   "engineTests": {
-    "passed": 43,
+    "passed": 57,
     "failed": 0,
     "skipped": 0,
-    "command": "npm test (repository root)",
-    "testSourceSha256": "443584b81dd2e956f810072c9c3dd91584c7358fa1871cb0ffbc3a2940bcfc0f"
+    "command": "npm test",
+    "testSourceSha256": "334eba7af2bc1b9fe9c8dc53a19dc4d737cbe562022765a2ae43658929ba162a"
   },
-  "browserChecksPassed": 88,
+  "browserChecksPassed": 111,
   "sampledRounds": 200000,
   "exactMath": {
     "expectedRtp": 0.965,
     "stakeModeProofs": 80,
-    "poolEntries": 47104,
-    "completelyEvaluatedStakeOutcomes": 376832,
-    "modelSha256": "07a21e869d49d90fdac4305963cdbac12c9cef9e63936a19a9521c1289e14d4e",
-    "proofSha256": "34b22f5cefa11858c3e214601985c537ab4f2119d1f6cbd627784dcf11ac93ec"
+    "poolEntries": 53248,
+    "completelyEvaluatedStakeOutcomes": 425984,
+    "modelSha256": "6f682f54985d232c8f09f3c0cd7ef136b1958aba5e81d85a148d56ff6269923e",
+    "proofSha256": "6fdc7d06c0e06cb3aa74dcf70bb9d2cd4fdb913600fe31ff0d51e44666cd9d65"
   },
   "production": {
     "path": "dist/index.html",
-    "sha256": "0afe8ce2362c7aadd57e92cbfb103a808cee4edea7c081e608214dbaafc03e7d",
+    "sha256": "16d6c765950c2007509a371145e21d743ef996a883664c5cecd3e193aac113e1",
     "bundleHashes": {
       "Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652",
       "Oswald.ttf": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
-      "art/README.md": "7da4358013e4adc6094251da349914a4f2ac62481599dc5916c80e8167a87655",
+      "art/README.md": "d3b4f1e52830bf68bf89c127f0a0f20705d9d358599bbfe0a950ccc3a84053db",
       "art/character-left-motion-a.png": "25b2b4068eef81925020b7240245a0eea3e554ade90f3c78ef3eb9365fe13fc8",
       "art/character-left-motion-b.png": "9aa5ae44f206be2fc927ba37b6b98a56ff832f77a2ffdf0b26c6f44875034030",
       "art/character-middle-motion-a.png": "753bdcecbf72f9e2ead921fa31ab550bafbbbff346a27307a369a3205cc98d61",
@@ -39,12 +39,12 @@
       "art/collector.svg": "a7a17d19663a8c5a1e13aad0daacd4532ad2ffcc5baf8ba5517fea6cdaa6ccd4",
       "art/getaway-car.png": "6f282a829f2de61061e07f9b78aa3a996c3ec9033f22794fabde8f53989aec02",
       "art/max.svg": "6b99ffd09c0c3e45173c89a45aced1024ac101b86a7e4a473cdfed2d7861e603",
-      "art/ruse-yard.png": "e74b3a330359ba094795cb39b3efd1f1e18249429ec8a4d780903423e03679fd",
       "art/scatter-premium.svg": "5f0cbf5bee081556a0ee63467c75f033285cc1a859c458aaafc58e9d94c4a232",
+      "art/student-club-ink.png": "584eb581d68c69d22339739b28dcf8316b5190bdc223b17c0c22d5942ec9de97",
       "art/symbols-ink.png": "fbf982a2066dbfb1ec74620ee9814a348f631dad81c619469403653bbb097291",
       "art/wild-premium.svg": "15f89e75bd7cce0518c35f8c8245870f59010c80e3f1c143884809b2b6d6339e",
-      "assets/index-4eoLgXFK.js": "e1a3ea42a6a09d76723ad395486c881261ed43c247e898a7368976a2f5d5f1a3",
-      "assets/index-CYIfqIMP.css": "4959c31ffd84151b15f0d52f1d9ee619eabb4382c8272994b6adec7cc714cb8a",
+      "assets/index-B01zqPHe.js": "c6fe09d32a7b4a9f486075bb9331a1947657173b88e8c806f53f73a4944bff9b",
+      "assets/index-Busf6jVu.css": "65d8c53f46f3f93b6441031b477cb8e7cd22153657c3ce34365759d1e7eb8eea",
       "audio/README.md": "82be675f0fd5a2576119ddd79ffbe96bdcb88bb392247002a1fd6891c323337d",
       "audio/bonus.wav": "ea76c3c066cde82acd79baf76b4fe230a3a37a79a229573f124c9f40df92b7a6",
       "audio/cascade.wav": "cde1e4014b5681970f48c690d54a1121f703e01156532679456e57240f6ec283",
@@ -57,79 +57,93 @@
       "audio/shot.wav": "37613a382c1a5b984ed3d109c2b5735d28627469f4778682883a41883e5f085a",
       "audio/win.wav": "c78e77dd7b84d81cc2442fe385c1c8ee3fca87cf45fcb15ed605228c85f9e022",
       "audio/yard-loop.wav": "6a521f27048270c5e5b15b022c5bffb67978f6318bdf32527021c34a20834706",
-      "index.html": "0afe8ce2362c7aadd57e92cbfb103a808cee4edea7c081e608214dbaafc03e7d"
+      "index.html": "16d6c765950c2007509a371145e21d743ef996a883664c5cecd3e193aac113e1"
     },
     "requests": [
-      "http://127.0.0.1:39333/",
-      "http://127.0.0.1:39333/assets/index-4eoLgXFK.js",
-      "http://127.0.0.1:39333/assets/index-CYIfqIMP.css",
-      "http://127.0.0.1:39333/audio/drop.wav",
-      "http://127.0.0.1:39333/audio/cascade.wav",
-      "http://127.0.0.1:39333/audio/reveal.wav",
-      "http://127.0.0.1:39333/audio/coin.wav",
-      "http://127.0.0.1:39333/audio/shot.wav",
-      "http://127.0.0.1:39333/audio/feature.wav",
-      "http://127.0.0.1:39333/audio/bonus.wav",
-      "http://127.0.0.1:39333/audio/win.wav",
-      "http://127.0.0.1:39333/audio/max.wav",
-      "http://127.0.0.1:39333/audio/scatter.wav",
-      "http://127.0.0.1:39333/audio/yard-loop.wav",
-      "http://127.0.0.1:39333/",
-      "http://127.0.0.1:39333/assets/index-4eoLgXFK.js",
-      "http://127.0.0.1:39333/assets/index-CYIfqIMP.css",
-      "http://127.0.0.1:39333/audio/drop.wav",
-      "http://127.0.0.1:39333/audio/cascade.wav",
-      "http://127.0.0.1:39333/audio/reveal.wav",
-      "http://127.0.0.1:39333/audio/coin.wav",
-      "http://127.0.0.1:39333/audio/shot.wav",
-      "http://127.0.0.1:39333/audio/feature.wav",
-      "http://127.0.0.1:39333/audio/bonus.wav",
-      "http://127.0.0.1:39333/audio/win.wav",
-      "http://127.0.0.1:39333/audio/max.wav",
-      "http://127.0.0.1:39333/audio/scatter.wav",
-      "http://127.0.0.1:39333/audio/yard-loop.wav",
-      "http://127.0.0.1:39333/",
-      "http://127.0.0.1:39333/assets/index-4eoLgXFK.js",
-      "http://127.0.0.1:39333/assets/index-CYIfqIMP.css",
-      "http://127.0.0.1:39333/audio/drop.wav",
-      "http://127.0.0.1:39333/audio/cascade.wav",
-      "http://127.0.0.1:39333/audio/reveal.wav",
-      "http://127.0.0.1:39333/audio/coin.wav",
-      "http://127.0.0.1:39333/audio/shot.wav",
-      "http://127.0.0.1:39333/audio/feature.wav",
-      "http://127.0.0.1:39333/audio/bonus.wav",
-      "http://127.0.0.1:39333/audio/win.wav",
-      "http://127.0.0.1:39333/audio/max.wav",
-      "http://127.0.0.1:39333/audio/scatter.wav",
-      "http://127.0.0.1:39333/audio/yard-loop.wav",
-      "http://127.0.0.1:39333/",
-      "http://127.0.0.1:39333/assets/index-4eoLgXFK.js",
-      "http://127.0.0.1:39333/assets/index-CYIfqIMP.css",
-      "http://127.0.0.1:39333/audio/drop.wav",
-      "http://127.0.0.1:39333/audio/cascade.wav",
-      "http://127.0.0.1:39333/audio/reveal.wav",
-      "http://127.0.0.1:39333/audio/coin.wav",
-      "http://127.0.0.1:39333/audio/shot.wav",
-      "http://127.0.0.1:39333/audio/feature.wav",
-      "http://127.0.0.1:39333/audio/bonus.wav",
-      "http://127.0.0.1:39333/audio/win.wav",
-      "http://127.0.0.1:39333/audio/max.wav",
-      "http://127.0.0.1:39333/audio/scatter.wav",
-      "http://127.0.0.1:39333/audio/yard-loop.wav",
-      "http://127.0.0.1:39333/",
-      "http://127.0.0.1:39333/assets/index-4eoLgXFK.js",
-      "http://127.0.0.1:39333/assets/index-CYIfqIMP.css",
-      "http://127.0.0.1:39333/audio/drop.wav",
-      "http://127.0.0.1:39333/audio/cascade.wav",
-      "http://127.0.0.1:39333/audio/reveal.wav",
-      "http://127.0.0.1:39333/audio/coin.wav",
-      "http://127.0.0.1:39333/audio/shot.wav",
-      "http://127.0.0.1:39333/audio/feature.wav",
-      "http://127.0.0.1:39333/audio/bonus.wav",
-      "http://127.0.0.1:39333/audio/win.wav",
-      "http://127.0.0.1:39333/audio/max.wav",
-      "http://127.0.0.1:39333/audio/scatter.wav",
-      "http://127.0.0.1:39333/audio/yard-loop.wav"
+      "http://127.0.0.1:36159/",
+      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
+      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:36159/audio/drop.wav",
+      "http://127.0.0.1:36159/audio/cascade.wav",
+      "http://127.0.0.1:36159/audio/reveal.wav",
+      "http://127.0.0.1:36159/audio/coin.wav",
+      "http://127.0.0.1:36159/audio/shot.wav",
+      "http://127.0.0.1:36159/audio/feature.wav",
+      "http://127.0.0.1:36159/audio/bonus.wav",
+      "http://127.0.0.1:36159/audio/win.wav",
+      "http://127.0.0.1:36159/audio/max.wav",
+      "http://127.0.0.1:36159/audio/scatter.wav",
+      "http://127.0.0.1:36159/audio/yard-loop.wav",
+      "http://127.0.0.1:36159/",
+      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
+      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:36159/audio/drop.wav",
+      "http://127.0.0.1:36159/audio/cascade.wav",
+      "http://127.0.0.1:36159/audio/reveal.wav",
+      "http://127.0.0.1:36159/audio/coin.wav",
+      "http://127.0.0.1:36159/audio/shot.wav",
+      "http://127.0.0.1:36159/audio/feature.wav",
+      "http://127.0.0.1:36159/audio/bonus.wav",
+      "http://127.0.0.1:36159/audio/win.wav",
+      "http://127.0.0.1:36159/audio/max.wav",
+      "http://127.0.0.1:36159/audio/scatter.wav",
+      "http://127.0.0.1:36159/audio/yard-loop.wav",
+      "http://127.0.0.1:36159/",
+      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
+      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:36159/audio/drop.wav",
+      "http://127.0.0.1:36159/audio/cascade.wav",
+      "http://127.0.0.1:36159/audio/reveal.wav",
+      "http://127.0.0.1:36159/audio/coin.wav",
+      "http://127.0.0.1:36159/audio/shot.wav",
+      "http://127.0.0.1:36159/audio/feature.wav",
+      "http://127.0.0.1:36159/audio/bonus.wav",
+      "http://127.0.0.1:36159/audio/win.wav",
+      "http://127.0.0.1:36159/audio/max.wav",
+      "http://127.0.0.1:36159/audio/scatter.wav",
+      "http://127.0.0.1:36159/audio/yard-loop.wav",
+      "http://127.0.0.1:36159/",
+      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
+      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:36159/audio/drop.wav",
+      "http://127.0.0.1:36159/audio/cascade.wav",
+      "http://127.0.0.1:36159/audio/reveal.wav",
+      "http://127.0.0.1:36159/audio/coin.wav",
+      "http://127.0.0.1:36159/audio/shot.wav",
+      "http://127.0.0.1:36159/audio/feature.wav",
+      "http://127.0.0.1:36159/audio/bonus.wav",
+      "http://127.0.0.1:36159/audio/win.wav",
+      "http://127.0.0.1:36159/audio/max.wav",
+      "http://127.0.0.1:36159/audio/scatter.wav",
+      "http://127.0.0.1:36159/audio/yard-loop.wav",
+      "http://127.0.0.1:36159/",
+      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
+      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:36159/audio/drop.wav",
+      "http://127.0.0.1:36159/audio/cascade.wav",
+      "http://127.0.0.1:36159/audio/reveal.wav",
+      "http://127.0.0.1:36159/audio/coin.wav",
+      "http://127.0.0.1:36159/audio/shot.wav",
+      "http://127.0.0.1:36159/audio/feature.wav",
+      "http://127.0.0.1:36159/audio/bonus.wav",
+      "http://127.0.0.1:36159/audio/win.wav",
+      "http://127.0.0.1:36159/audio/max.wav",
+      "http://127.0.0.1:36159/audio/scatter.wav",
+      "http://127.0.0.1:36159/audio/yard-loop.wav",
+      "http://127.0.0.1:36159/",
+      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
+      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:36159/audio/drop.wav",
+      "http://127.0.0.1:36159/audio/cascade.wav",
+      "http://127.0.0.1:36159/audio/reveal.wav",
+      "http://127.0.0.1:36159/audio/coin.wav",
+      "http://127.0.0.1:36159/audio/shot.wav",
+      "http://127.0.0.1:36159/audio/feature.wav",
+      "http://127.0.0.1:36159/audio/bonus.wav",
+      "http://127.0.0.1:36159/audio/win.wav",
+      "http://127.0.0.1:36159/audio/max.wav",
+      "http://127.0.0.1:36159/audio/scatter.wav",
+      "http://127.0.0.1:36159/audio/yard-loop.wav"
     ],
     "receipts": [
       {
@@ -139,18 +153,19 @@
         },
         "sequence": 1,
         "costCents": 1900,
-        "payoutCents": 600,
-        "sha256": "3cbd5e2beb62bc4b43fd5b99f3ddc8318a05c2349c3fa08da361ee4f878650c3",
+        "payoutCents": 7936,
+        "sha256": "8698e813f82d7a2d15f03b46b21014cbfcc0f5788d52b343f5471a92c0a4e087",
         "outcome": {
           "pool": "buy-ruse",
-          "index": 1446,
-          "seed": 1290245387,
+          "index": 4867,
+          "seed": 1452517059,
           "draws": [
-            2894807319,
-            3458852479
+            438866799,
+            3030027512
           ],
           "source": "crypto"
-        }
+        },
+        "selection": "fresh-ui-csprng"
       },
       {
         "choice": {
@@ -158,20 +173,20 @@
         },
         "sequence": 2,
         "costCents": 20,
-        "payoutCents": 0,
-        "sha256": "c8cca56db8b98c4d984e3edbba849a93b25a446380030afce25177a5742e79db",
+        "payoutCents": 2,
+        "sha256": "23e93b4cc5d625d2d7fb682a53cf21eb76412afaa978b319fafb0a93dbacee36",
         "outcome": {
           "pool": "ordinary",
-          "index": 7786,
-          "seed": 3089773130,
+          "index": 3925,
+          "seed": 2840565836,
           "draws": [
-            1205883163,
-            4097774584,
-            4001565925,
-            3644700639
+            3906845418,
+            262537623,
+            946051402
           ],
           "source": "crypto"
-        }
+        },
+        "selection": "fresh-ui-csprng"
       },
       {
         "choice": {
@@ -180,18 +195,18 @@
         },
         "sequence": 3,
         "costCents": 170,
-        "payoutCents": 0,
-        "sha256": "c3458ba554d116f10732f09624c747136cf26c31e815f7ae5a90332309032dc4",
+        "payoutCents": 712,
+        "sha256": "1e043ff915d5b9d6b418609b7fba514dcc0e2111b71c36d8de2d5da2771892c4",
         "outcome": {
           "pool": "xbet-left",
-          "index": 1041,
-          "seed": 3823097522,
+          "index": 1743,
+          "seed": 3354761520,
           "draws": [
-            2263401847,
-            781985993
+            928922890
           ],
           "source": "crypto"
-        }
+        },
+        "selection": "fresh-ui-csprng"
       },
       {
         "choice": {
@@ -200,27 +215,82 @@
         "sequence": 4,
         "costCents": 60,
         "payoutCents": 0,
-        "sha256": "6fd6e5db2a6b8ed04cad2a9b253274b0e76fd1e16a7cf6d3a29bed6618c60608",
+        "sha256": "b269e2343423b6e90758c50a8044ecdf87cf38c7cbab063912386b3723425cd0",
         "outcome": {
           "pool": "ordinary",
-          "index": 2609,
-          "seed": 2562428158,
+          "index": 5693,
+          "seed": 3983878735,
           "draws": [
-            1011701539,
-            3179821680
+            608426790,
+            312466722,
+            2168062569
           ],
           "source": "crypto"
-        }
+        },
+        "selection": "fresh-ui-csprng"
+      },
+      {
+        "choice": {
+          "kind": "xbet",
+          "character": "middle"
+        },
+        "sequence": 5,
+        "costCents": 500,
+        "payoutCents": 92,
+        "sha256": "e222dc7cc875586dbb6a74f59a45ae0eaf927dedf1bdf638631230fd3e6e3687",
+        "outcome": {
+          "pool": "xbet-middle",
+          "index": 3628,
+          "seed": 2483321364,
+          "draws": [
+            3844449422
+          ],
+          "source": "crypto"
+        },
+        "selection": "fresh-ui-csprng"
+      },
+      {
+        "choice": {
+          "kind": "buy",
+          "tier": "edge"
+        },
+        "sequence": 1,
+        "costCents": 36000,
+        "payoutCents": 62536,
+        "sha256": "345ef35d3f76aad3e2c4f279f4ee8b4c5f78eebbe0eb278e49d2637f22efde15",
+        "outcome": {
+          "pool": "buy-edge",
+          "index": 3731,
+          "seed": 3318811011,
+          "draws": [
+            2325413186,
+            2923043414
+          ],
+          "source": "crypto"
+        },
+        "selection": "node-csprng-precommitted-reload"
       }
-    ]
+    ],
+    "multiShooterReplay": {
+      "description": "A complete pending bought-bonus receipt selected with fresh Node CSPRNG by the same production playRound API, then replayed in the real production browser. This is reload coverage, not a fresh UI selection or a forged fixture.",
+      "attemptedFreshSelections": 7,
+      "ledgerSha256": "ea02e0e6c2aca1c97d116c49fce9e4ee19374b5a17381767bd51eb67ad306684",
+      "roundSha256": "345ef35d3f76aad3e2c4f279f4ee8b4c5f78eebbe0eb278e49d2637f22efde15",
+      "expandedReels": [
+        2,
+        3
+      ],
+      "entropyCallsAfterReload": 0
+    }
   },
   "standalone": {
     "path": "release/PLAY.html",
-    "sha256": "ea9ca40ac9b92f35d9f9f6f8bddd01226e47c7e8ab57d809d59d56edcd57ad4f",
+    "sha256": "5b0c86d526d6cb69889d27575ddee4e7b0b1bef3045edce8c8fb64b1d17b74e4",
     "note": "Secondary HTTP artifact requiring adjacent audio files, not the primary server workflow."
   },
   "runtimeSourceHashes": {
-    "package.json": "1ef4bed0459d0d76d18c7422c38de1ae6d1a59ac8c1c34062e0574f8b91b44f0",
+    "docs/research/le-zeus-payline-chart.json": "2631ca7cdc77d75e22a0dc5fccb65b6e91878bdd7d61362e6caf275e497f528d",
+    "package.json": "5ae7a6f615f5e5a049f36f4cf6ad8a24ade54d74a360a99ff7f178534af983a2",
     "public/Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652",
     "public/Oswald.ttf": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
     "public/art/character-left-motion-a.png": "25b2b4068eef81925020b7240245a0eea3e554ade90f3c78ef3eb9365fe13fc8",
@@ -235,8 +305,8 @@
     "public/art/collector.svg": "a7a17d19663a8c5a1e13aad0daacd4532ad2ffcc5baf8ba5517fea6cdaa6ccd4",
     "public/art/getaway-car.png": "6f282a829f2de61061e07f9b78aa3a996c3ec9033f22794fabde8f53989aec02",
     "public/art/max.svg": "6b99ffd09c0c3e45173c89a45aced1024ac101b86a7e4a473cdfed2d7861e603",
-    "public/art/ruse-yard.png": "e74b3a330359ba094795cb39b3efd1f1e18249429ec8a4d780903423e03679fd",
     "public/art/scatter-premium.svg": "5f0cbf5bee081556a0ee63467c75f033285cc1a859c458aaafc58e9d94c4a232",
+    "public/art/student-club-ink.png": "584eb581d68c69d22339739b28dcf8316b5190bdc223b17c0c22d5942ec9de97",
     "public/art/symbols-ink.png": "fbf982a2066dbfb1ec74620ee9814a348f631dad81c619469403653bbb097291",
     "public/art/wild-premium.svg": "15f89e75bd7cce0518c35f8c8245870f59010c80e3f1c143884809b2b6d6339e",
     "public/audio/bonus.wav": "ea76c3c066cde82acd79baf76b4fe230a3a37a79a229573f124c9f40df92b7a6",
@@ -250,77 +320,100 @@
     "public/audio/shot.wav": "37613a382c1a5b984ed3d109c2b5735d28627469f4778682883a41883e5f085a",
     "public/audio/win.wav": "c78e77dd7b84d81cc2442fe385c1c8ee3fca87cf45fcb15ed605228c85f9e022",
     "public/audio/yard-loop.wav": "6a521f27048270c5e5b15b022c5bffb67978f6318bdf32527021c34a20834706",
-    "scripts/browser-test.ts": "f642aed79b45a4eb3f89b44a532085b8ea7dfa4d3bb1a97c755a6784149b556b",
+    "scripts/browser-test.ts": "57022e3fd6fa83cca35ce478973307943b98de7b72cf601df3941b2de7879fc6",
     "scripts/standalone.mjs": "c4f6e84ad1ef4988344fe96ad36dd4047309161f205bf8adef7e7c9a68b4ad86",
-    "src/art.ts": "a4b200291dcbf3bac3f259c17eaf750e39c1602f2d416902da4aa8ba72aed3d5",
+    "src/art.ts": "7c0310124610a38e9ccf4ebe56314e7670bddccbcdde849bed3d9b5783b99327",
     "src/audio-config.ts": "02930cf7ac469057e629ade6a7678502a34013f4ffe2a820e683ce89e822b383",
     "src/audio.ts": "e7549c94413f0b28131599baedac1aa3c55706156fa135539d1ca64bf5f5e39e",
-    "src/engine.ts": "70812e4324b3d20b7c12185b287dd255bad6753fcddb1428ba54b8742d91dd8e",
-    "src/main.ts": "b5eb279adbdf93106db6bf3a4e5caec72b0d0776f3d057a0701b1a63e948eb4a",
-    "src/math-model.json": "07a21e869d49d90fdac4305963cdbac12c9cef9e63936a19a9521c1289e14d4e",
-    "src/math-model.ts": "3a4fd0ba4cf4ebd002544ded4fa1bfad6f3659a2a46f0dff6fe849314a0f5c53",
-    "src/renderer.ts": "7661bb53288158e8b97adbb278e9572a530b2bc2b3cc96483b9d9995d6bd20ad",
-    "src/style.css": "89976589ae432f57f2424719b19ad9c9d000cc767a579dfff93b5ad23a4bf1ef",
-    "src/types.ts": "dca3de70785c36c3e22210de83f331c9ab4ce82f6a633b2a39e79baf432bb371",
+    "src/engine.ts": "7ed0fc5efa02a5c453febd32b07c5c751d22b7075c02419e3af20f90fd708225",
+    "src/main.ts": "9c0b235ab18dca7b0ac63b32bfb87dbb5e11325b3bbb282e4e16a7ab91fddd29",
+    "src/math-model.json": "6f682f54985d232c8f09f3c0cd7ef136b1958aba5e81d85a148d56ff6269923e",
+    "src/math-model.ts": "2842948d150e9fa08dd0bdac0a6c6d8dc3f25973a18794b33689fced5da4d77a",
+    "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+    "src/renderer.ts": "6ff12252b66a0c879ff9fec4979f97486fcbf0736ce61095d54d9e134413b022",
+    "src/style.css": "0502532e8a87e7d3a78618aab19886cc1d9d60c8470a6cc309cce03a7daf3390",
+    "src/types.ts": "326541f1fb58df10554db9ed4745f9f4773d80ce5147d892926d3cd03ae95432",
     "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
     "vite.config.ts": "f3c57d53264ff4136c91b8454e4fc934bbde5c13aafbe3867a08d537decc1170"
   },
   "mathematicsSourceHashes": {
-    "src/engine.ts": "70812e4324b3d20b7c12185b287dd255bad6753fcddb1428ba54b8742d91dd8e",
-    "src/types.ts": "dca3de70785c36c3e22210de83f331c9ab4ce82f6a633b2a39e79baf432bb371",
-    "src/math-model.ts": "3a4fd0ba4cf4ebd002544ded4fa1bfad6f3659a2a46f0dff6fe849314a0f5c53",
-    "src/math-model.json": "07a21e869d49d90fdac4305963cdbac12c9cef9e63936a19a9521c1289e14d4e",
-    "scripts/simulate.ts": "9bbc0f66126664b5be3e37f5383eda9e4a0b67c82d2ac1cf25f5944a8f7db1c6"
+    "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+    "src/engine.ts": "7ed0fc5efa02a5c453febd32b07c5c751d22b7075c02419e3af20f90fd708225",
+    "src/types.ts": "326541f1fb58df10554db9ed4745f9f4773d80ce5147d892926d3cd03ae95432",
+    "src/math-model.ts": "2842948d150e9fa08dd0bdac0a6c6d8dc3f25973a18794b33689fced5da4d77a",
+    "src/math-model.json": "6f682f54985d232c8f09f3c0cd7ef136b1958aba5e81d85a148d56ff6269923e",
+    "scripts/simulate.ts": "3aba02f9d3abe0fae61c82ad187501787cff58d929ddd30ddb79325d5aef7231"
   },
   "screenshotHashes": {
-    "docs/screenshots/bonus-chance-boost.png": "410e92324c2a4c2f1e13c106d6c177de9d9ee48b3641743789f715636f8a1d31",
-    "docs/screenshots/character-left-reveal.png": "ba45aeadd44c59fbf72197c10e996dbb0029e0b035dcb18d3f75a867d636f4ee",
-    "docs/screenshots/character-left-impact.png": "521a582523188d537547a6e7d8a5d5e2d48e7e0118fae528a9aae427c1738a81",
-    "docs/screenshots/character-middle-reveal.png": "7499ab0af12cb810fb28a4cd41ddc1eb488a7d0869c4593b9719aa29be5484e2",
-    "docs/screenshots/character-middle-impact.png": "a83bb25e7c86e54634200ba8ab5729ac2faeddc8a38db2e9fdbcb89a1813dbd0",
-    "docs/screenshots/character-right-reveal.png": "da2f16e32cb9911a547b7fa930f39ee8b99066c4cf5544a755fa05f3fe98c2de",
-    "docs/screenshots/character-right-impact.png": "bfd8b01a77b906072d0aeee3676b375d89c8f98c15036561388febc316a3e7e1",
-    "docs/screenshots/animation-left-frame-1.png": "7bb9ebe91a36aa526b5b736d24f3c3955832d2755678daefa28116ee6f86fb90",
-    "docs/screenshots/animation-left-frame-2.png": "084b3dd6b100fc41b22638874781c943e6828029801bf768195f7952d49210ae",
-    "docs/screenshots/animation-left-frame-3.png": "f6427be32960d5e13ab1bfc63325d2509ce213d1b9aeafc913cc69b53b7be539",
-    "docs/screenshots/animation-left-frame-4.png": "228197c0e663c56a8c022a647f668933ed2de6492404e81257013ddee6a4b696",
-    "docs/screenshots/animation-left-frame-5.png": "29189eea35384fd20528cd75c827e1f294078bc53c34065a379b904da822d450",
-    "docs/screenshots/animation-left-frame-6.png": "31924a5c7b7bc5d17506aa0fe01fcec181e11ca9f1cef8a2792b0e0a0114a529",
-    "docs/screenshots/animation-left-frame-7.png": "a27088de406b7f5cf517e2535991a50b1b4b75a9e4a83da3ac463b9fa8e022df",
-    "docs/screenshots/animation-left-frame-8.png": "40ec62878205c647558f442698ad211055a0185f6d1614c930276971aa792896",
-    "docs/screenshots/bonus-ruse-scatters.png": "8aaa3cba2fe601fce0a9e07edcc07af4012dfacf454a535831a938f27ce696e3",
-    "docs/screenshots/bonus-ruse-counter.png": "bd218f9810efefca0887b8d0a7d2ba3e93dd9c8779eedc6a181fe4327f671508",
-    "docs/screenshots/bonus-lux-scatters.png": "44c819c525a561d2efe0fc0841f429cb95838561ead05ee57031a62b3d152c71",
-    "docs/screenshots/bonus-lux-counter.png": "237832a52908225b28d3796dcab60b7ba80d0fd24bd927cae6f18d624441fd43",
-    "docs/screenshots/bonus-edge-scatters.png": "7d6293d954362ff53498ef69dfbb7b8696ee67c7d3a3ef6b29a87d7988cb7dcd",
-    "docs/screenshots/bonus-edge-counter.png": "3f1b9e4acf6bce7da7b4851d5b684d38ec30d5c27f2815292d6674c1aee9a1f7",
-    "docs/screenshots/bonus-old-scatters.png": "db183a5ffb4cbfa935557ad445c43e115ec9134904eba88e90393946187e2ed9",
-    "docs/screenshots/bonus-old-counter.png": "a3edda2a4e17d99915948b71a923bf2ffcc98da88bf3715894761b16251b3047",
-    "docs/screenshots/repeated-shot.png": "2f98d2dac603dfb54f33d830dc8a0b49986450bd5ad3ea18bbbd677756f0276e",
-    "docs/screenshots/wild-completes-and-pays.png": "3cf4e2376ad373a8a8a8679846a7e5732db976bebde03f4348639e246785b4a7",
-    "docs/screenshots/sticky-wild-spent.png": "2fdd1dcd3045b8472721071a03f2315e9d35cc99298bd4e0f5e8769ca52e666d",
-    "docs/screenshots/independent-tumble.png": "eb9493de2fda056b26902763c6b16ccac3d751a5e331f58f9c2c2116da762883",
-    "docs/screenshots/sticky-wild-recharged.png": "64e89972c7be451d03846889b6e9c5592750caed4495438b776e5b545eb9756b",
-    "docs/screenshots/collector-all-coins-revealed.png": "f8cf1983a4c02d81254490391397ed5736f23f4ff098ec0697936d4de2f57462",
-    "docs/screenshots/collector-clears-and-stays.png": "fe102dbad7d5e930ec9cb2f6716481f84a22694daa6ad218c3f3959caee32345",
-    "docs/screenshots/collector-fresh-reroll.png": "cb37a78740ac34e5b0e5c413c055b1c7df27199b3b3e477548be68e9bc64240d",
-    "docs/screenshots/collector-flight.png": "23774da85d66ac0bdcad3bb4948b8a63f221665ea820d7f316b4b89c7b6952f8",
-    "docs/screenshots/collector-chain-absorption.png": "142542caa25e1f0f824cf412153e2a677d413d3d258999ba854ef8166f60b56e",
-    "docs/screenshots/collector-final-award.png": "a424ec4558227fbd982e66e0eebf89bfb33968aecf23c3f705ba7b0d4a3518d1",
-    "docs/screenshots/bonus-retrigger.png": "53e5f19231d6a86b1bbedad4b0352311a93bf82b3b68818aad18458c0f320a27",
-    "docs/screenshots/win-100.png": "f99df4f893f425a40ba99990115a19ba24d69c8ef9d85ace2060d2809da9d68f",
-    "docs/screenshots/win-500.png": "8cc0efb6f56621e3ed0bcfe3b08c954aa31f85c08a9c07bd049b597a5cc1950f",
-    "docs/screenshots/win-1000.png": "49f53869df31b4180b3e07638339f1d87ee8cd54534f84c4d159c3cbc6bd86b1",
-    "docs/screenshots/god-shot.png": "437871e36fbfc71af497740e9aff81d45942d90e7425c047920c6df8a95e99d9",
-    "docs/screenshots/max-win.png": "7614ee460c8b9ab280c07939a615ced6e987f02c610b4a7c8f720585d78b42fe",
-    "docs/screenshots/god-miss-board.png": "f4f74f44adc89100011ebe0dc787ce6e38b6a1d7b00a2faf1d49003d8ef1faea",
-    "docs/screenshots/base.png": "fbe198fc5b0274c62e1d13aaa27aae3b3577c51c1a2c40acd7e2de200965a14b",
-    "docs/screenshots/filesystem-audio-settings.png": "5fd988311ca794232868f18aace458e5b425d974a9d779b98c8393475cd26a0c",
-    "docs/screenshots/desktop.png": "636756cc8b6717f1cfe3bc6033d1df2edeebe123ba1604b6b90d61e516856636",
-    "docs/screenshots/desktop-full-window.png": "6b8dc61e9be123430cb497c4df76e2e18b1bca3be63d3d535397fc75a8a9d2c4",
-    "docs/screenshots/mobile.png": "586ca67bea9111170de4e5d6c62b2ad209304a0834a29a919bd2afb952842ffb",
-    "docs/screenshots/landscape.png": "426655da114334a2f49202940427eb33bb7413f9ddf9b5d22b9c0feb3acb2fdb",
-    "docs/screenshots/server-production.png": "a71da92ed549f6d4c05106b65bd84878b539ef66790f2a74cc7001bc4589cc1f"
+    "docs/screenshots/bonus-chance-boost.png": "cdeef09bd5a40a1c9ff54d0a4cd3f4e0e9dfdee93c5a6c222c4bb84bb6a958ac",
+    "docs/screenshots/character-left-reveal.png": "2c8ffe48fa7fff470cb1f77ee7f488d0eb2357272074877ee372f527cb435c4e",
+    "docs/screenshots/character-left-impact.png": "f4ea33065ddc17e8cfbd5fc80eb76ab6470e50aafd55f12c6e7edbf1bf94eb33",
+    "docs/screenshots/character-middle-reveal.png": "51f9f6eea7477bb980a3a59004a5d93890dd2956e8675b301545578a3b70e827",
+    "docs/screenshots/character-middle-impact.png": "deac0588cc5d8565f1a7f24b93007fdfe54b12dc7d3e08106c50afcd1b20aa7c",
+    "docs/screenshots/character-right-reveal.png": "669b98b7170db1105fb17f38ec4b94b3939bbd0e1d79a4fd63b33827441787f9",
+    "docs/screenshots/character-right-impact.png": "b2b384fa1547969383f43bb78608abaaa9d86f914eebd38927991ed0e55ccc6e",
+    "docs/screenshots/animation-left-frame-1.png": "cecf86f3f0f8cf3a4659f96d23d3301e022f016715aff59660ab1bb7f228288a",
+    "docs/screenshots/animation-left-frame-2.png": "0e8e75116d3a27ac38662c8cc6c3bd4858dc52f79396562af1be72f6f71a5a56",
+    "docs/screenshots/animation-left-frame-3.png": "b76459667cfd7d77bc1c89c05690fd8ace5d9743c8f13c3665d284179b545379",
+    "docs/screenshots/animation-left-frame-4.png": "ebf8cd8504cf42dec759c35d6f1bb8295db716bd3a2217799f6f51b70919be4c",
+    "docs/screenshots/animation-left-frame-5.png": "cb460bea5f1abb70ca4fb27184a62a5559b447a25984a474f0f4a8974c61a523",
+    "docs/screenshots/animation-left-frame-6.png": "aee7892f8e65917d6aaa7eff16ed68bf5ac4f63e33917a7e9970c30ea611025b",
+    "docs/screenshots/animation-left-frame-7.png": "fa4e86f136e0abc475ccbb733aa55a137a9cc1ea7897d164605462e35d65a984",
+    "docs/screenshots/animation-left-frame-8.png": "c93e42894d9697b67b2a44bba94abb6e82389abe54985b4aacd5be8068749bc8",
+    "docs/screenshots/bonus-ruse-scatters.png": "43b9cbdcc69b781654b70304b45d6761080749cd76bb95be1c9471c6ba965aeb",
+    "docs/screenshots/bonus-ruse-counter.png": "568e5f90d78b8a5222a82a15ff10baadf38cb72ae5034447816503d843b9b900",
+    "docs/screenshots/bonus-lux-scatters.png": "a9525ed396a74714ba95316a02f42fa22744b790b7b338a6b8a1a5d376feb142",
+    "docs/screenshots/bonus-lux-counter.png": "e511386412974731b4840d88876b9bfb3c26893211a4b34bf8b073219f4e49c0",
+    "docs/screenshots/bonus-edge-scatters.png": "2cc9f1d62dd00c81da1a19b3b2cb9cbc519075ec360eb726456f894767d3778e",
+    "docs/screenshots/bonus-edge-counter.png": "9f0ab2005430269d13a6eb9c91a1b97df6449702aeefacefed7a1bb01160e839",
+    "docs/screenshots/bonus-old-scatters.png": "8cfa69861feac8a440497fdc34c8eb6bb0f4c46a3976288c1a555f758a40876a",
+    "docs/screenshots/bonus-old-counter.png": "d46794752df2a6849762cc84de9d4b9afa4552268a97763ec1cb4ac2b20d70a0",
+    "docs/screenshots/animation-expansion-frame-1.png": "26bfff339d4a4abcb3b0cee15214f267373946db0685e6bcbb8b54c659f51118",
+    "docs/screenshots/animation-expansion-frame-2.png": "5dad8ef8dea3884bccc329b455c6818bee7dc011d575bdc1d839d00c93e0e550",
+    "docs/screenshots/animation-expansion-frame-3.png": "c65e0d932f3ab9a678b9a29f9d54a91717c15194ba3b85f13c57c69bff5e40d9",
+    "docs/screenshots/animation-expansion-frame-4.png": "9266a1107e6fad5fe5d45786cb59f6f2c35a6f24d0ac1353058c0786168a552b",
+    "docs/screenshots/animation-expansion-frame-5.png": "dafa1aa176be7ffb952ea86b7a64e4080ae42589079c9b0b919a602c1657f727",
+    "docs/screenshots/animation-expansion-frame-6.png": "480acad0ebd756f81b26097269f78251d20865912997c0e6910c893fb860878c",
+    "docs/screenshots/animation-expansion-frame-7.png": "2e4934b46df16545a938a11b1d59830e086a5ff592271f5b2a439cad6172042d",
+    "docs/screenshots/animation-expansion-frame-8.png": "e9e3c9fc0e072dc4aa006bab22ba48a03556b45ee39459b8013dc57d50e77b74",
+    "docs/screenshots/shooter-expands-without-shots.png": "a6c17dabdb67ca20fa47aefb3c06ff7bd70e34972517691affa9a775b655c330",
+    "docs/screenshots/base-first-expanding-reel.png": "75722a793f9429a4e2d3e8af71b842179e6716fa555f0d0b8c31fce5617668fa",
+    "docs/screenshots/base-two-expanding-reels.png": "45bfe33c32ad5482f5856b901b1b8da51bbc3f63a85aa91bb4f8a49236822efb",
+    "docs/screenshots/bonus-first-expanding-reel.png": "26fe256d51b691709f10caf79ca3fa837322a11778f8650070b068995529fab3",
+    "docs/screenshots/bonus-two-expanding-reels.png": "3b0ace6d22bbeb0eb5a8f8a5e0b50374812bca67f8fc4422f5d57be528c6536c",
+    "docs/screenshots/optional-shot-regular-wild.png": "c16503f68207999fb0f759b467c1af02c0007bab00a46ee291aa21e6d0b33f50",
+    "docs/screenshots/optional-shot-repeated-wild.png": "8a7f415f0e93dfe21defc43c02ed42688a802926c1c343c1d37b58787019a27b",
+    "docs/screenshots/base-expanded-reel-doubled.png": "ef629883a7e0fe93953a91e08399bacc58ccd2c4ea6d3a96e015a9bdd6168bfb",
+    "docs/screenshots/bonus-expanded-reel-locked.png": "d70e4a74f533d4e9e1540cfce0ec93df1f83aba17fdda152345ab6b0e9833d6b",
+    "docs/screenshots/bonus-locked-reel-spent.png": "9a0930108e96796cb4a9a1d9e092d27b5b7e643d6a972ae443d423cc0e2087eb",
+    "docs/screenshots/bonus-locked-reel-rearmed.png": "ab97f170710c51c28fe111c185750db2426d68be0b393b84ec239a6b4d2b0ed3",
+    "docs/screenshots/base-expansion-bonus-reset.png": "6849fd5ab25852972f1841f735d5531754a9b91800ef78e1172ee3ee968ad7a3",
+    "docs/screenshots/wild-completes-and-pays.png": "8df2ccdf3fbc5c7be093344b3e7b5000f7ed39d18cc438429db3393a1560b03d",
+    "docs/screenshots/overlapping-payline-wins.png": "b837b093bcf4514906ef7c2795b42f67f17bdee0df3e445d64a0d9b2a4d21fd0",
+    "docs/screenshots/sticky-wild-spent.png": "f10300438cf94608fa1f02b196fe615604be0192f95a17d9acd585967d7dd12c",
+    "docs/screenshots/independent-tumble.png": "3d0bab1e003c196b799c71d9014644cfe59ccd1503cc82720a38567ea9dfedbf",
+    "docs/screenshots/sticky-wild-recharged.png": "852efde63f39ab7920cc525907c35236a2b8fad06ff5ac3a1cc80c8832f21a45",
+    "docs/screenshots/collector-all-coins-revealed.png": "4d4d635e240122fa02f8058487c62835fa66acfe996d6c88a5ed3843dd2ac2da",
+    "docs/screenshots/collector-clears-and-stays.png": "ffae192663072366740c3a27cd48e426f9e952c6d70c540eff669821be1c7ca5",
+    "docs/screenshots/collector-fresh-reroll.png": "c7558ee418ecef4018be81d09191e11b9ecbefd6e5e581ae9eb2787ffd1d3fb6",
+    "docs/screenshots/collector-flight.png": "17a9555d434660620d6f1155f9e88fc72596790bb2d7f6c5997fedcf108e6d1a",
+    "docs/screenshots/collector-chain-absorption.png": "22894e8ebbbf6ebab7100a9ff243b6768791ada40cac45888584cea6777df0b8",
+    "docs/screenshots/collector-final-award.png": "fe4b6aeecbf7fb463c7f13fc8049b01eb0bd667b6ecc4e83dca79627738597b5",
+    "docs/screenshots/bonus-retrigger.png": "26626c5a8676e2e27eb7da0dfe4da77f70da5b30576cca3e0153bf13f0af11e6",
+    "docs/screenshots/win-100.png": "18e8c23596089dd54eda370840874fc41acf8f205ad6d6dd94d56784e2debada",
+    "docs/screenshots/win-500.png": "51593b5b79bc15f1de0b2c5d3809e1498c57b0b6c04ff2cd20ff0425d21208a7",
+    "docs/screenshots/win-1000.png": "8f902a3589fd5636d19a7c381b1b9d8319068c30afd4a93a6e51efab864894c8",
+    "docs/screenshots/god-shot.png": "1b8fd704fadddd59ebe2b3dd7143ed52f42458de0527305d0b99560924ce6f20",
+    "docs/screenshots/max-win.png": "55d049001901cae3e24d8c061cb90ecf5927847ceeed3b08099c058d3249e5b2",
+    "docs/screenshots/god-miss-board.png": "f99cdc550e8ad4f064a06119b951e0beab45034b1e27e13dbe6af6ea8dc88ffc",
+    "docs/screenshots/base.png": "b22dc41b0cc93231db6b87adf6b4d55da617df2dd52c9c4cad42f51216020098",
+    "docs/screenshots/exact-payline-chart.png": "62759eca08bd2f65084c33b5c056b5727db2eb5165ecdeabd76524f4b18b82d2",
+    "docs/screenshots/filesystem-audio-settings.png": "1afa647cac1dadefba366f9d48e17be1d5dd32e501962d18e8631d4ef01e7847",
+    "docs/screenshots/desktop.png": "1256b7be46d77049e99f001ab22a0cdef4a92e6cbda2877172b998a3bad81f54",
+    "docs/screenshots/desktop-full-window.png": "bf62521ca390ca9d8c3e231ff3f9f0551f5613547596dd8c4f9d067b377ce253",
+    "docs/screenshots/mobile.png": "a7a8064132b122d718a8c0b7284e2a2749afbac868283f3a434f9b5a6107e05e",
+    "docs/screenshots/landscape.png": "e0489476d621539425de2ab9102994a671f603b7622598f4a35855302bcc01b1",
+    "docs/screenshots/server-production.png": "a4477bd000a26ac20c28a48850a0b10176137a4a3039aed616b6bfc877d5c6b8"
   },
   "localServerAudioHashes": {
     "release/audio/max.wav": "2e2a384edf9c537ce5cb9d0bb67c3f2e42a23a97293e1b72a2146c2f4e1b5e64",
@@ -337,29 +430,198 @@
     "release/audio/shot.wav": "37613a382c1a5b984ed3d109c2b5735d28627469f4778682883a41883e5f085a"
   },
   "workflowFiles": {
-    "package.json": "32cad5c20b67166371ecd0f176fbca733ffc6f1a4d23374f17fb4c745d2ff545",
-    "package-lock.json": "709d2cce49543e3a21721a92dd9469ca4ad19dad9fef5d033bf98aa299f0880e"
+    "package.json": "dbf81a0d44a2ce5b5b503d73ea24a08e9f76d5b4654a561caf4996e742eb48a2",
+    "package-lock.json": "3406fb0f2aaae5678ed76bdd61d3bbdc73153e0f682b635dfe6d39cb54764e96"
   },
   "evidence": {
-    "docs/browser-validation.json": "65b184c92cd10a7f7c862c4fdf4d6c0a2dcf9c60c1aae49adf48c0a647d14bd9",
-    "docs/mathematics-sample.json": "8748af630b414b7da6d9f5f837379859152992ca8dccf0483df684df8084b964",
-    "docs/mathematics-proof.json": "34b22f5cefa11858c3e214601985c537ab4f2119d1f6cbd627784dcf11ac93ec",
-    "docs/mathematics-outcome-validation.json": "36f2857f4b88c3cdef18acdecfea1df51ee8ffb9265ba355b4a6aa33a0a14953"
+    "docs/browser-validation.json": "9d4ca43b7e6b08861fb483021edd20db101cc19d8c63d54358a3cebec9a816a9",
+    "docs/mathematics-sample.json": "563d5b3a25da49799a87fbc829914006b05cc17d6a91ca4c10380a2fc773fe09",
+    "docs/mathematics-proof.json": "6fdc7d06c0e06cb3aa74dcf70bb9d2cd4fdb913600fe31ff0d51e44666cd9d65",
+    "docs/mathematics-outcome-validation.json": "f01834ea835919c5a2704ff901bd64921722fae2e403767073cce939d910a1bf",
+    "docs/research/v4-independent-review.json": "38fe00a9bc2f7f5cbb9b84cd67cd0175bd02351776682d0732e30bd015217aba",
+    "docs/research/v4-helper-validation.json": "b26c5548931c13ea062d66e5f19d274e80fea847226d412668fc0194b9cc3c70"
+  },
+  "paylineReference": {
+    "path": "docs/research/le-zeus-payline-chart.json",
+    "sha256": "2631ca7cdc77d75e22a0dc5fccb65b6e91878bdd7d61362e6caf275e497f528d",
+    "count": 19,
+    "rows": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      [
+        2,
+        3,
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        3,
+        4,
+        3,
+        4,
+        3,
+        4
+      ],
+      [
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      [
+        2,
+        1,
+        2,
+        1,
+        2,
+        1
+      ],
+      [
+        3,
+        2,
+        3,
+        2,
+        3,
+        2
+      ],
+      [
+        4,
+        3,
+        4,
+        3,
+        4,
+        3
+      ],
+      [
+        0,
+        1,
+        2,
+        2,
+        1,
+        0
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        2,
+        1
+      ],
+      [
+        2,
+        3,
+        4,
+        4,
+        3,
+        2
+      ],
+      [
+        4,
+        3,
+        2,
+        2,
+        3,
+        4
+      ],
+      [
+        3,
+        2,
+        1,
+        1,
+        2,
+        3
+      ],
+      [
+        2,
+        1,
+        0,
+        0,
+        1,
+        2
+      ]
+    ]
   },
   "artEvidence": {
-    "validation": "docs/art/art-validation.json",
-    "sha256": "b213c8cd74c12633e1096d1e4d8174fb889416c18ea4939494ece009ec68b8ad",
+    "path": "docs/art/art-validation.json",
+    "sha256": "8bc3890e8cd11fbbcb29165ec2598cc8d07f9c39bbb67b13eee7911d9c512698",
     "characterFrames": 24,
     "regularSymbols": 9,
-    "contactSheet": {
-      "file": "docs/art/animation-contact-sheet.png",
-      "sha256": "b6142c78bc1a77a6743b7628f8526e1895e2500ec661bd11b4b3cd9d6f5d23fb"
+    "clubScene": "public/art/student-club-ink.png",
+    "sceneSha256": "584eb581d68c69d22339739b28dcf8316b5190bdc223b17c0c22d5942ec9de97",
+    "contactSheets": {
+      "contactSheet": {
+        "file": "docs/art/animation-contact-sheet.png",
+        "sha256": "b6142c78bc1a77a6743b7628f8526e1895e2500ec661bd11b4b3cd9d6f5d23fb"
+      },
+      "sceneContactSheet": {
+        "file": "docs/art/scene-cover-contact-sheet.png",
+        "sha256": "b28a2240f65a6faa93c38872ad391dda07ade95de5e802b3f92223fc2241da83"
+      }
     }
   },
   "releaseHelperHashes": {
     "START.cjs": "64d92b005c292843baf4c9ca134f4bdfbea4026e4ab26675006fe5be2a70801b",
     "START-WINDOWS.bat": "f7a923bb6bc0a4a6ca8dd6d7be9304d729d160c09d01cf68801b61f7f747b2f0",
-    "READ-ME.txt": "57258bc96ec243a0f127b73650f502a5cb1091489c91f3e4a07d594aa0aed620",
+    "READ-ME.txt": "5cd68124a4d859e4b455bbc12250bcf9bc79892a36439b0a1b78a47c5a91b8a0",
     "Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652"
   }
 }

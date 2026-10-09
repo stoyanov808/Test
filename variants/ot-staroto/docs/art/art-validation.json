@@ -1,7 +1,7 @@
 {
-  "revision": 3,
-  "checkedAtUTC": "2026-10-09T07:23:52.045312+00:00",
-  "method": "Chromium raw-atlas Canvas draw/decode plus alpha-component crop analysis; no source image pixels were edited.",
+  "revision": 4,
+  "checkedAtUTC": "2026-10-09T08:21:16.415878+00:00",
+  "method": "Fresh Chromium raw-atlas Canvas draw/decode of 24 character frames and nine regular symbols; fresh club scene decode and CSS background-size:cover previews. The unchanged atlas alpha-component checks are retained from the prior validation date; no source image pixels were edited.",
   "viewport": {
     "width": 1536,
     "height": 1180
@@ -9,7 +9,7 @@
   "characterFrameCount": 24,
   "regularSymbolCount": 9,
   "uniqueCharacterAtlases": 6,
-  "uniqueImageDecodes": 7,
+  "uniqueImageDecodes": 8,
   "browserErrors": [],
   "alphaThreshold": 100,
   "principalComponentMinimumPixels": 10000,
@@ -614,18 +614,79 @@
     }
   ],
   "sourceHashes": {
-    "src/art.ts": "a4b200291dcbf3bac3f259c17eaf750e39c1602f2d416902da4aa8ba72aed3d5",
-    "public/art/README.md": "7da4358013e4adc6094251da349914a4f2ac62481599dc5916c80e8167a87655",
+    "src/art.ts": "7c0310124610a38e9ccf4ebe56314e7670bddccbcdde849bed3d9b5783b99327",
+    "public/art/README.md": "d3b4f1e52830bf68bf89c127f0a0f20705d9d358599bbfe0a950ccc3a84053db",
     "public/art/symbols-ink.png": "fbf982a2066dbfb1ec74620ee9814a348f631dad81c619469403653bbb097291",
     "public/art/character-left-motion-a.png": "25b2b4068eef81925020b7240245a0eea3e554ade90f3c78ef3eb9365fe13fc8",
     "public/art/character-left-motion-b.png": "9aa5ae44f206be2fc927ba37b6b98a56ff832f77a2ffdf0b26c6f44875034030",
     "public/art/character-middle-motion-a.png": "753bdcecbf72f9e2ead921fa31ab550bafbbbff346a27307a369a3205cc98d61",
     "public/art/character-middle-motion-b.png": "95109ab0083b4ee6f41d9e40861d08fd3bd1441a0e3fe3a99887ac0fbe759728",
     "public/art/character-right-motion-a.png": "feae26df7ebe584325d5d788dad39027d7b091e81f360a6849e2e045dde8fe19",
-    "public/art/character-right-motion-b.png": "4677c05b0f8c0e1f1e3dbf2167860815e3440fd71c6a0fe589e6d7b587704b1c"
+    "public/art/character-right-motion-b.png": "4677c05b0f8c0e1f1e3dbf2167860815e3440fd71c6a0fe589e6d7b587704b1c",
+    "public/art/student-club-ink.png": "584eb581d68c69d22339739b28dcf8316b5190bdc223b17c0c22d5942ec9de97"
   },
   "contactSheet": {
     "file": "docs/art/animation-contact-sheet.png",
     "sha256": "b6142c78bc1a77a6743b7628f8526e1895e2500ec661bd11b4b3cd9d6f5d23fb"
+  },
+  "alphaComponentChecksValidatedAtUTC": "2026-10-09T07:23:52.045312+00:00",
+  "sceneValidation": {
+    "file": "public/art/student-club-ink.png",
+    "naturalWidth": 1672,
+    "naturalHeight": 941,
+    "opaque": true,
+    "paletteSanity": {
+      "totalPixels": 1573352,
+      "transparentPixels": 0,
+      "darkPixels": 1106446,
+      "creamPixels": 114523,
+      "redPixels": 351166
+    },
+    "sceneSharedAcrossTiers": true,
+    "covers": [
+      {
+        "id": "landscape",
+        "viewport": {
+          "width": 1040,
+          "height": 585
+        },
+        "rendered": {
+          "width": 1040,
+          "height": 585.311004784689
+        },
+        "sourceCrop": {
+          "x": 0,
+          "y": 0.24999999999998423,
+          "width": 1672,
+          "height": 940.5
+        },
+        "computedSize": "cover",
+        "blobBackground": true
+      },
+      {
+        "id": "portrait",
+        "viewport": {
+          "width": 400,
+          "height": 840
+        },
+        "rendered": {
+          "width": 1492.5398512221043,
+          "height": 840
+        },
+        "sourceCrop": {
+          "x": 611.952380952381,
+          "y": 0,
+          "width": 448.0952380952381,
+          "height": 941
+        },
+        "computedSize": "cover",
+        "blobBackground": true
+      }
+    ],
+    "checkedAtUTC": "2026-10-09T08:21:16.415878+00:00"
+  },
+  "sceneContactSheet": {
+    "file": "docs/art/scene-cover-contact-sheet.png",
+    "sha256": "b28a2240f65a6faa93c38872ad391dda07ade95de5e802b3f92223fc2241da83"
   }
 }

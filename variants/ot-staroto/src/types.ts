@@ -6,7 +6,7 @@ export type Grid = SymbolId[][];
 export type Matrix = number[][];
 export interface Cell { reel: number; row: number }
 export type Choice = { kind: 'spin' } | { kind: 'boost' } | { kind: 'xbet'; character: Character } | { kind: 'buy'; tier: Tier } | { kind: 'god' };
-export interface Win { symbol: Regular; cells: Cell[]; count: number; baseMultiplier: number; globalMultiplier: number; payoutCents: number }
+export interface Win { line: number; symbol: Regular | 'wild'; cells: Cell[]; count: number; baseMultiplier: number; globalMultiplier: number; payoutCents: number }
 export interface Coin { cell: Cell; kind: 'value' | 'collector' | 'multiplier' | 'global' | 'empty'; value: number; payoutCents: number; target?: Cell }
 export interface CoinModifier { source: Cell; targets: Cell[]; factor: number; global: boolean }
 export interface CoinCollection { collector: Cell; sources: Coin[]; collectedCents: number; valueBeforeCents: number; valueAfterCents: number }
@@ -14,8 +14,9 @@ export interface CoinWave {
   index: number; existingCollectors: Coin[]; coins: Coin[]; modifierEvents: CoinModifier[];
   collections: CoinCollection[]; retainedCollectors: Coin[]; cleared: Cell[]; repeat: boolean;
 }
+export interface ShooterShot { target: Cell; hits: { cell: Cell; multiplier: number; repeated: boolean }[]; expandedReel?: number; sticky: boolean }
 export interface Feature {
-  character: Character; source: Cell; targets: Cell[];
+  character: Character; source: Cell; targets: Cell[]; phase?: 'expand' | 'shots'; shotEvents?: ShooterShot[]; expandedReel?: number; expansionMultiplier?: number;
   hits: { cell: Cell; multiplier: number; repeated: boolean }[];
   coins: Coin[]; coinWaves: CoinWave[]; globalMultiplier: number; gridAfter: Grid; wildMultipliersAfter: Matrix;
   payoutCents: number;
@@ -23,12 +24,12 @@ export interface Feature {
 export interface Cascade {
   index: number; grid: Grid; wildMultipliers: Matrix; features: Feature[];
   resolvedGrid: Grid; resolvedWildMultipliers: Matrix; stickyWilds: Matrix; marks: boolean[][];
-  inactiveWilds: Cell[]; inactiveWildsAfter: Cell[];
+  expandedReels: number[]; inactiveWilds: Cell[]; inactiveWildsAfter: Cell[];
   wins: Win[]; removed: Cell[]; refilledGrid?: Grid; refilledWildMultipliers?: Matrix;
   globalMultiplier: number; payoutCents: number;
 }
 export interface Spin {
-  index: number; tier: Tier | null; initialGrid: Grid; initialWildMultipliers: Matrix;
+  index: number; tier: Tier | null; initialExpandedReels: number[]; finalExpandedReels: number[]; initialGrid: Grid; initialWildMultipliers: Matrix;
   cascades: Cascade[]; finalGrid: Grid; finalWildMultipliers: Matrix; marks: boolean[][];
   inactiveWilds: Cell[];
   presentCharacters: Character[]; scatters: number; spinsRemainingBefore: number;
@@ -43,6 +44,6 @@ export interface Round {
 }
 export interface GodShot { target: Cell; character: Character; hit: boolean }
 export interface Session {
-  version: 3; balanceCents: number; betCents: number; rngState: number; sequence: number;
+  version: 4; balanceCents: number; betCents: number; rngState: number; sequence: number;
   pending: Round | null; history: Round[];
 }

@@ -1,4 +1,4 @@
-OT STAROTO - version 3 server-based prototype
+OT STAROTO - version 4 payline game
 
 Recommended: download or clone the complete GitHub repository.
 With Node 20.19+ in Node 20, or 22.12+ installed, open its root folder:
@@ -14,48 +14,58 @@ This smaller test ZIP runs through its supplied local server:
 3. Keep the terminal open and visit http://127.0.0.1:5188/.
    Close an earlier launcher if port 5188 is occupied.
 No npm installation or internet access is needed for this smaller build.
-Direct file:// launch is not the tested workflow; audio requires HTTP.
+The validated workflow uses HTTP, including its sound files.
 
 BG/EN, mute, volume and music are normal player settings.
-Player audio uploads are removed. In the source repository, replace WAVs
-under variants/ot-staroto/public/audio, or edit src/audio-config.ts.
-Then rebuild to distribute your new files. The smaller ZIP also keeps its
-WAVs in the audio folder so they can be replaced in the filesystem.
+Sounds are filesystem files, without player upload controls. In the source
+repository, replace WAVs under variants/ot-staroto/public/audio, or edit
+src/audio-config.ts. Then rebuild. This ZIP keeps WAVs in its audio folder.
 All credits are virtual euros. Browser or server-address changes may
-create a separate local save. No real-money account or payment exists.
+create a separate local save. Previous settled virtual wallets can carry
+into version 4; older receipt bytes are preserved separately.
 
-Symbols use the same cream/black ink style as the characters.
-Each character has eight separately drawn action frames. The scene and
-compact controls fill the game window; every symbol falls independently.
-Holding Space starts only one spin per release/press. Clicking the board
-cannot skip paid rounds. Continue handles win scenes explicitly.
+The illustrated club background matches the cream/black ink characters
+and symbols. Eight character poses, independent falling symbols and
+compact controls fill the game window. Holding Space starts only one
+spin per release/press. Clicking the board cannot skip paid rounds.
 
-X BET 5x CHANCE costs 3x the base bet. It raises full natural bonus entry
-from 1/200 to 1/40 using the same conditional base and bonus outcomes.
-The other X Bet entries guarantee one character for a confirmed round.
-Left throws Wilds, sticky in his bonus. Used sticky Wilds rest for the
-remaining tumbles and recharge on the next free spin. Middle shoots Wilds;
-repeat hits double their multiplier. Right owns sparse coin reveals.
-Each coin wave reveals completely before collection. The collector stays,
-other coins clear, and a later collector absorbs the previous collector.
-God shots target actual grid symbols. MAX pays only when a shot hits it.
+The 6x5 board uses all 19 line paths from the supplied Le Zeus chart.
+Three to six matching symbols from the left pay each line's longest run;
+overlapping winning cells clear once. Six Wilds pay one 200x line award,
+before the summed active Wild multipliers. Rules display every line.
 
+Left throws Wilds, sticky in his bonus. Middle expands his whole reel;
+multiple Shooters may expand distinct reels in one spin. All expand first,
+then optional follow-up shots create single-use Wilds or double Wilds.
+A shot hitting an expanded reel doubles all five Wilds and locks the
+whole reel for the rest of the bonus. Base hits do not carry into a new
+bonus. Used sticky positions rest and recharge on the next free spin.
+
+Right reveals every marked winning cell as a value, modifier or collector,
+including repeated waves. Coin values range from 0.2x to 500x. Every wave
+reveals before modifiers and collection. The collector stays, other coins
+clear, and a later collector absorbs the previous collector. Terminal
+values pay once. God shots target actual grid symbols; MAX requires a hit.
+
+X BET 5x CHANCE costs 3x and raises full natural bonus entry from 1/200
+to 1/40 using the same conditional base and bonus outcomes. Other X Bet
+entries guarantee a chosen character for a separately confirmed round.
 Prices: Rusensko Vareno 95x, LUKS 150x, Raba sa obazhda 1,800x,
 OT STAROTO 2,500x. Character entries 8.5x/2.7x/25x. God Spin 3,000x.
 Whole-round maximum 19,999x the base stake.
 
-Every offered mode has exactly 96.5% theoretical expected return at all
-8 supported stakes, proven with rational weights over 47,104 complete
-outcome entries / 376,832 fully evaluated stake outcomes. Production uses
-Web Crypto tickets. Recorded entropy allows exact reload without charging
-or drawing again. Odds never adapt to wallet balance or previous losses.
-43 engine tests, the complete outcome replay and 200,000 production
-sampled rounds passed. Final browser checks and screenshot evidence are
-listed in RELEASE-INFO.json and in the GitHub documentation.
+Every paid mode proves 96.5% theoretical expected return at all eight
+stakes, using rational weights over 53,248 complete entries and
+425,984 fully evaluated stake outcomes. Web Crypto tickets select
+paid outcomes; recorded entropy permits exact reload with no new debit
+or random draw. Odds never adapt to balance, history or previous losses.
+57 engine tests, the complete outcome replay and 200,000 fresh-Crypto
+sampled rounds passed. Browser checks, source hashes and screenshot
+receipts are listed in RELEASE-INFO.json and the GitHub documentation.
 
-96.5% is a long-run mathematical expectation, not a guarantee for a round,
-session or finite sample. The catalogue has finite variety. This remains
-a virtual-credit prototype without third-party cash-game certification.
+96.5% is a mathematical expectation; an individual session can return less.
+The fixed catalogue has finite variety. This is a virtual-credit prototype
+without third-party cash-game certification or private commercial maths.
 
-Source, sound-file instructions, RTP proof and current screenshots:
+Source, sound instructions, exact chart, RTP proof and current gallery:
 https://github.com/stoyanov808/Test/tree/main/variants/ot-staroto

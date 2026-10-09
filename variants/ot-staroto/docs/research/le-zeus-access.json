@@ -1,0 +1,114 @@
+{
+  "checkedAtUTC": "2026-10-09T08:11:27.792085+00:00",
+  "method": "Python urllib.request over the configured network proxy; git ls-remote to pin accessible GitHub references",
+  "officialSourceVerified": false,
+  "exactPaylineCoordinatesVerified": true,
+  "attempts": [
+    {
+      "url": "https://hacksawgaming.com/games/le-zeus",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://www.hacksawgaming.com/games/le-zeus",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://www.hacksawgaming.com/games/le-zeus/",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://www.hacksawgaming.com/en/games/le-zeus",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://www.hacksawgaming.com/",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://www.hacksawgroup.com/products/hacksaw-gaming",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://play.hacksawgaming.com",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://static.hacksawgaming.com",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://static-stg.hacksawgaming.com/launcher/static-launcher.html?channel=desktop&gameid=1650&partner=stg&mode=demo&token=123",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://demo.hacksawgaming.com",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://demos.hacksawgaming.com/",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://www.google.com/search?q=Hacksaw+Le+Zeus+20+paylines+5+4",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://www.bing.com/search?q=Hacksaw+Le+Zeus+paylines",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://www.youtube.com/results?search_query=Hacksaw+Le+Zeus+paylines",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://slotcatalog.com/en/slots/Le-Zeus",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://www.bigwinboard.com/le-zeus-hacksaw-gaming-slot-review/",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    },
+    {
+      "url": "https://r.jina.ai/https://www.hacksawgaming.com/games/le-zeus",
+      "result": "Blocked before content retrieval: Tunnel connection failed: 403 Forbidden"
+    }
+  ],
+  "accessibleSecondarySources": [
+    {
+      "url": "https://github.com/LeZeusSlot/.github/blob/6cbe0fa253854bba66e6e0f4ea2ebb85fdfce8a0/README.md",
+      "status": 200,
+      "sourceSha256": "1cadd546bbb9f564f9ca9017b2122f79b3effd3968c9eb2c22ebbb1daf06f088",
+      "localSnapshot": "le-zeus-secondary-review.md",
+      "claims": "6 reels by 5 rows, 19 winning lines",
+      "confidence": "Unaffiliated SEO/affiliate review; not independently confirmed against official rules; no line coordinates.",
+      "snapshotNormalization": "Markdown trailing spaces removed; source text and links retained."
+    },
+    {
+      "url": "https://github.com/zeemowo/HackSaw-Demo-Slots-Games/blob/26030de9195c60e194c71d163433eea874c69878/dist/finalOutput.json",
+      "status": 200,
+      "sourceSha256": "a168963450395a84accd26f437be48419a154ffc08fbb76cbbd91ef69b523cca",
+      "claims": "Lists a differently titled Ze Zeus at ID 1650 and a staging-demo URL; that URL was blocked.",
+      "confidence": "Does not establish Le Zeus rules or identity."
+    }
+  ],
+  "queriesWithoutUsableEvidence": [
+    "Unauthenticated GitHub code search requires sign-in.",
+    "GitHub repository/issue/commit searches provided no verified line-coordinate table."
+  ],
+  "userSuppliedScreenshots": {
+    "evidence": "le-zeus-user-screenshots.json",
+    "paytableAndWildRuleTranscribedByPrimaryAgent": true,
+    "officialWebContentRetrieved": false,
+    "exactPaylineCoordinatesVerified": false
+  },
+  "userSuppliedPaylineChart": {
+    "evidence": "le-zeus-payline-chart.json",
+    "grid": "6×5",
+    "lineCount": 19,
+    "primaryTranscriptionVerified": true,
+    "independentChartReview": "confirmed",
+    "numbering": "Prototype IDs inferred from displayed diagram order; no printed numerals visible.",
+    "officialWebContentRetrieved": false,
+    "independentReviewMethod": "Direct inline-image inspection and fresh transcription before comparison; all 19 paths match."
+  }
+}
