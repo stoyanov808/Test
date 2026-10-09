@@ -1,6 +1,6 @@
-# ОТ СТАРОТО — version 2
+# ОТ СТАРОТО — version 3
 
-A Ruse courtyard slot with original ink cartoon artwork, an integrated scene UI, nine paying symbols, Bulgarian/English controls and virtual euro credits. Run it through the repository's normal Vite server.
+A Ruse courtyard slot with matching ink cartoon symbol and character artwork, eight-frame character actions, a full-window integrated scene UI, nine paying symbols, Bulgarian/English controls and virtual euro credits. Run it through the repository's normal Vite server.
 
 ## Start the server
 
@@ -18,7 +18,7 @@ npm run build
 npm run preview
 ```
 
-The production server uses `variants/ot-staroto/dist`. Development commands can also run directly from this variant's directory. Build creates a secondary self-contained `release/PLAY.html`; the server is the default workflow.
+The production server uses `variants/ot-staroto/dist`. Development commands can also run directly from this variant's directory. Build creates a secondary `release/PLAY.html` with adjacent `release/audio/` files. The server is the default workflow; keep the audio directory when distributing the test build.
 
 ## Characters and bonuses
 
@@ -31,7 +31,7 @@ The production server uses `variants/ot-staroto/dist`. Development commands can 
 
 Each individual bonus starts with ten spins; the super starts with fifteen. Bought invitations land visibly before the bonus begins, with receipt-derived varied positions. Natural 3/4/5/6 invitations award the corresponding tier. In a bonus, two invitations add two spins; three add five; four add five and upgrade to at least ЛУКС; five add five and upgrade to at least Ръба са обажда; six add ten and unlock ОТ СТАРОТО. A tier upgrade changes the eligible character while retained sticky positions and marks remain. Only the super admits all three arriving characters.
 
-X Bet guarantees the chosen character on the initial drop and charges its complete displayed cost: left **8.5×**, right **2.7×**, middle **25×**. The prices and coin distributions have been recalibrated for version 2.
+The individual X Bet entries guarantee the chosen character on the initial drop and charge their complete displayed cost: left **8.5×**, right **2.7×**, middle **25×**. Each requires confirmation for one round. **X BET · 5× CHANCE** is a separate persistent booster: it costs **3×**, changes the full natural bonus chance from **1/200 to 1/40**, and keeps the same conditional regular and bonus outcome distributions. The displayed cost is the complete debit; regular payouts still use the base stake.
 
 ## Wilds and tumbles
 
@@ -51,24 +51,24 @@ Reveals use only cells marked by real removed wins. Some reveal positions are em
 
 ## God Spin
 
-God Spin costs **3,000×**. One actual MAX symbol lands among 30 cells. The car stops above the board and shoots at four distinct random positions, with a 32% chance of a fifth shot. A hit occurs exactly when the recorded target is the MAX cell; shooting stops on that hit and awards the **19,999×** cap. A miss resolves ordinary combinations on the same board. No board-wide MAX overlay substitutes for the symbol.
+God Spin costs **3,000×**. One actual MAX symbol lands among 30 cells. The car stops above the board and shoots at four or five distinct recorded positions. Its complete shooting outcomes are weighted by the published mathematical model. A hit occurs exactly when the recorded target is the MAX cell; shooting stops on that hit and awards the **19,999×** cap. A miss resolves ordinary combinations on the same board. No board-wide MAX overlay substitutes for the symbol.
 
 The full round shares the cap, including any bonus. At a €0.20 base stake, the super costs €500, God Spin costs €600, and the max award is €3,999.80.
 
 ## Presentation, saves and sound
 
-The courtyard fills the viewport and contains the compact controls. Each symbol falls independently; surviving symbols preserve identity and order, sticky positions stay fixed, and grid cells have no hover effects or tooltips. Character anticipation, action and recoil use separate illustrated poses. Coin flips, transfers, recoil and shot impacts replay the recorded targets.
+The courtyard and compact edge controls fill the entire game window. The board scales to the available width and height without stretching its symbols. Each symbol falls independently; surviving symbols preserve identity and order, sticky positions stay fixed, and grid cells have no hover effects or tooltips. Each character has eight distinct illustrated drawings for anticipation, wind-up, release, follow-through, recoil and recovery. Falling pieces have independent acceleration and damped contact; coins travel along separate arcs into the collector. Coin flips, transfers, recoil and shot impacts replay the recorded targets.
 
-Small ordinary wins count in the HUD. Larger wins and bonus awards use the scene count-up, adding characters at 100× and 500×, shooting at 1,000× and the escape car at the actual cap. Space or clicking the board skips presentation; it does not generate a new outcome.
+Small ordinary wins count in the HUD. Larger wins and bonus awards use the scene count-up, adding characters at 100× and 500×, shooting at 1,000× and the escape car at the actual cap. Space starts one round per physical press and release. Auto-repeat and native held-button activation are blocked. Board clicks cannot skip an entire round. Win count-ups use their explicit Continue action; a second fresh action is required to close them.
 
-The complete outcome is settled and saved before replay. Reload resumes the same receipt with no repeated debit or award. Version 2 uses its own save key, leaves version 1 bytes untouched, and can carry a validated fully settled version 1 virtual wallet into a fresh version 2 session. Pending old results remain in the old save and are not reinterpreted with new mathematics. Preferences and custom audio remain available.
+The complete outcome is settled and saved before replay. Reload resumes the same receipt with no repeated debit or award. Version 3 uses its own save key, leaves previous version 1/2 bytes untouched, and can carry a validated fully settled previous virtual wallet into a fresh version 3 session. Pending old results remain in the old save and are not reinterpreted with new mathematics. Language, turbo, X Bet and normal audio preferences remain available.
 
-Settings accepts your own music, gunshot, feature and win files, up to 50 MB each. Files remain in local browser storage. Volume, mute, removal and reset apply to custom audio too.
+Player audio uploads and the browser audio database are removed. Replace the WAV files under `public/audio`, or change filenames and cue settings in `src/audio-config.ts`, then rebuild for deployment. Normal player controls are volume, mute and music on/off. [File and cue instructions](public/audio/README.md) list all eleven bundled sounds.
 
 ## Evidence
 
-The [reference notes](docs/LE-BANDIT-REFERENCE.md) distinguish the user's requested collector flow from inaccessible Le Bandit publisher rules. This is original prototype mathematics, not a transcription of private commercial probabilities. The approximately 96% goal is not a certified theoretical RTP; the [sample](docs/mathematics-sample.json) gives each mode's observed return and uncertainty.
+The [reference notes](docs/LE-BANDIT-REFERENCE.md) distinguish the user's requested collector flow from inaccessible Le Bandit publisher rules. This is original prototype mathematics, not a transcription of private commercial probabilities. The model proves **96.5% theoretical expected return** for every paid mode at all eight supported stakes against its complete debit. Fresh production tickets come from Web Crypto; recorded entropy permits strict reload replay. [RTP calculation](docs/MATH-MODEL.md) explains the finite weighted catalogue, exact integer-cent arithmetic, outcome variety and why finite sessions can return less. The [sample](docs/mathematics-sample.json) records production draws and their uncertainty; it is separate from the exhaustive expectation proof. This remains a virtual-credit prototype, without third-party cash-game certification.
 
 [Validation](docs/VALIDATION.md) · [Screenshot gallery](docs/GALLERY.md) · [Art provenance](public/art/README.md)
 
-From the repository root, `npm test`, `npm run build`, `npm run test:browser` and `npm run simulate` validate this version. Install Playwright Chromium with `npx playwright install chromium` if a system Chromium is unavailable. The browser runner owns its test server and checks the real production HTTP bundle as well as development replay.
+From the repository root, `npm test`, `npm run math:check`, `npm run build`, `npm run test:browser` and `npm run simulate` validate this version. Install Playwright Chromium with `npx playwright install chromium` if a system Chromium is unavailable. The browser runner owns its test server and checks the real production HTTP bundle as well as development replay.

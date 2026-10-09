@@ -1,6 +1,6 @@
 # ОТ СТАРОТО
 
-A browser slot set in a Ruse courtyard, with original ink cartoon artwork, three feature characters, Bulgarian/English controls and virtual euro credits. This is the default game launched by the repository commands.
+A browser slot set in a Ruse courtyard, with matching ink cartoon symbols and characters, eight-frame character actions, Bulgarian/English controls and virtual euro credits. This is the default game launched by the repository commands.
 
 ## Run the game
 
@@ -32,20 +32,23 @@ Coin rounds reveal the whole wave before applying modifiers or collecting. A new
 
 God Spin places one **MAX** symbol in an actual grid. The car's shots target recorded random grid cells; hitting MAX awards the shared **19,999×** round cap. Feature buys, X Bet prices, ordinary payouts and all animations follow the settled receipt. Reload cannot charge or pay it twice.
 
-The controls sit inside the game scene. Settings retain BG/EN, mute, volume and locally uploaded music and effects. All credits are virtual. The approximately 96% return target is prototype mathematics, not certified RTP; see the complete sampled results below.
+The scene and compact controls fill the game window. Holding Space cannot repeat spins, and clicking the board cannot fast-forward a paid round. Settings retain BG/EN, mute, volume and music. Sounds come from files in `variants/ot-staroto/public/audio`, configured in `src/audio-config.ts`; there are no player sound uploads.
 
-[Game rules and development notes](variants/ot-staroto/README.md) · [Reference and adaptation notes](variants/ot-staroto/docs/LE-BANDIT-REFERENCE.md) · [Screenshot gallery](variants/ot-staroto/docs/GALLERY.md) · [Validation](variants/ot-staroto/docs/VALIDATION.md)
+X BET · 5× CHANCE costs **3× the base bet** and increases the full bonus-trigger probability from **1/200 to 1/40**. Every offered mode has an exact **96.5% expected RTP** across all eight supported stakes, using a fixed weighted outcome catalogue and fresh Web Crypto ticket draws. This is a long-run expectation; individual sessions can return less. All credits are virtual. [The return calculation](variants/ot-staroto/docs/MATH-MODEL.md) describes the model and its limits.
+
+[Game rules and development notes](variants/ot-staroto/README.md) · [Reference and adaptation notes](variants/ot-staroto/docs/LE-BANDIT-REFERENCE.md) · [Screenshot gallery](variants/ot-staroto/docs/GALLERY.md) · [Validation](variants/ot-staroto/docs/VALIDATION.md) · [Replace sound files](variants/ot-staroto/public/audio/README.md)
 
 ## Verify
 
 ```sh
 npm test
+npm run math:check
 npm run build
 npx playwright install chromium
 npm run test:browser
 ```
 
-The browser runner starts and closes its own server. Linux can use an installed `/usr/bin/chromium`; Windows and macOS use Playwright's installed Chromium. `npm run simulate` regenerates the mathematical sample with source hashes, payout and accounting checks.
+The browser runner starts and closes its own server. Linux can use an installed `/usr/bin/chromium`; Windows and macOS use Playwright's installed Chromium. `npm run simulate` samples the production selector with source hashes, payout and accounting checks. `npm run math:check` verifies the exact return calculation. If you change the mathematical engine, run `npm run math:build` to evaluate and regenerate its catalogue; startup and build refuse stale mathematics.
 
 ## Previous Studentski Grad game
 

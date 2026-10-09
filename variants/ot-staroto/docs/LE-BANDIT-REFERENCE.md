@@ -47,4 +47,10 @@ Keep the game board and small balance/bet/spin controls in a single visual compo
 
 For the requested God Spin, use a **MAX symbol in a real board cell** and recorded shots at individual symbols. Only a shot whose recorded target is that MAX cell may trigger the cap. The artwork and effects should show that event instead of putting a MAX label over the board. This is the user's own requested God mechanic, not an attributed Le Bandit feature.
 
-The rebuilt prototype must publish fresh mathematical and browser evidence. The first sample is a historical baseline and must not be presented as validation of changed collector or tumble rules. Approximately 96% remains a calibration target until the new mathematics supports it; neither an attractive animation nor a short sample establishes certified RTP.
+The rebuilt prototype must publish fresh mathematical and browser evidence. The first sample is a historical baseline and must not be presented as validation of changed collector or tumble rules. Neither an attractive animation nor a short sample establishes certified RTP.
+
+## Version 3 mathematics
+
+The 9 October 2026 revision replaces the previous open-ended outcome distribution with a fixed weighted catalogue of completely evaluated rounds. Its own [RTP calculation](MATH-MODEL.md) proves 96.5% expected return for every paid mode and supported stake. The new 3× booster changes the full bonus-entry probability from 1/200 to 1/40 while sharing the base game's conditional outcome distributions. [The previous version 2 sample](research/prototype-v2-mathematics.json) is preserved as a historical comparison.
+
+This is the prototype's original mathematical model. It does not establish any inaccessible Le Bandit or Nolimit City probability, rule or certification. The publisher-access limits described above still apply.

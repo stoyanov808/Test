@@ -8,4 +8,6 @@ release/*
 !release/Oswald-LICENSE.txt
 !release/RELEASE-INFO.json
 !release/ot-staroto-test.zip
+!release/audio/
+!release/audio/**
 test-results/

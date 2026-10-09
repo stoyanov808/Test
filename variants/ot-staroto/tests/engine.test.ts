@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { CONFIG, TIER_CHARACTERS, TIER_ORDER, REGULARS, Rng, acknowledgeRound, bonusAward, costCents, createSession, deserializeSession, evaluate, playRound, resolveFeature, retrigger, wildGlobal } from '../src/engine';
+import { CONFIG, TIER_CHARACTERS, TIER_ORDER, REGULARS, Rng, acknowledgeRound, bonusAward, costCents, createSession, deserializeSession, evaluate, playFixtureRound as playRound, playRound as playCryptoRound, simulateRound, uniformTicket, bonusTriggerProbability, resolveFeature, retrigger, wildGlobal } from '../src/engine';
+import { MATH_MODEL } from '../src/math-model';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import type { Character, Choice, Grid, Matrix, Session, Tier } from '../src/types';
 
 const matrix = (): Matrix => Array.from({ length: 6 }, () => Array(5).fill(0));
@@ -154,8 +157,8 @@ test('natural 3/4/5/6-scatter tiers and bonus retrigger upgrades preserve strong
   assert.deepEqual(retrigger(4, 'edge'), { addedSpins: 5, upgradedTo: null });
 });
 test('buy costs and xBet costs debit exact euros and settle full bonus', () => {
-  const choices: Choice[] = [...TIER_ORDER.map(tier => ({ kind: 'buy', tier } as Choice)), ...(['left', 'right', 'middle'] as Character[]).map(character => ({ kind: 'xbet', character } as Choice)), { kind: 'god' }];
-  assert.deepEqual(choices.map(choice => costCents(20, choice)), [1900, 3000, 36000, 50000, 170, 54, 500, 60000]);
+  const choices: Choice[] = [{ kind: 'boost' }, ...TIER_ORDER.map(tier => ({ kind: 'buy', tier } as Choice)), ...(['left', 'right', 'middle'] as Character[]).map(character => ({ kind: 'xbet', character } as Choice)), { kind: 'god' }];
+  assert.deepEqual(choices.map(choice => costCents(20, choice)), [60, 1900, 3000, 36000, 50000, 170, 54, 500, 60000]);
   for (const choice of choices) {
     const session = rich(422), settled = playRound(session, choice), receipt = settled.pending!;
     assert.equal(settled.balanceCents, session.balanceCents - receipt.costCents + receipt.payoutCents);
@@ -353,10 +356,100 @@ test('identical seeds and bets have identical outcomes irrespective of credit ba
 });
 test('rounds and reload reject unconfigured stakes and an unfundable historical ledger', () => {
   const invalidBet = { ...createSession(123), betCents: 11 };
-  assert.throws(() => playRound(invalidBet, { kind: 'spin' }), /Invalid bet/);
+  assert.throws(() => playRound(invalidBet, { kind: 'spin' }), /Invalid choice or bet/);
   assert.equal(deserializeSession(JSON.stringify(invalidBet)), null);
-  const godWin = playRound(rich(1), { kind: 'god' });
+  let godWin = playRound(rich(1), { kind: 'god' });
+  for (let seed = 2; !godWin.pending!.maxWin && seed < 1000; seed++) godWin = playRound(rich(seed), { kind: 'god' });
   assert.equal(godWin.pending!.maxWin, true);
   godWin.balanceCents = 0;
   assert.equal(deserializeSession(JSON.stringify(godWin)), null);
+});
+
+
+test('all frozen pools prove exact 96.5% expected return at every offered stake', () => {
+  for (const [name, pool] of Object.entries(MATH_MODEL.pools)) for (const [stake, bet] of CONFIG.betsCents.entries()) {
+    const spec = pool.weights[stake], indices = new Set(spec.indices);
+    assert.equal(indices.size, spec.indices.length); assert.ok([...indices].every(i => i >= 0 && i < pool.seeds.length));
+    let total = 0n, weighted = 0n;
+    for (const [i, values] of pool.payouts.entries()) {
+      const weight = BigInt(spec.baseline) + (indices.has(i) ? BigInt(spec.extra) : 0n);
+      assert.ok(weight > 0n); assert.ok(Number.isSafeInteger(values[stake]) && values[stake] >= 0 && values[stake] <= bet * CONFIG.maxWin);
+      total += weight; weighted += weight * BigInt(values[stake]);
+    }
+    assert.equal(total, BigInt(spec.total)); assert.equal(weighted, BigInt(spec.weightedPayout));
+    const numerator = name === 'ordinary' ? BigInt(bet) * 193n : name === 'natural-bonus' ? BigInt(bet) * 38793n : BigInt(costCents(bet, pool.choice)) * 193n;
+    const denominator = name === 'ordinary' || name === 'natural-bonus' ? 400n : 200n;
+    assert.equal(weighted * denominator, total * numerator, `${name}/${bet}`);
+  }
+  // The SAME A and B distributions: .995 A + .005 B = .965; (.975 A + .025 B)/3 = .965.
+  assert.equal(199n * 193n + 38793n, 193n * 400n);
+  assert.equal((39n * 193n + 38793n) * 200n, 193n * 40n * 400n * 3n);
+});
+
+test('frozen catalogue source hashes match the complete procedural model', () => {
+  for (const [path, wanted] of Object.entries(MATH_MODEL.sourceHashes)) {
+    const actual = createHash('sha256').update(readFileSync(new URL(`../${path}`, import.meta.url))).digest('hex');
+    assert.equal(actual, wanted, path);
+  }
+});
+
+test('the 3x XBet raises the entire natural bonus-entry probability exactly five times', () => {
+  assert.equal(costCents(20, { kind: 'boost' }), 60);
+  assert.equal(bonusTriggerProbability({ kind: 'spin' }), .005);
+  assert.equal(bonusTriggerProbability({ kind: 'boost' }), .025);
+  assert.equal(bonusTriggerProbability({ kind: 'boost' }) / bonusTriggerProbability({ kind: 'spin' }), 5);
+  assert.ok(MATH_MODEL.pools['natural-bonus'].entryScatters?.includes(3));
+  assert.ok(MATH_MODEL.pools['natural-bonus'].entryScatters?.includes(4));
+  assert.ok(MATH_MODEL.pools['natural-bonus'].entryScatters?.includes(5));
+  assert.ok(MATH_MODEL.pools['natural-bonus'].entryScatters?.includes(6));
+  for (const betCents of CONFIG.betsCents) assert.equal(costCents(betCents, { kind: 'boost' }), betCents * 3);
+});
+
+test('integer rejection sampling discards the modulo tail and supports multiple entropy words', () => {
+  const values = [0xffffffff, 17]; let consumed = 0;
+  assert.equal(uniformTicket(() => { consumed++; return values.shift()!; }, 10n), 7n);
+  assert.equal(consumed, 2);
+  const large = [1, 2]; assert.equal(uniformTicket(() => large.shift()!, 1n << 40n), 4294967298n);
+  assert.throws(() => uniformTicket(() => -.1, 10n), /entropy/);
+  assert.throws(() => uniformTicket(() => 1, 0n), /limit/);
+});
+
+test('production crypto receipts record entropy and reload without redrawing or paying twice', () => {
+  for (const choice of [{ kind: 'spin' }, { kind: 'boost' }, { kind: 'god' }, { kind: 'buy', tier: 'old' }] as Choice[]) {
+    const source = createSession(781, 100000000), played = playCryptoRound(source, choice);
+    assert.equal(played.pending!.outcome!.source, 'crypto'); assert.ok(played.pending!.outcome!.draws.length > 0);
+    const restored = deserializeSession(JSON.stringify(played)); assert.deepEqual(restored, played);
+    const settled = acknowledgeRound(restored!); assert.equal(settled.balanceCents, played.balanceCents);
+    assert.deepEqual(deserializeSession(JSON.stringify(settled)), settled);
+    const changed = structuredClone(played); changed.pending!.outcome!.draws[0] ^= 1;
+    assert.equal(deserializeSession(JSON.stringify(changed)), null);
+    const extra = structuredClone(played); extra.pending!.outcome!.draws.push(0);
+    assert.equal(deserializeSession(JSON.stringify(extra)), null);
+  }
+});
+
+test('every selected fixture receipt identifies and matches its verified cent outcome', () => {
+  for (const choice of [{ kind: 'spin' }, { kind: 'boost' }, { kind: 'xbet', character: 'right' }, { kind: 'buy', tier: 'old' }, { kind: 'god' }] as Choice[]) for (const betCents of CONFIG.betsCents) {
+    const receipt = playRound({ ...rich(17342), betCents }, choice).pending!, outcome = receipt.outcome!;
+    const pool = MATH_MODEL.pools[outcome.pool], stake = MATH_MODEL.betsCents.indexOf(betCents);
+    assert.equal(receipt.payoutCents, pool.payouts[outcome.index][stake]); assert.equal(outcome.seed, pool.seeds[outcome.index]);
+    const generated = simulateRound(outcome.seed, betCents, pool.choice, pool.entryScatters?.[outcome.index]);
+    assert.equal(generated.payoutCents, receipt.payoutCents);
+  }
+});
+
+test('v2 pending receipts cannot be silently replayed under v3 mathematics', () => {
+  const legacy = { ...rich(19), version: 2 };
+  assert.equal(deserializeSession(JSON.stringify(legacy)), null);
+  assert.equal(createSession(19).version, 3);
+});
+
+test('a failed entropy source stops within the replay draw budget and leaves credits untouched', () => {
+  const session = rich(19), before = structuredClone(session), crypto = globalThis.crypto;
+  const original = crypto.getRandomValues; let calls = 0;
+  Object.defineProperty(crypto, 'getRandomValues', { configurable: true, writable: true, value: (bytes: Uint32Array) => { calls++; bytes.fill(0xffffffff); return bytes; } });
+  try {
+    assert.throws(() => playCryptoRound(session, { kind: 'spin' }), /Entropy safety limit/);
+    assert.equal(calls, 1000); assert.deepEqual(session, before);
+  } finally { Object.defineProperty(crypto, 'getRandomValues', { configurable: true, writable: true, value: original }); }
 });

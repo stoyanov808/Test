@@ -1,4 +1,4 @@
-import { carURL, characterSprite, coinURL, sceneURL, symbolSprite } from './art';
+import { carURL, characterAnimationSprites, characterFrameCount, characterFrameSprite, coinURL, sceneURL, symbolSprite } from './art';
 import { REGULARS, TIER_CHARACTERS } from './engine';
 import type { Cell, Character, Coin, CoinCollection, Feature, Grid, Matrix, Round, Spin, SymbolId, Tier } from './types';
 
@@ -53,11 +53,15 @@ export interface RendererInspection extends Omit<RendererUpdate, 'spin' | 'round
   inactiveWilds: Cell[];
   activeCharacters: Character[]; movingCells: MovingSymbol[]; effect: Effect | null; coins: Coin[];
   coinWave: number | null; coinPhase: 'reveal' | 'revealed' | 'modifier' | 'collect' | 'clear' | 'award' | null;
-  coinRevealRemaining: number; collection: CoinCollection | null; clearedCoins: Cell[];
+  coinRevealRemaining: number; coinRevealProgress: number; collection: CoinCollection | null; clearedCoins: Cell[];
   godGrid: Grid | null; godShots: Round['godShots'];
   coinFlips: { coin: Coin; progress: number }[];
+  characterFrames: { character: Character; index: number; count: number; progress: number }[];
+  coinTransits: { source: Cell; target: Cell; progress: number; arrival: number }[];
 }
 export interface RendererOptions {
+  /** The full-window shell can own one continuous scene behind the transparent board. */
+  background?: 'scene' | 'transparent';
   onUpdate?: (view: RendererUpdate) => void;
   onSound?: (cue: string) => void;
 }
@@ -81,9 +85,9 @@ function planDrop(grid: Grid, seed: string, turbo: boolean, removed?: Set<string
         reel, row, symbol, sourceRow, stationary, sticky,
         start: stationary ? 0 : Math.round((refill ? 0 : turbo ? 70 : 110) + reel * (refill ? turbo ? 8 : 12 : turbo ? 35 : 74) + (ROWS - 1 - row) * (turbo ? 8 : 15) + unit(identity, 1) * (turbo ? 9 : 15)),
         flight: stationary ? 0 : Math.round((refill ? turbo ? 235 : 395 : turbo ? 285 : 470) * factor * (.93 + .14 * unit(identity, 2))),
-        settle: stationary ? 0 : Math.round(turbo ? 55 + 20 * unit(identity, 3) : 88 + 30 * unit(identity, 3)),
-        drift: 1.3 + 2.1 * unit(identity, 4), lean: .026 + .026 * unit(identity, 5),
-        phase: unit(identity, 6) * Math.PI * 2, curve: .94 + .14 * unit(identity, 7),
+        settle: stationary ? 0 : Math.round(turbo ? 90 + 24 * unit(identity, 3) : 145 + 34 * unit(identity, 3)),
+        drift: .8 + 1.8 * unit(identity, 4), lean: .019 + .018 * unit(identity, 5),
+        phase: unit(identity, 6) * Math.PI * 2, curve: 1.42 + .22 * unit(identity, 7),
       };
     });
     for (let index = freeRows.length - 2; index >= 0; index--) {
@@ -99,16 +103,20 @@ function dropFrames(plan: DropPlan, elapsed: number, reduced: boolean): MovingSy
   const frames = plan.cells.map((cell): MovingSymbol => {
     const p = cell.stationary ? 1 : clamp((elapsed - cell.start) / cell.flight);
     const s = cell.stationary ? 1 : clamp((elapsed - cell.start - cell.flight) / cell.settle);
-    const flightEnvelope = p === 1 ? 0 : Math.sin(p * Math.PI), settleEnvelope = s === 1 ? 0 : Math.sin(s * Math.PI) * (1 - s) ** 2;
-    const compression = .06 * Math.sin(s * Math.PI) * (1 - s);
+    // Each piece accelerates independently, then lands with one damped body reaction.
+    // Smoothstep on the whole fall made the last half float; gravity keeps the contact decisive.
+    const flightEnvelope = p === 1 ? 0 : Math.sin(p * Math.PI);
+    const settling = cell.stationary || p < 1 || s >= 1 ? 0 : Math.sin(s * Math.PI * 3.25) * (1 - s) ** 2;
+    const compression = cell.stationary || p < 1 ? 0 : .074 * Math.sin(Math.min(1, s / .28) * Math.PI) * (1 - s);
+    const inAir = cell.stationary || p >= 1 ? 0 : Math.sin(p * Math.PI) * .019;
     const target = center(cell);
     return {
       ...cell, progress: p, settleProgress: s,
-      x: target.x + (reduced || cell.stationary ? 0 : flightEnvelope * cell.drift * Math.sin(p * Math.PI * 3 + cell.phase) + settleEnvelope * 2 * Math.sin(s * Math.PI * 4)),
-      y: p === 1 ? target.y : BOARD.y + (cell.sourceRow + .5) * CH + (cell.row - cell.sourceRow) * CH * smooth(p ** cell.curve),
-      rotation: reduced || cell.stationary ? 0 : flightEnvelope * cell.lean * Math.sin(p * Math.PI * 5 + cell.phase) + settleEnvelope * .026 * Math.sin(s * Math.PI * 4),
-      scaleX: reduced || cell.stationary ? 1 : 1 + compression,
-      scaleY: reduced || cell.stationary ? 1 : 1 - compression * .85,
+      x: target.x + (reduced || cell.stationary ? 0 : flightEnvelope * cell.drift * Math.sin(p * Math.PI * 1.75 + cell.phase) + settling * .95 * Math.sin(cell.phase)),
+      y: (p === 1 ? target.y : BOARD.y + (cell.sourceRow + .5) * CH + (cell.row - cell.sourceRow) * CH * p ** cell.curve) + (reduced ? 0 : settling * 4.5),
+      rotation: reduced || cell.stationary ? 0 : flightEnvelope * cell.lean * Math.sin(p * Math.PI * 1.8 + cell.phase) + settling * .012 * Math.cos(cell.phase),
+      scaleX: reduced || cell.stationary ? 1 : 1 + compression - inAir * .55,
+      scaleY: reduced || cell.stationary ? 1 : 1 - compression * .77 + inAir,
     };
   });
   for (let reel = 0; reel < COLS; reel++) {
@@ -136,6 +144,7 @@ export class GameRenderer {
   private coinWave: number | null = null;
   private coinPhase: RendererInspection['coinPhase'] = null;
   private coinRevealRemaining = 0;
+  private coinRevealProgress = 0;
   private collection: CoinCollection | null = null;
   private clearedCoins: Cell[] = [];
   private coinPositions = new Set<string>();
@@ -157,6 +166,7 @@ export class GameRenderer {
   private animationFrame = 0;
   private finishAnimation: (() => void) | null = null;
   private deviceRatio = 1;
+  private viewportHeader: { top: number; height: number } | null = null;
   private godCarProgress = 0;
   private godCutscene = false;
   private godResolved: boolean[] = [];
@@ -219,6 +229,16 @@ export class GameRenderer {
     this.draw();
   }
 
+  /** The shell may enlarge the board and crop unused street; keep its header inside view. */
+  setViewportHeader(top: number, height: number): void {
+    if (!Number.isFinite(top) || !Number.isFinite(height)) return;
+    const nextTop = Math.max(0, Math.min(BOARD.y - 32, top));
+    const nextHeight = Math.max(30, Math.min(BOARD.y - nextTop, height));
+    if (this.viewportHeader?.top === nextTop && this.viewportHeader?.height === nextHeight) return;
+    this.viewportHeader = { top: nextTop, height: nextHeight };
+    this.draw();
+  }
+
   inspect(): RendererInspection {
     return {
       stage: this.stage, grid: cloneGrid(this.grid), wildMultipliers: cloneMatrix(this.wildMultipliers),
@@ -226,12 +246,14 @@ export class GameRenderer {
       inactiveWilds: [...this.inactiveWilds].map(value => { const [reel, row] = value.split(':').map(Number); return { reel, row }; }),
       movingCells: this.moving.map(cell => ({ ...cell })), effect: this.effect ? { ...this.effect, source: this.effect.source ? { ...this.effect.source } : undefined, target: this.effect.target ? { ...this.effect.target } : undefined, recipient: this.effect.recipient ? { ...this.effect.recipient } : undefined, recipients: this.effect.recipients?.map(cell => ({ ...cell })), coin: this.effect.coin ? cloneCoin(this.effect.coin) : undefined, collection: this.effect.collection ? cloneCollection(this.effect.collection) : undefined } : null,
       coins: this.revealedCoins.map(cloneCoin),
-      coinWave: this.coinWave, coinPhase: this.coinPhase, coinRevealRemaining: this.coinRevealRemaining,
+      coinWave: this.coinWave, coinPhase: this.coinPhase, coinRevealRemaining: this.coinRevealRemaining, coinRevealProgress: this.coinRevealProgress,
       collection: this.collection ? cloneCollection(this.collection) : null,
       clearedCoins: this.clearedCoins.map(cell => ({ ...cell })),
       godGrid: this.godGrid ? cloneGrid(this.godGrid) : null,
       godShots: this.round?.godShots.map(shot => ({ ...shot, target: { ...shot.target } })) ?? [],
       coinFlips: this.coinFlips.map(flip => ({ coin: cloneCoin(flip.coin), progress: flip.progress })),
+      characterFrames: this.activeCharacters.map(character => this.characterAnimationState(character)),
+      coinTransits: this.effect?.kind === 'collect' && this.effect.collection ? this.effect.collection.sources.map((coin, index) => ({ source: { ...coin.cell }, target: { ...this.effect!.collection!.collector }, ...this.collectionTransit(this.effect!.progress, index, this.effect!.collection!.sources.length) })) : [],
       global: this.global, remaining: this.remaining, tier: this.tier, totalCents: this.totalCents,
     };
   }
@@ -416,7 +438,7 @@ export class GameRenderer {
     const from = this.grid[feature.source.reel][feature.source.row];
     const to = feature.gridAfter[feature.source.reel][feature.source.row];
     this.effect = { kind: 'reveal', progress: 0, source: feature.source, character: feature.character, from, to };
-    await this.animate(turbo ? 170 : 310, p => { if (this.effect) this.effect.progress = p; });
+    await this.animate(turbo ? 230 : 420, p => { if (this.effect) this.effect.progress = p; });
     this.grid[feature.source.reel][feature.source.row] = to;
     this.effect = null;
     if (feature.character === 'left' || feature.character === 'middle') {
@@ -425,7 +447,7 @@ export class GameRenderer {
         this.effect = { kind: feature.character === 'left' ? 'wild' : 'shot', progress: 0, source: feature.source, target: hit.cell, character: feature.character, value: hit.multiplier, repeated: hit.repeated };
         this.options.onSound?.(feature.character === 'left' ? 'throw' : 'shot');
         let impacted = false;
-        await this.animate(turbo ? 150 : feature.character === 'left' ? 300 : 250, p => {
+        await this.animate(turbo ? feature.character === 'left' ? 260 : 225 : feature.character === 'left' ? 460 : 385, p => {
           if (this.effect) this.effect.progress = p;
           if (p >= .68 && !impacted) {
             impacted = true;
@@ -456,6 +478,7 @@ export class GameRenderer {
     this.coinWave = null;
     this.coinPhase = null;
     this.coinRevealRemaining = 0;
+    this.coinRevealProgress = 0;
     this.collection = null;
     this.clearedCoins = [];
     this.coinPositions.clear();
@@ -471,6 +494,7 @@ export class GameRenderer {
       this.coinWave = wave.index;
       this.coinPhase = 'reveal';
       this.coinRevealRemaining = wave.coins.length;
+      this.coinRevealProgress = 0;
       this.collection = null;
       this.clearedCoins = [];
       this.revealedCoins = wave.existingCollectors.map(cloneCoin);
@@ -478,10 +502,11 @@ export class GameRenderer {
       this.emit();
       if (wave.coins.length > 10) {
         const revealed = new Set<number>();
-        const flight = turbo ? 175 : 300, stagger = turbo ? 31 : 52;
+        const flight = turbo ? 220 : 370, stagger = turbo ? 32 : 48;
         const duration = flight + (wave.coins.length - 1) * stagger;
         this.options.onSound?.('coin');
-        await this.animate(duration, (_, elapsed) => {
+        await this.animate(duration, (p, elapsed) => {
+          this.coinRevealProgress = p;
           this.coinFlips = [];
           for (const [index, coin] of wave.coins.entries()) {
             const progress = clamp((elapsed - index * stagger) / flight);
@@ -499,13 +524,17 @@ export class GameRenderer {
       } else for (const coin of wave.coins) {
         this.effect = { kind: 'coin', progress: 0, source: feature.source, target: coin.cell, character: 'right', coinKind: coin.kind, value: coin.value, coin: cloneCoin(coin), label: this.coinLabel(coin, false) };
         this.options.onSound?.('coin');
-        await this.animate(turbo ? 140 : 255, p => { if (this.effect) this.effect.progress = p; });
+        await this.animate(turbo ? 170 : 295, p => {
+          if (this.effect) this.effect.progress = p;
+          this.coinRevealProgress = (wave.coins.length - this.coinRevealRemaining + p) / wave.coins.length;
+        });
         this.revealedCoins.push(cloneCoin(coin));
         this.marks[coin.cell.reel][coin.cell.row] = false;
         this.coinRevealRemaining--;
         this.effect = null;
       }
       // The entire board can be read before any modifier or collector is allowed to act.
+      this.coinRevealProgress = 1;
       this.coinPhase = 'revealed';
       this.stage = 'coin-reveal-complete';
       this.emit();
@@ -538,7 +567,7 @@ export class GameRenderer {
         this.options.onSound?.('collector');
         this.emit();
         let applied = false;
-        await this.animate(turbo ? 320 : 650, p => {
+        await this.animate(turbo ? 460 : 840, p => {
           if (this.effect) this.effect.progress = p;
           if (p >= .88 && !applied) {
             applied = true;
@@ -688,7 +717,7 @@ export class GameRenderer {
   }
 
   private preload(): Promise<void> {
-    const urls = [carURL, ...SYMBOLS.map(symbol => symbolSprite(symbol).url), ...CHARACTERS.flatMap(character => (['idle', 'reveal', 'action', 'recoil'] as const).map(pose => characterSprite(character, pose).url)), ...(['value', 'collector', 'multiplier', 'global'] as const).map(coinURL), ...[null, 'ruse', 'lux', 'edge', 'old'].map(tier => sceneURL(tier as Tier | null))];
+    const urls = [carURL, ...SYMBOLS.map(symbol => symbolSprite(symbol).url), ...CHARACTERS.flatMap(character => characterAnimationSprites(character).map(sprite => sprite.url)), ...(['value', 'collector', 'multiplier', 'global'] as const).map(coinURL), ...[null, 'ruse', 'lux', 'edge', 'old'].map(tier => sceneURL(tier as Tier | null))];
     return Promise.all([...new Set(urls)].filter(Boolean).map(url => this.image(url))).then(() => {});
   }
 
@@ -726,21 +755,24 @@ export class GameRenderer {
     } else {
       for (let reel = 0; reel < COLS; reel++) for (let row = 0; row < ROWS; row++) {
         const cell = { reel, row }, position = center(cell), removing = this.clearing.has(key(cell));
+        const dissolve = removing ? this.clearCellProgress(cell) : 0;
         ctx.save();
-        if (removing) ctx.globalAlpha = 1 - this.clearProgress;
+        if (removing) ctx.globalAlpha = 1 - smooth(dissolve);
         if (this.coinPositions.has(key(cell))) ctx.globalAlpha *= .10;
-        let symbol = this.grid[reel]?.[row] ?? 'bottle', sx = removing ? 1 - this.clearProgress * .23 : 1;
+        let symbol = this.grid[reel]?.[row] ?? 'bottle', sx = removing ? 1 - dissolve * .18 : 1;
         if (this.effect?.kind === 'reveal' && this.effect.source && key(this.effect.source) === key(cell)) {
-          symbol = this.effect.progress < .5 ? this.effect.from ?? symbol : this.effect.to ?? symbol;
-          sx = Math.max(.045, Math.abs(Math.cos(this.effect.progress * Math.PI)));
+          const reveal = clamp((this.effect.progress - .15) / .59);
+          symbol = reveal < .5 ? this.effect.from ?? symbol : this.effect.to ?? symbol;
+          sx = this.reducedMotion.matches ? 1 : Math.max(.065, Math.abs(Math.cos(smooth(reveal) * Math.PI)));
         }
         const impactAt = this.effect?.kind === 'god' ? .4 : .68;
         const hit = this.effect?.target && key(this.effect.target) === key(cell) && (this.effect.kind === 'wild' || this.effect.kind === 'shot' || this.effect.kind === 'god');
         const recoil = hit && !this.reducedMotion.matches ? clamp(((this.effect?.progress ?? 0) - impactAt) / (1 - impactAt)) : 1;
         const kick = Math.sin(recoil * Math.PI * 3) * (1 - recoil) ** 2;
-        this.drawSymbol(symbol, position.x + kick * 4.5, position.y + kick * 2.2, kick * .045, sx * (1 + Math.sin(recoil * Math.PI) * .055), removing ? 1 - this.clearProgress * .23 : 1, this.inactiveWilds.has(key(cell)));
+        this.drawSymbol(symbol, position.x + kick * 4.5, position.y + kick * 2.2 - (this.reducedMotion.matches ? 0 : dissolve * 6), kick * .045, sx * (1 + Math.sin(recoil * Math.PI) * .055), removing ? 1 - dissolve * .18 : 1, this.inactiveWilds.has(key(cell)));
         this.drawMultiplier(cell, this.wildMultipliers[reel]?.[row] ?? 0);
         ctx.restore();
+        if (removing && dissolve > .08 && dissolve < .8 && !this.reducedMotion.matches) this.clearInk(position.x, position.y, dissolve, hash(`${this.round?.id ?? 0}:${this.spin?.index ?? 0}:${key(cell)}`));
       }
     }
     this.drawMarks();
@@ -758,7 +790,26 @@ export class GameRenderer {
     if (this.godCutscene) this.drawGod();
   }
 
+  private clearCellProgress(cell: Cell): number {
+    const delay = this.reducedMotion.matches ? 0 : unit(hash(`${this.round?.id ?? 0}:${this.spin?.index ?? 0}:clear:${key(cell)}`), 19) * .22;
+    return clamp((this.clearProgress - delay) / (1 - delay));
+  }
+
+  private clearInk(x: number, y: number, p: number, identity: number): void {
+    const ctx = this.ctx;
+    ctx.save(); ctx.globalAlpha = Math.sin(p * Math.PI) * (1 - p) * .58;
+    ctx.strokeStyle = '#c7b68e'; ctx.lineWidth = 1.3;
+    for (let index = 0; index < 5; index++) {
+      const angle = index * 2.39996 + unit(identity, 5) * .7, radius = 25 + p * (22 + unit(identity, index + 7) * 15);
+      const length = 2 + (1 - p) * 5;
+      ctx.beginPath(); ctx.moveTo(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius * .72);
+      ctx.lineTo(x + Math.cos(angle) * (radius + length), y + Math.sin(angle) * (radius + length) * .72); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   private drawScene(): void {
+    if (this.options.background === 'transparent') return;
     const ctx = this.ctx, img = this.images.get(sceneURL(this.tier));
     ctx.fillStyle = '#171716';
     ctx.fillRect(0, 0, W, H);
@@ -875,38 +926,69 @@ export class GameRenderer {
 
   private characterPlacement(character: Character): { x: number; y: number; width: number; height: number } {
     if (window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches) {
-      return { x: ({ left: 400, middle: 620, right: 840 })[character], y: 158, width: 130, height: 125 };
+      const height = Math.min(125, (this.viewportHeader?.height ?? BOARD.y) - 30);
+      return { x: ({ left: 400, middle: 620, right: 840 })[character], y: BOARD.y - 12, width: 130, height };
     }
     const sharedRight = character === 'right' && this.activeCharacters.includes('middle');
-    return { x: character === 'left' ? 107 : 1105, y: sharedRight ? 437 : 788, width: character === 'left' ? 190 : sharedRight ? 172 : 190, height: sharedRight ? 246 : 426 };
+    return { x: character === 'left' ? 125 : 1105, y: sharedRight ? 437 : 788, width: character === 'left' ? 190 : sharedRight ? 172 : 190, height: sharedRight ? 246 : 426 };
   }
 
   private characterMuzzle(character: Character): { x: number; y: number } {
-    const box = this.characterPlacement(character), sprite = characterSprite(character, 'action');
-    const scale = Math.min(box.width / (sprite.referenceWidth ?? sprite.width), box.height / sprite.height);
-    const point = ({ left: { x: 594, y: 150 }, middle: { x: 585, y: 158 }, right: { x: 55, y: 132 } })[character];
+    const box = this.characterPlacement(character), sprite = characterFrameSprite(character, 4);
+    const scale = Math.min(box.width / (sprite.referenceWidth ?? sprite.width), box.height / (sprite.referenceHeight ?? sprite.height));
     const flip = character === 'middle' ? -1 : 1;
-    return { x: box.x + flip * (point.x - (sprite.anchorX ?? sprite.width / 2)) * scale, y: box.y - sprite.height * scale + point.y * scale };
+    return {
+      x: box.x + flip * ((sprite.attachmentX ?? sprite.width / 2) - (sprite.anchorX ?? sprite.width / 2)) * scale,
+      y: box.y + ((sprite.attachmentY ?? sprite.height * .28) - (sprite.anchorY ?? sprite.height)) * scale,
+    };
+  }
+
+  private characterAnimationState(character: Character): { character: Character; index: number; count: number; progress: number } {
+    const active = this.effect?.character === character || this.effect?.kind === 'tier';
+    const progress = !active ? 0 : this.effect?.kind === 'coin' && character === 'right' ? this.coinRevealProgress : this.effect?.progress ?? 0;
+    const count = characterFrameCount(character);
+    let index = 0;
+    if (active) {
+      if (this.reducedMotion.matches) index = progress < .26 ? 0 : progress < .80 ? 4 : 7;
+      else if (this.effect?.kind === 'reveal') {
+        // The badge introduces the actor. The following, separate action performs the release.
+        index = progress < .10 ? 0 : progress < .34 ? 1 : progress < .70 ? 2 : progress < .89 ? 1 : 0;
+      } else {
+        // Genuine drawings receive readable holds; release coincides with the physical projectile.
+        const beats = [.018, .085, .17, .26, .43, .68, .85];
+        index = beats.filter(beat => progress >= beat).length;
+      }
+    }
+    return { character, index: Math.min(count - 1, index), count, progress };
+  }
+
+  private collectionTransit(p: number, index: number, count: number): { progress: number; arrival: number } {
+    const stagger = count > 1 ? .23 / (count - 1) : 0;
+    const launch = .12 + index * stagger;
+    const flight = .47;
+    return { progress: clamp((p - launch) / flight), arrival: launch + flight };
   }
 
   private drawCharacters(foregroundOnly = false): void {
+    // The entrance cast occupies the board; do not duplicate it in the street rails.
+    if (this.effect?.kind === 'tier') return;
     const ctx = this.ctx;
     for (const character of this.activeCharacters) {
       const active = this.effect?.character === character;
       if (foregroundOnly && !active) continue;
-      const p = active ? this.effect?.progress ?? 0 : 0;
-      const pose = !active ? 'idle' : this.effect?.kind === 'reveal' || this.effect?.kind === 'coin' ? 'reveal' : p < .20 ? 'reveal' : p < .68 ? 'action' : 'recoil';
-      const sprite = characterSprite(character, pose), img = this.images.get(sprite.url);
+      const state = this.characterAnimationState(character), p = state.progress;
+      const sprite = characterFrameSprite(character, state.index), img = this.images.get(sprite.url);
       if (!img?.complete || !img.naturalWidth) continue;
       const box = this.characterPlacement(character);
-      const scale = Math.min(box.width / (sprite.referenceWidth ?? sprite.width), box.height / sprite.height);
-      const recoil = active && !this.reducedMotion.matches && p > .68 ? Math.sin((p - .68) / .32 * Math.PI) * .019 : 0;
+      const scale = Math.min(box.width / (sprite.referenceWidth ?? sprite.width), box.height / (sprite.referenceHeight ?? sprite.height));
+      const recoil = active && !this.reducedMotion.matches && p > .68 ? Math.sin((p - .68) / .32 * Math.PI) * .013 : 0;
+      const anticipation = active && !this.reducedMotion.matches && p < .26 ? Math.sin(p / .26 * Math.PI) * 1.7 : 0;
       ctx.save();
       ctx.fillStyle = 'rgba(0,0,0,.44)'; ctx.beginPath(); ctx.ellipse(box.x, box.y - 5, box.width * .39, 11, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.translate(box.x, box.y); ctx.rotate(recoil * (character === 'left' ? -1 : 1));
+      ctx.translate(box.x, box.y + anticipation); ctx.rotate(recoil * (character === 'left' ? -1 : 1));
       if (character === 'middle') ctx.scale(-1, 1);
-      ctx.shadowColor = 'rgba(0,0,0,.54)'; ctx.shadowBlur = 13; ctx.shadowOffsetY = 5;
-      ctx.drawImage(img, sprite.sx, sprite.sy, sprite.width, sprite.height, -(sprite.anchorX ?? sprite.width / 2) * scale, -sprite.height * scale, sprite.width * scale, sprite.height * scale);
+      ctx.shadowColor = 'rgba(0,0,0,.54)'; ctx.shadowBlur = 9; ctx.shadowOffsetY = 4;
+      ctx.drawImage(img, sprite.sx, sprite.sy, sprite.width, sprite.height, -(sprite.anchorX ?? sprite.width / 2) * scale, -(sprite.anchorY ?? sprite.height) * scale, sprite.width * scale, sprite.height * scale);
       ctx.restore();
     }
   }
@@ -915,12 +997,19 @@ export class GameRenderer {
     if (this.godCutscene) return;
     const ctx = this.ctx;
     const mobile = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
+    const header = this.viewportHeader;
     if (mobile && this.activeCharacters.length) {
-      this.inkText('ОТ СТАРОТО', W / 2, 26, 25, '#ddd3bd');
+      this.inkText('ОТ СТАРОТО', W / 2, (header?.top ?? 0) + 26, 25, '#ddd3bd');
     } else {
-      this.inkText('ОТ СТАРОТО', W / 2, mobile ? 93 : 88, mobile ? 56 : 58, '#ddd3bd');
-      ctx.font = '700 14px RuseInk, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#b2a68e';
-      ctx.fillText(this.tier ? this.tierName(this.tier) : this.text('РУСЕ · НОЩНАТА СМЯНА', 'RUSE · NIGHT SHIFT'), W / 2, mobile ? 123 : 116);
+      const compact = !!header && header.height < 130;
+      const titleY = compact ? header.top + header.height * .43 : mobile ? 93 : 88;
+      const titleSize = compact ? Math.max(23, Math.min(42, header.height * .43)) : mobile ? 56 : 58;
+      this.inkText('ОТ СТАРОТО', W / 2, titleY, titleSize, '#ddd3bd');
+      if (this.coinWave === null) {
+        const subtitleY = compact ? header.top + header.height * .74 : mobile ? 123 : 116;
+        ctx.font = `700 ${compact ? 12 : 14}px RuseInk, Arial, sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#b2a68e';
+        ctx.fillText(this.tier ? this.tierName(this.tier) : this.text('РУСЕ · НОЩНАТА СМЯНА', 'RUSE · NIGHT SHIFT'), W / 2, subtitleY);
+      }
     }
     if (this.coinWave !== null) {
       const label = this.coinPhase === 'collect' ? this.text('СЪБИРАНЕ', 'COLLECT') : this.coinPhase === 'modifier' ? this.text('МНОЖИТЕЛ', 'MULTIPLIER') : this.coinPhase === 'award' ? this.text('ПЕЧАЛБА ОТ МОНЕТИ', 'COIN WIN') : `${this.text('РАЗКРИВАНЕ', 'REVEAL')} ${this.coinWave + 1}`;
@@ -943,12 +1032,17 @@ export class GameRenderer {
         glow.addColorStop(0, 'rgba(156,43,25,.19)'); glow.addColorStop(1, 'rgba(156,43,25,0)'); ctx.fillStyle = glow; ctx.fillRect(BOARD.x, BOARD.y, BOARD.w, BOARD.h);
         const cast = tierCharacters(tier);
         for (const [index, character] of cast.entries()) {
-          const sprite = symbolSprite(character), img = this.images.get(sprite.url);
-          if (img?.complete && img.naturalWidth) ctx.drawImage(img, sprite.sx, sprite.sy, sprite.width, sprite.height, W / 2 + (index - (cast.length - 1) / 2) * 123 - 58, 297, 116, 116);
+          const state = this.characterAnimationState(character), sprite = characterFrameSprite(character, state.index), img = this.images.get(sprite.url);
+          if (!img?.complete || !img.naturalWidth) continue;
+          const scale = Math.min(145 / (sprite.referenceWidth ?? sprite.width), 252 / (sprite.referenceHeight ?? sprite.height));
+          const x = W / 2 + (index - (cast.length - 1) / 2) * 190;
+          ctx.save(); ctx.translate(x, 469);
+          ctx.drawImage(img, sprite.sx, sprite.sy, sprite.width, sprite.height, -(sprite.anchorX ?? sprite.width / 2) * scale, -(sprite.anchorY ?? sprite.height) * scale, sprite.width * scale, sprite.height * scale);
+          ctx.restore();
         }
-        this.inkText(this.text('БЕЗПЛАТНИ ЗАВЪРТАНИЯ', 'FREE SPINS'), W / 2, 456, 23, '#bbaa8c');
-        this.inkText(this.tierName(tier), W / 2, 528, tier === 'old' ? 63 : 58, '#f0d27c');
-        ctx.strokeStyle = '#a1844d'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(W / 2 - 162, 560); ctx.lineTo(W / 2 + 162, 560); ctx.stroke();
+        this.inkText(this.text('БЕЗПЛАТНИ ЗАВЪРТАНИЯ', 'FREE SPINS'), W / 2, 523, 23, '#bbaa8c');
+        this.inkText(this.tierName(tier), W / 2, 590, tier === 'old' ? 63 : 58, '#f0d27c');
+        ctx.strokeStyle = '#a1844d'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(W / 2 - 162, 622); ctx.lineTo(W / 2 + 162, 622); ctx.stroke();
       } else {
         const lift = (1 - smooth(clamp(p / .24))) * 14;
         ctx.fillStyle = 'rgba(9,7,7,.80)'; ctx.fillRect(BOARD.x + 113, BOARD.y + 265 - lift, BOARD.w - 226, 86);
@@ -957,9 +1051,10 @@ export class GameRenderer {
       ctx.restore(); return;
     }
     if (outside) {
-      if ((effect.kind === 'shot' || effect.kind === 'wild') && effect.character && p > .20 && p < .33) {
+      if (effect.kind === 'wild' || effect.kind === 'shot' || effect.kind === 'god') this.drawProjectile(effect);
+      if ((effect.kind === 'shot' || effect.kind === 'wild') && effect.character && p > .26 && p < .39) {
         const origin = this.characterMuzzle(effect.character);
-        this.impact(origin.x, origin.y, clamp((p - .20) / .13), effect.kind === 'shot' ? '#f5dfa3' : '#c5ad6c', true);
+        this.impact(origin.x, origin.y, clamp((p - .26) / .13), effect.kind === 'shot' ? '#f5dfa3' : '#c5ad6c', true);
       }
       return;
     }
@@ -997,45 +1092,76 @@ export class GameRenderer {
       const collection = effect.collection;
       for (const [index, coin] of collection.sources.entries()) {
         const from = center(coin.cell);
-        const travel = clamp((p - .12 - Math.min(index, 10) * .015) / .60);
-        if (travel <= 0 || travel >= 1) continue;
-        const curve = Math.sin(travel * Math.PI) * (22 + Math.min(40, Math.abs(end.x - from.x) * .09));
-        const x = from.x + (end.x - from.x) * smooth(travel), y = from.y + (end.y - from.y) * smooth(travel) - curve;
+        const { progress: travel, arrival } = this.collectionTransit(p, index, collection.sources.length);
+        if (travel <= 0 || travel >= 1) {
+          if (p >= arrival && p < arrival + .14) this.impact(end.x, end.y, clamp((p - arrival) / .14), '#d2b777');
+          continue;
+        }
+        const motion = smooth(travel), side = index % 2 ? -1 : 1;
+        const curve = Math.sin(travel * Math.PI) * (17 + Math.min(46, Math.abs(end.x - from.x) * .10));
+        const x = from.x + (end.x - from.x) * motion + Math.sin(travel * Math.PI) * side * 8;
+        const y = from.y + (end.y - from.y) * motion - (this.reducedMotion.matches ? 0 : curve);
         const img = this.images.get(coinURL(coin.kind));
-        ctx.save(); ctx.globalAlpha = 1 - travel * .23; ctx.translate(x, y); ctx.rotate((index % 2 ? -1 : 1) * travel * .35);
-        const size = 61 * (1 - travel * .45);
-        ctx.shadowColor = '#d6b66b'; ctx.shadowBlur = 7;
+        ctx.save(); ctx.globalAlpha = 1 - travel * .20; ctx.translate(x, y); ctx.rotate(this.reducedMotion.matches ? 0 : side * Math.sin(travel * Math.PI) * .28);
+        const size = 67 * (1 - travel * .48);
+        ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
+        // Brief pen strokes behind the moving token keep the motion in the drawing's ink language.
+        if (!this.reducedMotion.matches && travel < .82) {
+          ctx.strokeStyle = 'rgba(211,189,138,.54)'; ctx.lineWidth = 1.4;
+          const vx = Math.sign(end.x - from.x), vy = Math.sign(end.y - from.y);
+          ctx.beginPath(); ctx.moveTo(-vx * 22, -vy * 12); ctx.lineTo(-vx * 35, -vy * 22); ctx.stroke();
+        }
         if (img?.complete && img.naturalWidth) ctx.drawImage(img, -size / 2, -size / 2, size, size);
         else { ctx.fillStyle = '#d1ad57'; ctx.beginPath(); ctx.arc(0, 0, size * .34, 0, Math.PI * 2); ctx.fill(); }
         ctx.restore();
       }
-      if (p > .70) this.impact(end.x, end.y, clamp((p - .70) / .30), '#eacb7d');
       return;
     }
     const god = effect.kind === 'god';
-    const start = god ? this.godMuzzle(effect.character ?? 'left') : effect.character ? this.characterMuzzle(effect.character) : effect.source ? center(effect.source) : { x: BOARD.x, y: end.y };
     const impactAt = god ? .4 : .68;
-    const flight = clamp((p - .20) / (impactAt - .20)), impact = clamp((p - impactAt) / (1 - impactAt));
+    const impact = clamp((p - impactAt) / (1 - impactAt));
+    if (p < impactAt) return;
+    if (effect.kind === 'wild') this.splash(end.x, end.y, impact, '#cbaa56');
+    else if (effect.kind === 'shot' || god) {
+      this.impact(end.x, end.y, impact, god && !effect.hit ? '#aa9781' : '#efd18b');
+      if (!god) this.inkText(`×${effect.value ?? 1}`, end.x, end.y - 27 - impact * 18, 31, '#ffe2a0');
+    }
+  }
+
+  /** A released object follows its hand-to-cell path in the complete scene, across the frame rail. */
+  private drawProjectile(effect: Effect): void {
+    if (!effect.target) return;
+    const god = effect.kind === 'god', p = effect.progress, impactAt = god ? .4 : .68, releaseAt = god ? .20 : .26;
+    if (p <= releaseAt || p >= impactAt) return;
+    const ctx = this.ctx, end = center(effect.target);
+    const start = god ? this.godMuzzle(effect.character ?? 'left') : effect.character ? this.characterMuzzle(effect.character) : effect.source ? center(effect.source) : { x: BOARD.x, y: end.y };
+    const flight = clamp((p - releaseAt) / (impactAt - releaseAt));
     if (effect.kind === 'wild') {
-      if (p > .20 && p < impactAt) {
-        const x = start.x + (end.x - start.x) * flight, y = start.y + (end.y - start.y) * flight - Math.sin(flight * Math.PI) * Math.min(105, 37 + Math.abs(end.x - start.x) * .12);
-        const sprite = symbolSprite('wild'), img = this.images.get(sprite.url);
-        ctx.save(); ctx.translate(x, y); ctx.rotate(-.4 + flight * Math.PI * 1.5); ctx.scale(Math.max(.28, Math.abs(Math.cos(flight * Math.PI))), 1); ctx.shadowColor = '#070806'; ctx.shadowBlur = 5;
-        if (img?.complete && img.naturalWidth) ctx.drawImage(img, sprite.sx, sprite.sy, sprite.width, sprite.height, -25, -25, 50, 50);
-        else { ctx.fillStyle = '#d0b774'; ctx.fillRect(-8, -23, 16, 47); }
-        ctx.restore();
-      } else if (p >= impactAt) this.splash(end.x, end.y, impact, '#cbaa56');
-    } else if (effect.kind === 'shot' || god) {
+      const arc = this.reducedMotion.matches ? 0 : Math.min(105, 39 + Math.abs(end.x - start.x) * .12);
+      const at = (progress: number) => ({ x: start.x + (end.x - start.x) * progress, y: start.y + (end.y - start.y) * progress - Math.sin(progress * Math.PI) * arc });
+      const position = at(flight), previous = at(Math.max(0, flight - .06)), tail = at(Math.max(0, flight - .13));
+      const sprite = symbolSprite('wild'), img = this.images.get(sprite.url);
       ctx.save();
-      if (p > .20 && p < impactAt) {
-        const x = start.x + (end.x - start.x) * flight, y = start.y + (end.y - start.y) * flight;
-        const length = Math.min(.16, flight), tail = Math.max(0, flight - length);
-        ctx.strokeStyle = '#f7e4ba'; ctx.lineWidth = 2.8; ctx.shadowColor = '#f5cf7d'; ctx.shadowBlur = 7;
-        ctx.beginPath(); ctx.moveTo(start.x + (end.x - start.x) * tail, start.y + (end.y - start.y) * tail); ctx.lineTo(x, y); ctx.stroke();
-      } else if (p >= impactAt) {
-        this.impact(end.x, end.y, impact, god && !effect.hit ? '#aa9781' : '#efd18b');
-        if (!god) this.inkText(`×${effect.value ?? 1}`, end.x, end.y - 27 - impact * 18, 31, '#ffe2a0');
+      if (!this.reducedMotion.matches) {
+        ctx.strokeStyle = 'rgba(205,183,125,.47)'; ctx.lineWidth = 1.7;
+        ctx.beginPath(); ctx.moveTo(tail.x, tail.y); ctx.quadraticCurveTo(previous.x, previous.y, position.x, position.y); ctx.stroke();
+        ctx.strokeStyle = 'rgba(27,23,16,.85)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(tail.x - 3, tail.y + 3); ctx.lineTo(previous.x - 3, previous.y + 3); ctx.stroke();
       }
+      ctx.translate(position.x, position.y);
+      ctx.rotate(this.reducedMotion.matches ? 0 : -.4 + flight * Math.PI * 1.25);
+      if (!this.reducedMotion.matches) ctx.scale(Math.max(.40, Math.abs(Math.cos(flight * Math.PI))), 1);
+      ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 3;
+      const size = 48 + Math.sin(flight * Math.PI) * 5;
+      if (img?.complete && img.naturalWidth) ctx.drawImage(img, sprite.sx, sprite.sy, sprite.width, sprite.height, -size / 2, -size / 2, size, size);
+      else { ctx.fillStyle = '#d0b774'; ctx.fillRect(-8, -23, 16, 47); }
+      ctx.restore();
+    } else {
+      const x = start.x + (end.x - start.x) * flight, y = start.y + (end.y - start.y) * flight;
+      const tail = Math.max(0, flight - .09);
+      ctx.save(); ctx.strokeStyle = '#f4ddb0'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(start.x + (end.x - start.x) * tail, start.y + (end.y - start.y) * tail); ctx.lineTo(x, y); ctx.stroke();
+      ctx.fillStyle = '#fff0cc'; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
   }
@@ -1051,16 +1177,29 @@ export class GameRenderer {
       if (!this.reducedMotion.matches) ctx.translate(0, -clear * 11);
     }
     ctx.translate(pos.x, pos.y);
-    this.drawCoinPlate(coin, this.coinLabel(coin));
+    let label = this.coinLabel(coin);
+    const collection = this.effect?.kind === 'collect' ? this.effect.collection : null;
+    if (collection && key(collection.collector) === key(coin.cell)) {
+      const arrived = collection.sources.reduce((sum, source, index) => sum + (this.effect!.progress >= this.collectionTransit(this.effect!.progress, index, collection.sources.length).arrival ? source.payoutCents : 0), 0);
+      label = `€${((collection.valueBeforeCents + arrived) / 100).toFixed(2)}`;
+      if (!this.reducedMotion.matches) {
+        const pulse = collection.sources.reduce((max, _source, index) => {
+          const after = this.effect!.progress - this.collectionTransit(this.effect!.progress, index, collection.sources.length).arrival;
+          return Math.max(max, after > 0 && after < .14 ? Math.sin(after / .14 * Math.PI) * .045 : 0);
+        }, 0);
+        ctx.scale(1 + pulse, 1 + pulse);
+      }
+    }
+    this.drawCoinPlate(coin, label);
     ctx.restore();
   }
 
   private drawCoinReveal(coin: Coin, p: number): void {
     const ctx = this.ctx, end = center(coin.cell);
-    const flip = Math.max(.055, Math.abs(Math.cos(smooth(p) * Math.PI * 2)));
+    const flip = this.reducedMotion.matches ? 1 : Math.max(.060, Math.abs(Math.cos(smooth(p) * Math.PI)));
     const rise = this.reducedMotion.matches ? 0 : -Math.sin(p * Math.PI) * 9;
     ctx.save(); ctx.translate(end.x, end.y + rise); ctx.scale(flip, 1 + Math.sin(p * Math.PI) * .025);
-    if (coin.kind !== 'empty' || p < .76) this.drawCoinPlate(coin, p >= .54 ? this.coinLabel(coin, false) : '?', p);
+    if (coin.kind !== 'empty' || p < .76) this.drawCoinPlate(coin, p >= .50 ? this.coinLabel(coin, false) : '?', p);
     else { ctx.globalAlpha = (1 - p) * .8; this.inkText('—', 0, 5, 24, '#8f8065'); }
     ctx.restore();
   }
@@ -1149,10 +1288,10 @@ export class GameRenderer {
   }
 
   private godCarBox(): { x: number; y: number; width: number; height: number } {
-    const width = 257, height = 168;
+    const height = Math.min(168, (this.viewportHeader?.height ?? 170) - 2), width = 257 * height / 168;
     const arrivedX = W / 2 - width / 2;
     const x = this.godCarProgress <= 1 ? -width - 50 + (arrivedX + width + 50) * this.godCarProgress : arrivedX + (W + 80 - arrivedX) * (this.godCarProgress - 1);
-    return { x, y: -2, width, height };
+    return { x, y: this.viewportHeader?.top ?? -2, width, height };
   }
 
   private godMuzzle(character: Character): { x: number; y: number } {
@@ -1165,21 +1304,22 @@ export class GameRenderer {
     const ctx = this.ctx, box = this.godCarBox();
     const car = this.images.get(carURL);
     ctx.save();
-    ctx.beginPath(); ctx.rect(0, 0, W, BOARD.y - 3); ctx.clip();
-    const carShade = ctx.createLinearGradient(0, 0, 0, BOARD.y);
-    carShade.addColorStop(0, 'rgba(9,8,6,.22)'); carShade.addColorStop(1, 'rgba(9,8,6,.76)'); ctx.fillStyle = carShade; ctx.fillRect(0, 0, W, BOARD.y);
+    const header = this.viewportHeader ?? { top: 0, height: BOARD.y };
+    ctx.beginPath(); ctx.rect(0, header.top, W, header.height - 3); ctx.clip();
+    const carShade = ctx.createLinearGradient(0, header.top, 0, header.top + header.height);
+    carShade.addColorStop(0, 'rgba(9,8,6,.22)'); carShade.addColorStop(1, 'rgba(9,8,6,.76)'); ctx.fillStyle = carShade; ctx.fillRect(0, header.top, W, header.height);
     const brake = !this.reducedMotion.matches && this.godCarProgress > .85 && this.godCarProgress < 1 ? Math.sin((this.godCarProgress - .85) / .15 * Math.PI) * 1.5 : 0;
     if (car?.complete && car.naturalWidth) {
       ctx.shadowColor = '#050706'; ctx.shadowBlur = 17;
       ctx.drawImage(car, box.x, box.y + brake, box.width, box.height);
     }
-    this.inkText('GOD MODE', BOARD.x + 125, 103, 31, '#ddd1b7');
+    this.inkText('GOD MODE', BOARD.x + 125, header.top + header.height * .61, Math.min(31, header.height * .23), '#ddd1b7');
     const hit = this.godResolved.some(Boolean);
-    this.inkText(hit ? this.text('В ЦЕЛТА', 'TARGET HIT') : this.text('НА ПРИЦЕЛ', 'TAKE AIM'), BOARD.x + BOARD.w - 126, 103, 24, hit ? '#edc573' : '#d0bc95');
+    this.inkText(hit ? this.text('В ЦЕЛТА', 'TARGET HIT') : this.text('НА ПРИЦЕЛ', 'TAKE AIM'), BOARD.x + BOARD.w - 126, header.top + header.height * .61, Math.min(24, header.height * .19), hit ? '#edc573' : '#d0bc95');
     for (const [shot, resolved] of this.godResolved.entries()) {
       ctx.fillStyle = resolved ? '#d8b263' : '#857260';
       const x = BOARD.x + BOARD.w - 167 + shot * 19;
-      ctx.beginPath(); ctx.arc(x, 127, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x, header.top + header.height * .77, 3.5, 0, Math.PI * 2); ctx.fill();
     }
     const effect = this.effect?.kind === 'god' ? this.effect : null;
     if (effect && effect.progress >= .20 && effect.progress < .34) {

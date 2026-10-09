@@ -1,3 +1,4 @@
+import { MATH_MODEL } from './math-model';
 import type { Cascade, Cell, Character, Choice, Coin, CoinWave, Feature, GodShot, Grid, Matrix, Regular, Round, Session, Spin, Tier, Win } from './types';
 
 export const REGULARS: Regular[] = ['bottle', 'cash', 'chain', 'cassette', 'sneaker', 'crown', 'lighter', 'dice', 'ring'];
@@ -5,7 +6,7 @@ export const TIER_ORDER: Tier[] = ['ruse', 'lux', 'edge', 'old'];
 export const BONUS_NAMES: Record<Tier, string> = { ruse: 'Русенско Варено', lux: 'ЛУКС', edge: 'Ръба са обажда', old: 'ОТ СТАРОТО' };
 export const TIER_CHARACTERS: Record<Tier, Character[]> = { ruse: ['left'], lux: ['right'], edge: ['middle'], old: ['left', 'middle', 'right'] };
 export const CONFIG = {
-  version: 2, reels: 6, rows: 5, maxWin: 19999, minimumNaturalSymbols: 1,
+  version: 3, targetRtp: .965, bonusTriggerDenominator: 200, boostedBonusTriggerDenominator: 40, boostCost: 3, reels: 6, rows: 5, maxWin: 19999, minimumNaturalSymbols: 1,
   betsCents: [10, 20, 50, 100, 200, 500, 1000, 2000], defaultBetCents: 20, initialBalanceCents: 1000000,
   buyCosts: { ruse: 95, lux: 150, edge: 1800, old: 2500 }, xbetCosts: { left: 8.5, right: 2.7, middle: 25 }, godCost: 3000,
   godShots: 5, godMinimumShots: 4, godExtraShotChance: .32,
@@ -31,6 +32,7 @@ export const CONFIG = {
 
 const CHARS: Character[] = ['left', 'middle', 'right'];
 const MONEY_LIMIT = 9_000_000_000_000;
+const MAX_ENTROPY_WORDS = 1000;
 const cloneGrid = (g: Grid): Grid => g.map(column => [...column]);
 const cloneMatrix = (m: Matrix): Matrix => m.map(column => [...column]);
 const blankMatrix = (): Matrix => Array.from({ length: CONFIG.reels }, () => Array(CONFIG.rows).fill(0));
@@ -41,6 +43,12 @@ const regular = (s: string): s is Regular => REGULARS.includes(s as Regular);
 const character = (s: string): s is Character => CHARS.includes(s as Character);
 const money = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0 && (v as number) <= MONEY_LIMIT;
 const integer = (v: unknown, min: number, max: number): v is number => Number.isSafeInteger(v) && (v as number) >= min && (v as number) <= max;
+
+function secureSeed(): number {
+  const bytes = new Uint32Array(1);
+  do { globalThis.crypto.getRandomValues(bytes); } while (!bytes[0]);
+  return bytes[0];
+}
 
 /** A local RNG object makes deterministic fixtures possible without sharing the UI's RNG. */
 export class Rng {
@@ -55,16 +63,36 @@ export class Rng {
   int(n: number): number { return Math.floor(this.next() * n); }
 }
 
+/** Unbiased rational tickets from independent uniform uint32 words. Production uses
+ * Web Crypto; the consumed draw tape is recorded so reload can replay without RNG.
+ */
+export function uniformTicket(word: () => number, limit: bigint): bigint {
+  if (limit <= 0n) throw new Error('Invalid ticket limit');
+  const radix = 0x100000000n;
+  let space = radix, words = 1;
+  while (space < limit) { space *= radix; words++; }
+  const accepted = space - space % limit;
+  for (;;) {
+    let value = 0n;
+    for (let i = 0; i < words; i++) {
+      const next = word();
+      if (!integer(next, 0, 0xffffffff)) throw new Error('Invalid entropy word');
+      value = value * radix + BigInt(next);
+    }
+    if (value < accepted) return value % limit;
+  }
+}
+
 export function costCents(betCents: number, choice: Choice): number {
   if (!integer(betCents, 1, 100000)) throw new Error('Invalid bet');
-  const factor = choice.kind === 'spin' ? 1 : choice.kind === 'god' ? CONFIG.godCost : choice.kind === 'buy' ? CONFIG.buyCosts[choice.tier] : CONFIG.xbetCosts[choice.character];
+  const factor = choice.kind === 'spin' ? 1 : choice.kind === 'boost' ? CONFIG.boostCost : choice.kind === 'god' ? CONFIG.godCost : choice.kind === 'buy' ? CONFIG.buyCosts[choice.tier] : CONFIG.xbetCosts[choice.character];
   if (!Number.isFinite(factor) || factor < 1 || factor > 3000) throw new Error('Invalid choice');
   return Math.round(betCents * factor);
 }
 
-export function createSession(seed = 0x59a10, balanceCents: number = CONFIG.initialBalanceCents): Session {
+export function createSession(seed = secureSeed(), balanceCents: number = CONFIG.initialBalanceCents): Session {
   if (!money(balanceCents)) throw new Error('Invalid balance');
-  return { version: 2, balanceCents, betCents: CONFIG.defaultBetCents, rngState: new Rng(seed).state, sequence: 0, pending: null, history: [] };
+  return { version: 3, balanceCents, betCents: CONFIG.defaultBetCents, rngState: new Rng(seed).state, sequence: 0, pending: null, history: [] };
 }
 
 function randomRegular(rng: Rng): Regular { return REGULARS[rng.int(REGULARS.length)]; }
@@ -326,13 +354,11 @@ function playSpin(rng: Rng, tier: Tier | null, betCents: number, index: number, 
   };
 }
 
-export function playRound(session: Session, choice: Choice): Session {
-  if (session.pending) throw new Error('Finish the current round first');
-  if (!money(session.balanceCents) || !integer(session.rngState, 1, 0xffffffff) || !integer(session.sequence, 0, Number.MAX_SAFE_INTEGER - 1)) throw new Error('Invalid session');
-  if (!(CONFIG.betsCents as readonly number[]).includes(session.betCents)) throw new Error('Invalid bet');
-  const cost = costCents(session.betCents, choice);
-  if (session.balanceCents < cost) throw new Error('Insufficient credits');
-  const rng = new Rng(session.rngState), capCents = session.betCents * CONFIG.maxWin;
+/** Offline procedural outcome generator. Paid play selects a fully evaluated weighted outcome. */
+export function simulateRound(seed: number, betCents: number, choice: Choice, entryScatters?: number): Round {
+  if (!(CONFIG.betsCents as readonly number[]).includes(betCents)) throw new Error('Invalid bet');
+  const rng = new Rng(seed), capCents = betCents * CONFIG.maxWin;
+  const cost = costCents(betCents, choice);
   const state: State = { sticky: blankMatrix(), marks: blankMarks(), markEnabled: false };
   const spins: Spin[] = [], godHits: boolean[] = [], godShots: GodShot[] = [];
   let godGrid: Grid | null = null;
@@ -356,7 +382,18 @@ export function playRound(session: Session, choice: Choice): Session {
   let triggerTier: Tier | null = activeTier;
   let remaining = activeTier ? activeTier === 'old' ? 15 : 10 : 0;
   if (!payoutCents && !activeTier) {
-    const spin = playSpin(rng, null, session.betCents, spins.length, 0, payoutCents, capCents, state, choice.kind === 'xbet' ? choice.character : undefined, godGrid ?? undefined);
+    let entryGrid = godGrid ?? undefined;
+    if (entryScatters !== undefined) {
+      if (choice.kind !== 'spin' || !integer(entryScatters, 3, 6)) throw new Error('Invalid natural entry');
+      entryGrid = makeGrid(rng, null, state.sticky).grid;
+      for (const c of allCells()) if (entryGrid[c.reel][c.row] === 'scatter') entryGrid[c.reel][c.row] = randomRegular(rng);
+      const reels = Array.from({ length: CONFIG.reels }, (_, i) => i);
+      for (let i = 0; i < entryScatters; i++) {
+        const reel = reels.splice(rng.int(reels.length), 1)[0];
+        entryGrid[reel][rng.int(CONFIG.rows)] = 'scatter';
+      }
+    }
+    const spin = playSpin(rng, null, betCents, spins.length, 0, payoutCents, capCents, state, choice.kind === 'xbet' ? choice.character : undefined, entryGrid);
     spins.push(spin); payoutCents += spin.payoutCents;
     activeTier = spin.bonusAwarded; triggerTier = activeTier; remaining = spin.spinsRemainingAfter;
     // Base Wilds are never carried into a newly triggered bonus.
@@ -365,17 +402,99 @@ export function playRound(session: Session, choice: Choice): Session {
   while (activeTier && remaining > 0 && payoutCents < capCents) {
     if (spins.length >= 2000) throw new Error('Bonus safety limit reached; round was not charged');
     state.markEnabled = activeTier === 'lux' || activeTier === 'old';
-    const spin = playSpin(rng, activeTier, session.betCents, spins.length, remaining, payoutCents, capCents, state);
+    const spin = playSpin(rng, activeTier, betCents, spins.length, remaining, payoutCents, capCents, state);
     spins.push(spin); payoutCents += spin.payoutCents; remaining = spin.spinsRemainingAfter;
     if (spin.upgradedTo) activeTier = spin.upgradedTo;
   }
   const round: Round = {
-    id: session.sequence + 1, choice: { ...choice }, betCents: session.betCents, costCents: cost, payoutCents, capCents, maxWin: payoutCents >= capCents,
-    godHits, godGrid, godShots, spins, initialRng: session.rngState, finalRng: rng.state, triggerTier,
+    id: 1, choice: { ...choice }, betCents: betCents, costCents: cost, payoutCents, capCents, maxWin: payoutCents >= capCents,
+    godHits, godGrid, godShots, spins, initialRng: new Rng(seed).state, finalRng: rng.state, triggerTier, outcome: null,
   };
-  const balanceCents = session.balanceCents - cost + payoutCents;
+  return round;
+}
+
+const weightCache = new Map<string, { cumulative: bigint[]; total: bigint }>();
+/** The advertised chance applies to the entire bonus entry event, not each scatter. */
+export function bonusTriggerProbability(choice: Choice, betCents: number = CONFIG.defaultBetCents): number {
+  if (choice.kind === 'spin') return 1 / CONFIG.bonusTriggerDenominator;
+  if (choice.kind === 'boost') return 1 / CONFIG.boostedBonusTriggerDenominator;
+  if (choice.kind === 'buy') return 1;
+  if (choice.kind === 'god') return 0;
+  const pool = MATH_MODEL.pools[`xbet-${choice.character}`], stake = MATH_MODEL.betsCents.indexOf(betCents);
+  if (!pool || stake < 0) throw new Error('Math model does not cover this stake');
+  const spec = pool.weights[stake], extra = new Set(spec.indices);
+  let tickets = 0n;
+  for (let i = 0; i < pool.seeds.length; i++) if (pool.triggerTiers[i]) tickets += BigInt(spec.baseline) + (extra.has(i) ? BigInt(spec.extra) : 0n);
+  return Number(tickets) / Number(BigInt(spec.total));
+}
+
+function selectOutcome(word: () => number, betCents: number, choice: Choice): { pool: string; index: number; seed: number; expectedPayout: number } {
+  const stake = MATH_MODEL.betsCents.indexOf(betCents);
+  if (stake < 0 || MATH_MODEL.version !== CONFIG.version) throw new Error('Math model does not cover this stake');
+  const poolName = choice.kind === 'spin' || choice.kind === 'boost'
+    ? uniformTicket(word, BigInt(choice.kind === 'boost' ? CONFIG.boostedBonusTriggerDenominator : CONFIG.bonusTriggerDenominator)) === 0n ? 'natural-bonus' : 'ordinary'
+    : choice.kind === 'buy' ? `buy-${choice.tier}` : choice.kind === 'xbet' ? `xbet-${choice.character}` : 'god';
+  const pool = MATH_MODEL.pools[poolName];
+  if (!pool || !pool.seeds.length || pool.payouts.length !== pool.seeds.length) throw new Error('Incomplete math catalogue');
+  const cacheKey = `${poolName}:${stake}`;
+  let cached = weightCache.get(cacheKey);
+  if (!cached) {
+    const spec = pool.weights[stake], extra = new Set(spec.indices);
+    let total = 0n, weightedPayout = 0n;
+    const cumulative = pool.seeds.map((_seed, i) => {
+      const weight = BigInt(spec.baseline) + (extra.has(i) ? BigInt(spec.extra) : 0n);
+      if (weight <= 0n || !money(pool.payouts[i][stake]) || pool.payouts[i][stake] > betCents * CONFIG.maxWin) throw new Error('Invalid math outcome');
+      total += weight; weightedPayout += weight * BigInt(pool.payouts[i][stake]);
+      return total;
+    });
+    if (total <= 0n || total !== BigInt(spec.total)) throw new Error('Invalid math ticket total');
+    const targetNumerator = poolName === 'natural-bonus' ? BigInt(betCents) * 193n * 201n : poolName === 'ordinary' ? BigInt(betCents) * 193n : BigInt(costCents(betCents, pool.choice)) * 193n;
+    const targetDenominator = poolName === 'natural-bonus' || poolName === 'ordinary' ? 400n : 200n;
+    if (weightedPayout !== BigInt(spec.weightedPayout) || weightedPayout * targetDenominator !== total * targetNumerator) throw new Error('Math catalogue RTP equality failed');
+    cached = { cumulative, total }; weightCache.set(cacheKey, cached);
+  }
+  const ticket = uniformTicket(word, cached.total);
+  let lo = 0, hi = cached.cumulative.length - 1;
+  while (lo < hi) { const mid = (lo + hi) >>> 1; if (ticket < cached.cumulative[mid]) hi = mid; else lo = mid + 1; }
+  return { pool: poolName, index: lo, seed: pool.seeds[lo], expectedPayout: pool.payouts[lo][stake] };
+}
+
+/** Paid outcomes are frozen, independently weighted full-round receipts. No wallet input affects selection. */
+function settleWeighted(session: Session, choice: Choice, source: () => number, label: 'crypto' | 'fixture'): Session {
+  if (session.pending) throw new Error('Finish the current round first');
+  if (session.version !== 3 || !money(session.balanceCents) || !integer(session.rngState, 1, 0xffffffff) || !integer(session.sequence, 0, Number.MAX_SAFE_INTEGER - 1)) throw new Error('Invalid session');
+  if (!validChoice(choice) || !(CONFIG.betsCents as readonly number[]).includes(session.betCents)) throw new Error('Invalid choice or bet');
+  const cost = costCents(session.betCents, choice);
+  if (session.balanceCents < cost) throw new Error('Insufficient credits');
+  const draws: number[] = [];
+  const word = () => {
+    if (draws.length >= MAX_ENTROPY_WORDS) throw new Error('Entropy safety limit reached; round was not charged');
+    const value = source(); if (!integer(value, 0, 0xffffffff)) throw new Error('Invalid entropy word');
+    draws.push(value); return value;
+  };
+  const selected = selectOutcome(word, session.betCents, choice);
+  const rawChoice = MATH_MODEL.pools[selected.pool].choice;
+  const pool = MATH_MODEL.pools[selected.pool];
+  const generated = simulateRound(selected.seed, session.betCents, rawChoice, pool.entryScatters?.[selected.index]);
+  if (generated.payoutCents !== selected.expectedPayout || (selected.pool === 'ordinary' && generated.triggerTier !== null) || (selected.pool === 'natural-bonus' && generated.triggerTier === null)) throw new Error('Math catalogue changed; round was not charged');
+  const chain = new Rng(session.rngState);
+  for (const draw of draws) { chain.state = (chain.state ^ draw) >>> 0 || 0x6d2b79f5; chain.next(); }
+  const round: Round = { ...generated, id: session.sequence + 1, choice: { ...choice }, costCents: cost, initialRng: session.rngState, finalRng: chain.state, outcome: { pool: selected.pool, index: selected.index, seed: selected.seed, draws, source: label } };
+  const balanceCents = session.balanceCents - cost + round.payoutCents;
   if (!money(balanceCents)) throw new Error('Credit limit reached; round was not charged');
-  return { ...session, balanceCents, rngState: rng.state, sequence: round.id, pending: round, history: [...session.history, round].slice(-12) };
+  return { ...session, balanceCents, rngState: chain.state, sequence: round.id, pending: round, history: [...session.history, round].slice(-12) };
+}
+
+/** Production paid play. Fresh unbiased CSPRNG words; no balance-adaptive odds. */
+export function playRound(session: Session, choice: Choice): Session {
+  const value = new Uint32Array(1);
+  return settleWeighted(session, choice, () => { globalThis.crypto.getRandomValues(value); return value[0]; }, 'crypto');
+}
+
+/** Deterministic QA factory. The UI calls this only from its development reset hook. */
+export function playFixtureRound(session: Session, choice: Choice): Session {
+  const rng = new Rng(session.rngState);
+  return settleWeighted(session, choice, () => { rng.next(); return rng.state; }, 'fixture');
 }
 
 export function acknowledgeRound(session: Session): Session { return session.pending ? { ...session, pending: null } : session; }
@@ -383,7 +502,7 @@ export function acknowledgeRound(session: Session): Session { return session.pen
 function validChoice(c: unknown): c is Choice {
   if (!c || typeof c !== 'object') return false;
   const choice = c as Choice;
-  return choice.kind === 'spin' || choice.kind === 'god' || (choice.kind === 'buy' && TIER_ORDER.includes(choice.tier)) || (choice.kind === 'xbet' && CHARS.includes(choice.character));
+  return choice.kind === 'spin' || choice.kind === 'boost' || choice.kind === 'god' || (choice.kind === 'buy' && TIER_ORDER.includes(choice.tier)) || (choice.kind === 'xbet' && CHARS.includes(choice.character));
 }
 function validRound(r: unknown): r is Round {
   if (!r || typeof r !== 'object') return false;
@@ -392,15 +511,23 @@ function validRound(r: unknown): r is Round {
   if (!integer(v.initialRng, 1, 0xffffffff) || !integer(v.finalRng, 1, 0xffffffff) || !Array.isArray(v.spins) || !Array.isArray(v.godHits) || v.godHits.length > CONFIG.godShots || v.godHits.some(hit => typeof hit !== 'boolean') || (v.triggerTier !== null && !TIER_ORDER.includes(v.triggerTier))) return false;
   // Strict receipt validation by deterministic replay also checks every grid, shot, coin and ledger.
   try {
+    if (!v.outcome || !['crypto', 'fixture'].includes(v.outcome.source) || !Array.isArray(v.outcome.draws) || !v.outcome.draws.length || v.outcome.draws.length > MAX_ENTROPY_WORDS || v.outcome.draws.some(word => !integer(word, 0, 0xffffffff))) return false;
     const seedSession = { ...createSession(v.initialRng, v.costCents), betCents: v.betCents, sequence: v.id - 1 };
-    return JSON.stringify(playRound(seedSession, v.choice).pending) === JSON.stringify(v);
+    let replay: Session;
+    if (v.outcome.source === 'fixture') replay = playFixtureRound(seedSession, v.choice);
+    else {
+      let at = 0;
+      replay = settleWeighted(seedSession, v.choice, () => { if (at >= v.outcome!.draws.length) throw new Error('Truncated entropy'); return v.outcome!.draws[at++]; }, 'crypto');
+      if (at !== v.outcome.draws.length) return false;
+    }
+    return JSON.stringify(replay.pending) === JSON.stringify(v);
   } catch { return false; }
 }
 
 export function deserializeSession(raw: string): Session | null {
   try {
     const s = JSON.parse(raw) as Session;
-    if (s.version !== 2 || !money(s.balanceCents) || !(CONFIG.betsCents as readonly number[]).includes(s.betCents) || !integer(s.rngState, 1, 0xffffffff) || !integer(s.sequence, 0, Number.MAX_SAFE_INTEGER) || !Array.isArray(s.history) || s.history.length > 12) return null;
+    if (s.version !== 3 || !money(s.balanceCents) || !(CONFIG.betsCents as readonly number[]).includes(s.betCents) || !integer(s.rngState, 1, 0xffffffff) || !integer(s.sequence, 0, Number.MAX_SAFE_INTEGER) || !Array.isArray(s.history) || s.history.length > 12) return null;
     if (s.pending !== null && !validRound(s.pending)) return null;
     if (!s.history.every(validRound)) return null;
     for (let i = 1; i < s.history.length; i++) if (s.history[i].id !== s.history[i - 1].id + 1 || s.history[i].initialRng !== s.history[i - 1].finalRng) return null;

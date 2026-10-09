@@ -2,7 +2,7 @@
 cd /d "%~dp0"
 where node >nul 2>nul
 if errorlevel 1 (
-  echo Node is not installed. Double-click PLAY.html instead.
+  echo Install Node 20.19+ or 22.12+ and run this launcher again.
   pause
   exit /b 1
 )

@@ -1,0 +1,631 @@
+{
+  "revision": 3,
+  "checkedAtUTC": "2026-10-09T07:23:52.045312+00:00",
+  "method": "Chromium raw-atlas Canvas draw/decode plus alpha-component crop analysis; no source image pixels were edited.",
+  "viewport": {
+    "width": 1536,
+    "height": 1180
+  },
+  "characterFrameCount": 24,
+  "regularSymbolCount": 9,
+  "uniqueCharacterAtlases": 6,
+  "uniqueImageDecodes": 7,
+  "browserErrors": [],
+  "alphaThreshold": 100,
+  "principalComponentMinimumPixels": 10000,
+  "characterFrames": [
+    {
+      "character": "left",
+      "index": 0,
+      "sx": 212,
+      "sy": 21,
+      "width": 374,
+      "height": 484,
+      "anchorX": 184,
+      "anchorY": 478,
+      "referenceWidth": 360,
+      "referenceHeight": 485
+    },
+    {
+      "character": "left",
+      "index": 1,
+      "sx": 919,
+      "sy": 37,
+      "width": 436,
+      "height": 468,
+      "anchorX": 196,
+      "anchorY": 462,
+      "referenceWidth": 360,
+      "referenceHeight": 485
+    },
+    {
+      "character": "left",
+      "index": 2,
+      "sx": 206,
+      "sy": 536,
+      "width": 458,
+      "height": 463,
+      "anchorX": 209,
+      "anchorY": 457,
+      "referenceWidth": 360,
+      "referenceHeight": 485
+    },
+    {
+      "character": "left",
+      "index": 3,
+      "sx": 943,
+      "sy": 517,
+      "width": 444,
+      "height": 481,
+      "anchorX": 177,
+      "anchorY": 475,
+      "referenceWidth": 360,
+      "referenceHeight": 485
+    },
+    {
+      "character": "left",
+      "index": 4,
+      "sx": 148,
+      "sy": 30,
+      "width": 519,
+      "height": 458,
+      "anchorX": 222,
+      "anchorY": 452,
+      "referenceWidth": 360,
+      "referenceHeight": 485,
+      "attachmentX": 497,
+      "attachmentY": 147
+    },
+    {
+      "character": "left",
+      "index": 5,
+      "sx": 869,
+      "sy": 30,
+      "width": 536,
+      "height": 458,
+      "anchorX": 221,
+      "anchorY": 452,
+      "referenceWidth": 360,
+      "referenceHeight": 485
+    },
+    {
+      "character": "left",
+      "index": 6,
+      "sx": 158,
+      "sy": 534,
+      "width": 500,
+      "height": 465,
+      "anchorX": 227,
+      "anchorY": 459,
+      "referenceWidth": 360,
+      "referenceHeight": 485
+    },
+    {
+      "character": "left",
+      "index": 7,
+      "sx": 941,
+      "sy": 502,
+      "width": 385,
+      "height": 497,
+      "anchorX": 194,
+      "anchorY": 491,
+      "referenceWidth": 360,
+      "referenceHeight": 485
+    },
+    {
+      "character": "middle",
+      "index": 0,
+      "sx": 280,
+      "sy": 24,
+      "width": 301,
+      "height": 463,
+      "anchorX": 158,
+      "anchorY": 457,
+      "referenceWidth": 290,
+      "referenceHeight": 482
+    },
+    {
+      "character": "middle",
+      "index": 1,
+      "sx": 935,
+      "sy": 51,
+      "width": 336,
+      "height": 436,
+      "anchorX": 168,
+      "anchorY": 430,
+      "referenceWidth": 290,
+      "referenceHeight": 482
+    },
+    {
+      "character": "middle",
+      "index": 2,
+      "sx": 271,
+      "sy": 524,
+      "width": 375,
+      "height": 455,
+      "anchorX": 174,
+      "anchorY": 449,
+      "referenceWidth": 290,
+      "referenceHeight": 482
+    },
+    {
+      "character": "middle",
+      "index": 3,
+      "sx": 935,
+      "sy": 529,
+      "width": 371,
+      "height": 450,
+      "anchorX": 170,
+      "anchorY": 444,
+      "referenceWidth": 290,
+      "referenceHeight": 482
+    },
+    {
+      "character": "middle",
+      "index": 4,
+      "sx": 237,
+      "sy": 33,
+      "width": 464,
+      "height": 470,
+      "anchorX": 188,
+      "anchorY": 464,
+      "referenceWidth": 290,
+      "referenceHeight": 482,
+      "attachmentX": 363,
+      "attachmentY": 145
+    },
+    {
+      "character": "middle",
+      "index": 5,
+      "sx": 931,
+      "sy": 10,
+      "width": 396,
+      "height": 494,
+      "anchorX": 199,
+      "anchorY": 488,
+      "referenceWidth": 290,
+      "referenceHeight": 482
+    },
+    {
+      "character": "middle",
+      "index": 6,
+      "sx": 241,
+      "sy": 535,
+      "width": 484,
+      "height": 459,
+      "anchorX": 209,
+      "anchorY": 453,
+      "referenceWidth": 290,
+      "referenceHeight": 482
+    },
+    {
+      "character": "middle",
+      "index": 7,
+      "sx": 984,
+      "sy": 513,
+      "width": 327,
+      "height": 482,
+      "anchorX": 176,
+      "anchorY": 476,
+      "referenceWidth": 290,
+      "referenceHeight": 482
+    },
+    {
+      "character": "right",
+      "index": 0,
+      "sx": 324,
+      "sy": 15,
+      "width": 329,
+      "height": 483,
+      "anchorX": 164,
+      "anchorY": 477,
+      "referenceWidth": 330,
+      "referenceHeight": 492
+    },
+    {
+      "character": "right",
+      "index": 1,
+      "sx": 896,
+      "sy": 27,
+      "width": 335,
+      "height": 471,
+      "anchorX": 174,
+      "anchorY": 465,
+      "referenceWidth": 330,
+      "referenceHeight": 492
+    },
+    {
+      "character": "right",
+      "index": 2,
+      "sx": 329,
+      "sy": 511,
+      "width": 346,
+      "height": 495,
+      "anchorX": 179,
+      "anchorY": 489,
+      "referenceWidth": 330,
+      "referenceHeight": 492
+    },
+    {
+      "character": "right",
+      "index": 3,
+      "sx": 897,
+      "sy": 506,
+      "width": 346,
+      "height": 500,
+      "anchorX": 193,
+      "anchorY": 494,
+      "referenceWidth": 330,
+      "referenceHeight": 492
+    },
+    {
+      "character": "right",
+      "index": 4,
+      "sx": 202,
+      "sy": 12,
+      "width": 466,
+      "height": 501,
+      "anchorX": 260,
+      "anchorY": 495,
+      "referenceWidth": 330,
+      "referenceHeight": 492,
+      "attachmentX": 17,
+      "attachmentY": 157
+    },
+    {
+      "character": "right",
+      "index": 5,
+      "sx": 881,
+      "sy": 15,
+      "width": 490,
+      "height": 499,
+      "anchorX": 289,
+      "anchorY": 493,
+      "referenceWidth": 330,
+      "referenceHeight": 492
+    },
+    {
+      "character": "right",
+      "index": 6,
+      "sx": 246,
+      "sy": 509,
+      "width": 427,
+      "height": 504,
+      "anchorX": 236,
+      "anchorY": 498,
+      "referenceWidth": 330,
+      "referenceHeight": 492
+    },
+    {
+      "character": "right",
+      "index": 7,
+      "sx": 921,
+      "sy": 524,
+      "width": 428,
+      "height": 489,
+      "anchorX": 199,
+      "anchorY": 483,
+      "referenceWidth": 330,
+      "referenceHeight": 492
+    }
+  ],
+  "characterCropChecks": [
+    {
+      "character": "left",
+      "frame": 0,
+      "atlas": "public/art/character-left-motion-a.png",
+      "principalComponentPixels": 107065,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "left",
+      "frame": 1,
+      "atlas": "public/art/character-left-motion-a.png",
+      "principalComponentPixels": 107715,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "left",
+      "frame": 2,
+      "atlas": "public/art/character-left-motion-a.png",
+      "principalComponentPixels": 113059,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "left",
+      "frame": 3,
+      "atlas": "public/art/character-left-motion-a.png",
+      "principalComponentPixels": 111286,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "left",
+      "frame": 4,
+      "atlas": "public/art/character-left-motion-b.png",
+      "principalComponentPixels": 111829,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "left",
+      "frame": 5,
+      "atlas": "public/art/character-left-motion-b.png",
+      "principalComponentPixels": 114021,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "left",
+      "frame": 6,
+      "atlas": "public/art/character-left-motion-b.png",
+      "principalComponentPixels": 120239,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "left",
+      "frame": 7,
+      "atlas": "public/art/character-left-motion-b.png",
+      "principalComponentPixels": 113262,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "middle",
+      "frame": 0,
+      "atlas": "public/art/character-middle-motion-a.png",
+      "principalComponentPixels": 81131,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "middle",
+      "frame": 1,
+      "atlas": "public/art/character-middle-motion-a.png",
+      "principalComponentPixels": 79493,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "middle",
+      "frame": 2,
+      "atlas": "public/art/character-middle-motion-a.png",
+      "principalComponentPixels": 90705,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "middle",
+      "frame": 3,
+      "atlas": "public/art/character-middle-motion-a.png",
+      "principalComponentPixels": 89723,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "middle",
+      "frame": 4,
+      "atlas": "public/art/character-middle-motion-b.png",
+      "principalComponentPixels": 103502,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "middle",
+      "frame": 5,
+      "atlas": "public/art/character-middle-motion-b.png",
+      "principalComponentPixels": 106551,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "middle",
+      "frame": 6,
+      "atlas": "public/art/character-middle-motion-b.png",
+      "principalComponentPixels": 102349,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "middle",
+      "frame": 7,
+      "atlas": "public/art/character-middle-motion-b.png",
+      "principalComponentPixels": 92927,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "right",
+      "frame": 0,
+      "atlas": "public/art/character-right-motion-a.png",
+      "principalComponentPixels": 78133,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "right",
+      "frame": 1,
+      "atlas": "public/art/character-right-motion-a.png",
+      "principalComponentPixels": 74607,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "right",
+      "frame": 2,
+      "atlas": "public/art/character-right-motion-a.png",
+      "principalComponentPixels": 82418,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "right",
+      "frame": 3,
+      "atlas": "public/art/character-right-motion-a.png",
+      "principalComponentPixels": 80602,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "right",
+      "frame": 4,
+      "atlas": "public/art/character-right-motion-b.png",
+      "principalComponentPixels": 99880,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "right",
+      "frame": 5,
+      "atlas": "public/art/character-right-motion-b.png",
+      "principalComponentPixels": 98153,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "right",
+      "frame": 6,
+      "atlas": "public/art/character-right-motion-b.png",
+      "principalComponentPixels": 93628,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "character": "right",
+      "frame": 7,
+      "atlas": "public/art/character-right-motion-b.png",
+      "principalComponentPixels": 88891,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    }
+  ],
+  "symbolCropChecks": [
+    {
+      "symbol": "bottle",
+      "rect": [
+        70,
+        8,
+        295,
+        430
+      ],
+      "principalComponentPixels": 73274,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "symbol": "cash",
+      "rect": [
+        414,
+        65,
+        440,
+        364
+      ],
+      "principalComponentPixels": 91528,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "symbol": "chain",
+      "rect": [
+        873,
+        66,
+        365,
+        360
+      ],
+      "principalComponentPixels": 65028,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "symbol": "cassette",
+      "rect": [
+        10,
+        470,
+        425,
+        344
+      ],
+      "principalComponentPixels": 101129,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "symbol": "sneaker",
+      "rect": [
+        431,
+        444,
+        416,
+        379
+      ],
+      "principalComponentPixels": 100085,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "symbol": "crown",
+      "rect": [
+        864,
+        463,
+        385,
+        364
+      ],
+      "principalComponentPixels": 85367,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "symbol": "lighter",
+      "rect": [
+        23,
+        812,
+        365,
+        415
+      ],
+      "principalComponentPixels": 81841,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "symbol": "dice",
+      "rect": [
+        445,
+        841,
+        365,
+        377
+      ],
+      "principalComponentPixels": 79668,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    },
+    {
+      "symbol": "ring",
+      "rect": [
+        875,
+        881,
+        346,
+        332
+      ],
+      "principalComponentPixels": 78449,
+      "principalComponentComplete": true,
+      "neighborPrincipalPixels": 0
+    }
+  ],
+  "sourceHashes": {
+    "src/art.ts": "a4b200291dcbf3bac3f259c17eaf750e39c1602f2d416902da4aa8ba72aed3d5",
+    "public/art/README.md": "7da4358013e4adc6094251da349914a4f2ac62481599dc5916c80e8167a87655",
+    "public/art/symbols-ink.png": "fbf982a2066dbfb1ec74620ee9814a348f631dad81c619469403653bbb097291",
+    "public/art/character-left-motion-a.png": "25b2b4068eef81925020b7240245a0eea3e554ade90f3c78ef3eb9365fe13fc8",
+    "public/art/character-left-motion-b.png": "9aa5ae44f206be2fc927ba37b6b98a56ff832f77a2ffdf0b26c6f44875034030",
+    "public/art/character-middle-motion-a.png": "753bdcecbf72f9e2ead921fa31ab550bafbbbff346a27307a369a3205cc98d61",
+    "public/art/character-middle-motion-b.png": "95109ab0083b4ee6f41d9e40861d08fd3bd1441a0e3fe3a99887ac0fbe759728",
+    "public/art/character-right-motion-a.png": "feae26df7ebe584325d5d788dad39027d7b091e81f360a6849e2e045dde8fe19",
+    "public/art/character-right-motion-b.png": "4677c05b0f8c0e1f1e3dbf2167860815e3440fd71c6a0fe589e6d7b587704b1c"
+  },
+  "contactSheet": {
+    "file": "docs/art/animation-contact-sheet.png",
+    "sha256": "b6142c78bc1a77a6743b7628f8526e1895e2500ec661bd11b4b3cd9d6f5d23fb"
+  }
+}

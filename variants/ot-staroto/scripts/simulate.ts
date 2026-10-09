@@ -3,15 +3,16 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CONFIG, acknowledgeRound, createSession, playRound, TIER_CHARACTERS } from '../src/engine';
+import { MATH_MODEL } from '../src/math-model';
 import type { Choice } from '../src/types';
 
 const variantRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const sha = (relative: string): string => createHash('sha256').update(readFileSync(resolve(variantRoot, relative))).digest('hex');
-const sourceHashes = Object.fromEntries(['src/engine.ts', 'src/types.ts', 'scripts/simulate.ts'].map(file => [file, sha(file)]));
+const sourceHashes = Object.fromEntries(['src/engine.ts', 'src/types.ts', 'src/math-model.ts', 'src/math-model.json', 'scripts/simulate.ts'].map(file => [file, sha(file)]));
 const ordinaryRounds = Number(process.env.OT_BASE_ROUNDS || 100000);
 const modeRounds = Number(process.env.OT_MODE_ROUNDS || 10000);
 if (![ordinaryRounds, modeRounds].every(n => Number.isSafeInteger(n) && n > 0)) throw new Error('Counts must be positive integers');
-const choices: Choice[] = [{ kind: 'spin' }, { kind: 'xbet', character: 'left' }, { kind: 'xbet', character: 'right' }, { kind: 'xbet', character: 'middle' }, { kind: 'buy', tier: 'ruse' }, { kind: 'buy', tier: 'lux' }, { kind: 'buy', tier: 'edge' }, { kind: 'buy', tier: 'old' }, { kind: 'god' }];
+const choices: Choice[] = [{ kind: 'spin' }, { kind: 'boost' }, { kind: 'xbet', character: 'left' }, { kind: 'xbet', character: 'right' }, { kind: 'xbet', character: 'middle' }, { kind: 'buy', tier: 'ruse' }, { kind: 'buy', tier: 'lux' }, { kind: 'buy', tier: 'edge' }, { kind: 'buy', tier: 'old' }, { kind: 'god' }];
 const rows = [];
 const percentile = (values: number[], fraction: number): number => {
   if (!values.length) return 0;
@@ -20,7 +21,7 @@ const percentile = (values: number[], fraction: number): number => {
 };
 for (const [modeIndex, choice] of choices.entries()) {
   if (process.env.OT_MODES && !process.env.OT_MODES.split(',').includes(String(modeIndex))) continue;
-  const n = choice.kind === 'spin' ? ordinaryRounds : modeRounds;
+  const n = choice.kind === 'spin' || choice.kind === 'boost' ? ordinaryRounds : modeRounds;
   const seed = (0x1bf732 + modeIndex * 0x7c1b29) >>> 0;
   let session = createSession(seed, 8_000_000_000_000);
   let cost = 0, payout = 0, squares = 0, winningRounds = 0, capped = 0, bonusEntries = 0, spins = 0, cascades = 0, features = 0, regularPayout = 0, coinPayout = 0, godWins = 0, longestCascade = 0, longestBonus = 0, peakBetMultiple = 0;
@@ -97,11 +98,10 @@ for (const [modeIndex, choice] of choices.entries()) {
 }
 for (const [file, hash] of Object.entries(sourceHashes)) if (sha(file) !== hash) throw new Error(`Source changed during sample: ${file}`);
 const report = {
-  sourceVersion: 2, generatedAt: new Date().toISOString(), config: CONFIG,
+  sourceVersion: 3, generatedAt: new Date().toISOString(), config: CONFIG,
   sourceHashes,
-  notes: ['Independent prototype mathematics, not a licensed game clone or certified RTP.', 'Nine regular symbols; any 8/10/12 matching physical cells including Wilds pay with at least one actual regular of that type.', 'Badges and at most one scatter per reel enter only on each spin initial drop; refill draws regulars.', 'Normal confidence intervals approximate sampling error; rare tails can remain unsampled.', 'Each mode uses a fixed seed and full settled rounds; odds never depend on credit balance.', 'God uses one actual MAX symbol among 30 cells and 4 uniform distinct targets plus a fifth with 32% probability; stop on hit. Misses settle the same board.', 'Coin reveals finish before modifiers and collector activation; collector repeats clear noncollectors; final retained collector and terminal value coins pay exactly once.'],
-  godTheoreticalHitProbability: (CONFIG.godMinimumShots + CONFIG.godExtraShotChance) / (CONFIG.reels * CONFIG.rows),
-  godTheoreticalCapReturn: (CONFIG.godMinimumShots + CONFIG.godExtraShotChance) / (CONFIG.reels * CONFIG.rows) * CONFIG.maxWin / CONFIG.godCost,
+  notes: ['Weighted prototype mathematics with exact 96.5% expected return at every supported stake and mode; not a certified cash game.', 'Nine regular symbols; any 8/10/12 matching physical cells including Wilds pay with at least one actual regular of that type.', 'Badges and at most one scatter per reel enter only on each spin initial drop; refill draws regulars.', 'Normal confidence intervals approximate sampling error; rare tails can remain unsampled.', 'Production paid rounds use fresh independent Web Crypto ticket words; initial ledger seeds are reported but do not predetermine draws. Odds never depend on wallet balance or loss history.', 'God selects weighted complete real-board shooting outcomes, stops on an actual MAX hit, and settles misses on the same board. The weighted catalogue supersedes the old raw procedural 4.32/30 probability.', 'Coin reveals finish before modifiers and collector activation; collector repeats clear noncollectors; final retained collector and terminal value coins pay exactly once.'],
+  exactModel: { expectedReturn: MATH_MODEL.targetRtp.numerator / MATH_MODEL.targetRtp.denominator, proof: 'docs/mathematics-proof.json', modelSha256: sha('src/math-model.json'), baseBonusChance: 1 / 200, boostBonusChance: 1 / 40, boostedCostMultiplier: 3 },
 
   rows,
 };

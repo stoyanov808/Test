@@ -1,7 +1,10 @@
-import symbolAtlas from '../public/art/symbols-premium.png?url&inline';
-import leftAtlas from '../public/art/character-left-actions.png?url&inline';
-import middleAtlas from '../public/art/character-middle-actions.png?url&inline';
-import rightAtlas from '../public/art/character-right-actions.png?url&inline';
+import symbolAtlas from '../public/art/symbols-ink.png?url&inline';
+import leftPreparation from '../public/art/character-left-motion-a.png?url&inline';
+import leftAction from '../public/art/character-left-motion-b.png?url&inline';
+import middlePreparation from '../public/art/character-middle-motion-a.png?url&inline';
+import middleAction from '../public/art/character-middle-motion-b.png?url&inline';
+import rightPreparation from '../public/art/character-right-motion-a.png?url&inline';
+import rightAction from '../public/art/character-right-motion-b.png?url&inline';
 import yard from '../public/art/ruse-yard.png?url&inline';
 import wild from '../public/art/wild-premium.svg?url&inline';
 import scatter from '../public/art/scatter-premium.svg?url&inline';
@@ -14,68 +17,100 @@ import globalCoin from '../public/art/coin-global.svg?url&inline';
 import type { Character, Coin, Regular, SymbolId, Tier } from './types';
 
 export type CharacterPose = 'idle' | 'reveal' | 'action' | 'recoil';
+export type CharacterAnimation = 'feature' | 'win';
 export interface ArtSprite {
   url: string; sx: number; sy: number; width: number; height: number;
-  /** Consistent body width and foot anchor prevent action arms shrinking a character. */
-  referenceWidth?: number; anchorX?: number;
+  /** Body dimensions and the foot anchor stay stable when an arm extends. */
+  referenceWidth?: number; referenceHeight?: number; anchorX?: number; anchorY?: number;
+  /** Source-window coordinates of the release palm or revolver barrel. */
+  attachmentX?: number; attachmentY?: number;
 }
 const svgURL = (svg: string): string => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-const atlases: Record<Character, string> = { left: leftAtlas, middle: middleAtlas, right: rightAtlas };
-const sprite = (url: string, rect: readonly number[], referenceWidth?: number, anchorX?: number): ArtSprite => ({ url, sx: rect[0], sy: rect[1], width: rect[2], height: rect[3], referenceWidth, anchorX });
+const sprite = (url: string, rect: readonly number[]): ArtSprite => ({ url, sx: rect[0], sy: rect[1], width: rect[2], height: rect[3] });
 
-// Tight display windows into the intact 1225×1284 PNG. No source pixels are edited.
+// These display windows keep the original 1254×1254 illustration intact.
+// Thick ivory/black prop drawings share the characters' flat ink language.
 const symbolRects: Record<Regular, readonly number[]> = {
-  bottle: [98, 66, 225, 378], cash: [434, 153, 352, 268], chain: [850, 138, 330, 287],
-  cassette: [29, 539, 367, 274], sneaker: [433, 516, 357, 307], crown: [832, 498, 367, 315],
-  lighter: [43, 856, 324, 355], dice: [463, 943, 311, 266], ring: [854, 921, 318, 296],
+  bottle: [70, 8, 295, 430], cash: [414, 65, 440, 364], chain: [873, 66, 365, 360],
+  cassette: [10, 470, 425, 344], sneaker: [431, 444, 416, 379], crown: [864, 463, 385, 364],
+  lighter: [23, 812, 365, 415], dice: [445, 841, 365, 377], ring: [875, 881, 346, 332],
 };
-// Four articulated drawings per 1536×1024 atlas, in idle/reveal/action/recoil order.
-// Crops exclude detached throw tokens: the receipt-driven projectile is drawn by the renderer.
-const bodyRects: Record<Character, Record<CharacterPose, readonly number[]>> = {
-  left: { idle: [205, 12, 405, 499], reveal: [950, 30, 510, 484], action: [110, 522, 648, 480], recoil: [945, 526, 475, 480] },
-  middle: { idle: [265, 22, 355, 498], reveal: [905, 72, 412, 449], action: [155, 522, 680, 476], recoil: [916, 522, 460, 480] },
-  right: { idle: [302, 1, 355, 512], reveal: [968, 8, 330, 505], action: [231, 524, 497, 488], recoil: [925, 509, 365, 511] },
+
+// Eight separately illustrated key drawings: idle, anticipation, preparation,
+// wind-up/aim, release, follow-through/recoil, recovery and settle.
+// Two generously spaced 1536×1024 sheets per character keep hands and shoes
+// inside each display window. No source pixels are edited or pose copies made.
+const atlases: Record<Character, readonly [string, string]> = {
+  left: [leftPreparation, leftAction], middle: [middlePreparation, middleAction], right: [rightPreparation, rightAction],
 };
-const anchors: Record<Character, Record<CharacterPose, number>> = {
-  left: { idle: 200, reveal: 240, action: 270, recoil: 235 },
-  middle: { idle: 180, reveal: 206, action: 250, recoil: 230 },
-  right: { idle: 180, reveal: 164, action: 286, recoil: 184 },
+const bodyRects: Record<Character, readonly (readonly number[])[]> = {
+  left: [[212, 21, 374, 484], [919, 37, 436, 468], [206, 536, 458, 463], [943, 517, 444, 481],
+    [148, 30, 519, 458], [869, 30, 536, 458], [158, 534, 500, 465], [941, 502, 385, 497]],
+  middle: [[280, 24, 301, 463], [935, 51, 336, 436], [271, 524, 375, 455], [935, 529, 371, 450],
+    [237, 33, 464, 470], [931, 10, 396, 494], [241, 535, 484, 459], [984, 513, 327, 482]],
+  right: [[324, 15, 329, 483], [896, 27, 335, 471], [329, 511, 346, 495], [897, 506, 346, 500],
+    [202, 12, 466, 501], [881, 15, 490, 499], [246, 509, 427, 504], [921, 524, 428, 489]],
 };
-const characterSprites = {} as Record<Character, Record<CharacterPose, ArtSprite>>;
+// Horizontal body anchors are expressed in the intact source atlas. Each frame
+// has its own foot baseline; gestures cannot shift the actor or shrink its body.
+const bodyAnchors: Record<Character, readonly number[]> = {
+  left: [396, 1115, 415, 1120, 370, 1090, 385, 1135],
+  middle: [438, 1103, 445, 1105, 425, 1130, 450, 1160],
+  right: [488, 1070, 508, 1090, 462, 1170, 482, 1120],
+};
+const footBaselines: Record<Character, readonly number[]> = {
+  left: [499, 499, 993, 992, 482, 482, 993, 993],
+  middle: [481, 481, 973, 973, 497, 498, 988, 989],
+  right: [492, 492, 1000, 1000, 507, 508, 1007, 1007],
+};
+const bodySizes: Record<Character, readonly [number, number]> = { left: [360, 485], middle: [290, 482], right: [330, 492] };
+const releasePoints: Record<Character, readonly [number, number]> = { left: [645, 177], middle: [600, 178], right: [219, 169] };
+const animationSprites = {} as Record<Character, readonly ArtSprite[]>;
 for (const character of ['left', 'middle', 'right'] as const) {
-  characterSprites[character] = {} as Record<CharacterPose, ArtSprite>;
-  for (const pose of ['idle', 'reveal', 'action', 'recoil'] as const) {
-    characterSprites[character][pose] = sprite(atlases[character], bodyRects[character][pose], character === 'left' ? 405 : 355, anchors[character][pose]);
-  }
+  animationSprites[character] = bodyRects[character].map((rect, index) => {
+    const value: ArtSprite = { ...sprite(atlases[character][Math.floor(index / 4)], rect), referenceWidth: bodySizes[character][0], referenceHeight: bodySizes[character][1], anchorX: bodyAnchors[character][index] - rect[0], anchorY: footBaselines[character][index] - rect[1] };
+    if (index === 4) { value.attachmentX = releasePoints[character][0] - rect[0]; value.attachmentY = releasePoints[character][1] - rect[1]; }
+    return value;
+  });
 }
+const poseIndex: Record<CharacterPose, number> = { idle: 0, reveal: 3, action: 4, recoil: 6 };
 const portraits: Record<Character, ArtSprite> = {
-  left: sprite(leftAtlas, [275, 12, 240, 230]), middle: sprite(middleAtlas, [312, 25, 240, 220]), right: sprite(rightAtlas, [326, 2, 250, 230]),
+  left: sprite(leftPreparation, [304, 21, 196, 198]), middle: sprite(middlePreparation, [324, 24, 201, 190]), right: sprite(rightPreparation, [362, 15, 202, 200]),
 };
 const sprites = {} as Record<SymbolId, ArtSprite>;
 for (const regular of Object.keys(symbolRects) as Regular[]) sprites[regular] = sprite(symbolAtlas, symbolRects[regular]);
 Object.assign(sprites, portraits, { wild: sprite(wild, [0, 0, 360, 360]), scatter: sprite(scatter, [0, 0, 360, 360]), max: sprite(max, [0, 0, 360, 360]) });
-const dimensions = new Map<string, readonly [number, number]>([[symbolAtlas, [1225, 1284]], [leftAtlas, [1536, 1024]], [middleAtlas, [1536, 1024]], [rightAtlas, [1536, 1024]], [wild, [360, 360]], [scatter, [360, 360]], [max, [360, 360]]]);
+const dimensions = new Map<string, readonly [number, number]>([
+  [symbolAtlas, [1254, 1254]], ...Object.values(atlases).flatMap(pair => pair.map(url => [url, [1536, 1024]] as const)),
+  [wild, [360, 360]], [scatter, [360, 360]], [max, [360, 360]],
+]);
 const cropURL = (value: ArtSprite): string => {
   const [width, height] = dimensions.get(value.url)!;
   return svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${value.width} ${value.height}"><image href="${value.url}" x="${-value.sx}" y="${-value.sy}" width="${width}" height="${height}"/></svg>`);
 };
-// URL caches are created lazily once. Canvas uses raw atlas sprites and never decodes duplicates.
+// Canvas callers use the six raw atlases directly and share their decodes.
+// Cropped URL compatibility is lazy; it is not used to warm all 24 frames.
 const symbolURLs = new Map<SymbolId, string>();
 const frameURLs = new Map<string, string>();
 export const sceneURL = (_tier: Tier | null = null): string => yard;
 export const symbolSprite = (symbol: SymbolId): ArtSprite => sprites[symbol];
-export const characterSprite = (character: Character, pose: CharacterPose = 'idle'): ArtSprite => characterSprites[character][pose];
+export const characterFrameCount = (character: Character): number => animationSprites[character].length;
+export const characterFrameSprite = (character: Character, index: number): ArtSprite => animationSprites[character][Math.max(0, Math.min(7, Math.floor(index)))];
+export const characterAnimationSprites = (character: Character, _animation: CharacterAnimation = 'feature'): readonly ArtSprite[] => animationSprites[character];
+export const characterAnimationSprite = (character: Character, progress: number, _animation: CharacterAnimation = 'feature'): ArtSprite => characterFrameSprite(character, Math.floor(Math.max(0, Math.min(1, progress)) * 8));
+export const characterSprite = (character: Character, pose: CharacterPose = 'idle'): ArtSprite => characterFrameSprite(character, poseIndex[pose]);
 export const symbolURL = (symbol: SymbolId): string => {
   let value = symbolURLs.get(symbol);
   if (!value) { value = cropURL(sprites[symbol]); symbolURLs.set(symbol, value); }
   return value;
 };
-export const characterFrameURL = (character: Character, pose: CharacterPose): string => {
-  const key = `${character}:${pose}`;
+export const characterAnimationFrameURL = (character: Character, index: number): string => {
+  const normalized = Math.max(0, Math.min(7, Math.floor(index))), key = `${character}:${normalized}`;
   let value = frameURLs.get(key);
-  if (!value) { value = cropURL(characterSprites[character][pose]); frameURLs.set(key, value); }
+  if (!value) { value = cropURL(characterFrameSprite(character, normalized)); frameURLs.set(key, value); }
   return value;
 };
+export const characterFrameURL = (character: Character, pose: CharacterPose): string => characterAnimationFrameURL(character, poseIndex[pose]);
 export const characterURL = (character: Character): string => characterFrameURL(character, 'idle');
 const coinURLs: Record<Coin['kind'], string> = { value: coin, collector, multiplier, global: globalCoin, empty: svgURL('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320"/>') };
 export const coinURL = (kind: Coin['kind']): string => coinURLs[kind];

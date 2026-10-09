@@ -1,6 +1,6 @@
 {
   "name": "ruse-slot-workspace",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,9 @@
     "preview": "vite preview variants/ot-staroto --host 0.0.0.0",
     "test": "npm --prefix variants/ot-staroto test",
     "simulate": "npm --prefix variants/ot-staroto run simulate",
+    "math:build": "npm --prefix variants/ot-staroto run math:build",
+    "math:check": "npm --prefix variants/ot-staroto run math:check",
+    "math:check:full": "npm --prefix variants/ot-staroto run math:check:full",
     "test:browser": "npm --prefix variants/ot-staroto run test:browser",
     "capture:gallery": "npm --prefix variants/ot-staroto run test:browser",
     "start:studentski": "vite --host 127.0.0.1 --open",

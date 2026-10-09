@@ -5,7 +5,7 @@ export type SymbolId = Regular | Character | 'wild' | 'scatter' | 'max';
 export type Grid = SymbolId[][];
 export type Matrix = number[][];
 export interface Cell { reel: number; row: number }
-export type Choice = { kind: 'spin' } | { kind: 'xbet'; character: Character } | { kind: 'buy'; tier: Tier } | { kind: 'god' };
+export type Choice = { kind: 'spin' } | { kind: 'boost' } | { kind: 'xbet'; character: Character } | { kind: 'buy'; tier: Tier } | { kind: 'god' };
 export interface Win { symbol: Regular; cells: Cell[]; count: number; baseMultiplier: number; globalMultiplier: number; payoutCents: number }
 export interface Coin { cell: Cell; kind: 'value' | 'collector' | 'multiplier' | 'global' | 'empty'; value: number; payoutCents: number; target?: Cell }
 export interface CoinModifier { source: Cell; targets: Cell[]; factor: number; global: boolean }
@@ -39,9 +39,10 @@ export interface Round {
   id: number; choice: Choice; betCents: number; costCents: number; payoutCents: number;
   capCents: number; maxWin: boolean; godHits: boolean[]; godGrid: Grid | null; godShots: GodShot[]; spins: Spin[];
   initialRng: number; finalRng: number; triggerTier: Tier | null;
+  outcome: { pool: string; index: number; seed: number; draws: number[]; source: 'crypto' | 'fixture' } | null;
 }
 export interface GodShot { target: Cell; character: Character; hit: boolean }
 export interface Session {
-  version: 2; balanceCents: number; betCents: number; rngState: number; sequence: number;
+  version: 3; balanceCents: number; betCents: number; rngState: number; sequence: number;
   pending: Round | null; history: Round[];
 }

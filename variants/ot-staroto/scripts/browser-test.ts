@@ -4,12 +4,12 @@ import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
 import { createServer as createHTTPServer } from 'node:http';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import { chromium, type Page, type BrowserContext } from 'playwright';
-import { CONFIG, TIER_ORDER, TIER_CHARACTERS, acknowledgeRound, costCents, createSession, playRound } from '../src/engine';
+import { CONFIG, TIER_ORDER, TIER_CHARACTERS, acknowledgeRound, costCents, createSession, deserializeSession, playFixtureRound } from '../src/engine';
 import type { Character, Choice, Feature, Round, Session, Tier } from '../src/types';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -25,6 +25,7 @@ const failures: string[] = [];
 const jsErrors: string[] = [];
 const externalRequests: string[] = [];
 const productionRequests: string[] = [];
+const productionReceipts: { choice: Choice; sequence: number; costCents: number; payoutCents: number; sha256: string; outcome: Round['outcome'] }[] = [];
 let productionBundleHashes: Record<string, string> = {};
 const sha = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 let server: ReturnType<typeof spawn> | undefined;
@@ -50,11 +51,13 @@ async function sourceHashes() {
   const paths = [...await files(join(root, 'src')), ...await files(join(root, 'public')), join(root, 'package.json'), join(root, 'vite.config.ts'), join(root, 'scripts/standalone.mjs'), fileURLToPath(import.meta.url)].filter(path => !path.endsWith('/README.md'));
   return Object.fromEntries(await Promise.all(paths.sort().map(async path => [relative(root, path), sha(await readFile(path))])));
 }
-type Gate = { stage?: string; kind?: string; character?: Character; min?: number; max?: number; tier?: number; afterSpin?: number; repeated?: boolean; labelPrefix?: string; coinWave?: number; collectionConsumesCollector?: boolean; godShot?: number; inactiveMin?: number; midDrop?: boolean };
-async function probe(context: BrowserContext, local = false) {
-  await context.addInitScript(() => {
+type Gate = { stage?: string; kind?: string; character?: Character; min?: number; max?: number; tier?: number; afterSpin?: number; repeated?: boolean; labelPrefix?: string; coinWave?: number; collectionConsumesCollector?: boolean; godShot?: number; inactiveMin?: number; midDrop?: boolean; characterFrame?: number };
+async function probe(context: BrowserContext, productionRuntime = false) {
+  const installProbe = () => {
     const w = window as any;
-    const p: any = w.__probe = { gate: null, held: false, queue: [] as any[], frames: [] as any[], images: [] as any[], draws: [] as any[] };
+    const wallNow = performance.now.bind(performance); let pausedTime = 0; let p: any;
+    Object.defineProperty(performance, 'now', { value: () => (p?.held && p.pausedAt !== null ? p.pausedAt : wallNow()) - pausedTime });
+    p = w.__probe = { gate: null, held: false, pausedAt: null, queue: [] as any[], frames: [] as any[], images: [] as any[], draws: [] as any[], audioDecodes: [] as any[], audioStarts: [] as any[], entropyCalls: [] as any[] };
     const descriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')!;
     Object.defineProperty(HTMLImageElement.prototype, 'src', { ...descriptor, set(value: string) {
       const record = { prefix: String(value).slice(0, 65), length: String(value).length, width: 0, height: 0, loaded: false, failed: false };
@@ -66,9 +69,23 @@ async function probe(context: BrowserContext, local = false) {
     const originalDraw = CanvasRenderingContext2D.prototype.drawImage;
     CanvasRenderingContext2D.prototype.drawImage = function (this: CanvasRenderingContext2D, ...args: any[]) {
       const img = args[0];
-      if (img instanceof HTMLImageElement && p.draws.length < 1000) p.draws.push({ prefix: img.src.slice(0, 65), width: img.naturalWidth, height: img.naturalHeight, loaded: img.complete && img.naturalWidth > 0 });
+      if (img instanceof HTMLImageElement && p.draws.length < 30000) p.draws.push({ prefix: img.src.slice(0, 100), width: img.naturalWidth, height: img.naturalHeight, loaded: img.complete && img.naturalWidth > 0, crop: args.length === 9 ? args.slice(1, 5) : null, at: performance.now() });
       return (originalDraw as any).apply(this, args);
     } as typeof originalDraw;
+    const random = Crypto.prototype.getRandomValues;
+    Crypto.prototype.getRandomValues = function (this: Crypto, array: any) { const result = (random as any).call(this, array); p.entropyCalls.push({ bytes: array.byteLength, at: performance.now() }); return result; } as typeof Crypto.prototype.getRandomValues;
+    const audioPrototype = window.AudioContext?.prototype;
+    if (audioPrototype) {
+      const decode = audioPrototype.decodeAudioData;
+      audioPrototype.decodeAudioData = function (bytes: ArrayBuffer, ...callbacks: any[]) {
+        const record: any = { bytes: bytes.byteLength, decoded: false }; p.audioDecodes.push(record);
+        const result = (decode as any).call(this, bytes, ...callbacks);
+        result.then((buffer: AudioBuffer) => { record.decoded = true; record.duration = buffer.duration; record.channels = buffer.numberOfChannels; record.sampleRate = buffer.sampleRate; }, (error: Error) => { record.error = error.message; });
+        return result;
+      };
+      const start = AudioBufferSourceNode.prototype.start;
+      AudioBufferSourceNode.prototype.start = function (...args: any[]) { p.audioStarts.push({ duration: this.buffer?.duration, loop: this.loop, at: performance.now() }); return (start as any).apply(this, args); };
+    }
     const raf = window.requestAnimationFrame.bind(window);
     const caf = window.cancelAnimationFrame.bind(window); const cancelled = new Set<number>();
     window.cancelAnimationFrame = handle => { cancelled.add(handle); caf(handle); };
@@ -76,7 +93,7 @@ async function probe(context: BrowserContext, local = false) {
       let handle = 0; handle = raf(now => {
       if (cancelled.has(handle)) return;
       if (p.held) { p.queue.push({ callback, now, handle }); return; }
-      callback(now);
+      callback(now - pausedTime);
       const b = w.__ruse?.board?.();
       if (b && p.frames.length < 6000) p.frames.push({ ...b, at: performance.now(), uiRemaining: document.getElementById('remaining')?.textContent });
       const g = p.gate;
@@ -84,19 +101,21 @@ async function probe(context: BrowserContext, local = false) {
       const effect = b?.effect;
       const tier = Number(document.getElementById('win-scene')?.dataset.tier ?? 0);
       const firstMoving = b?.movingCells?.find((cell: any) => !cell.stationary);
-      const match = (!g.stage || b?.stage === g.stage) && (!g.kind || effect?.kind === g.kind) && (!g.character || effect?.character === g.character) && (g.min === undefined || effect?.progress >= g.min) && (g.max === undefined || effect?.progress <= g.max) && (!g.tier || tier === g.tier) && (g.repeated === undefined || effect?.repeated === g.repeated) && (!g.labelPrefix || effect?.label?.startsWith(g.labelPrefix)) && (g.afterSpin === undefined || firstMoving?.sourceRow < 0 && b.remaining <= g.afterSpin) && (g.coinWave === undefined || b?.coinWave === g.coinWave) && (g.collectionConsumesCollector === undefined || !!b?.collection?.sources?.some((coin: any) => coin.kind === 'collector') === g.collectionConsumesCollector) && (g.godShot === undefined || effect?.shot === g.godShot) && (g.inactiveMin === undefined || b?.inactiveWilds?.length >= g.inactiveMin) && (!g.midDrop || b?.movingCells?.some((cell: any) => cell.progress >= .4 && cell.progress <= .8));
-      if (match) p.held = true;
+      const match = (!g.stage || b?.stage === g.stage) && (!g.kind || effect?.kind === g.kind) && (!g.character || effect?.character === g.character) && (g.min === undefined || effect?.progress >= g.min) && (g.max === undefined || effect?.progress <= g.max) && (!g.tier || tier === g.tier) && (g.repeated === undefined || effect?.repeated === g.repeated) && (!g.labelPrefix || effect?.label?.startsWith(g.labelPrefix)) && (g.afterSpin === undefined || firstMoving?.sourceRow < 0 && b.remaining <= g.afterSpin) && (g.coinWave === undefined || b?.coinWave === g.coinWave) && (g.collectionConsumesCollector === undefined || !!b?.collection?.sources?.some((coin: any) => coin.kind === 'collector') === g.collectionConsumesCollector) && (g.godShot === undefined || effect?.shot === g.godShot) && (g.inactiveMin === undefined || b?.inactiveWilds?.length >= g.inactiveMin) && (!g.midDrop || b?.movingCells?.some((cell: any) => cell.progress >= .4 && cell.progress <= .8)) && (g.characterFrame === undefined || b?.characterFrames?.some((frame: any) => frame.character === g.character && frame.index === g.characterFrame && frame.count === 8));
+      if (match) { p.held = true; p.pausedAt = wallNow(); }
       }); return handle;
     };
-    p.release = function () { p.gate = null; p.held = false; const queue = p.queue.splice(0); for (const item of queue) if (!cancelled.has(item.handle)) window.requestAnimationFrame(item.callback); };
-  });
+    p.release = function () { p.gate = null; if (p.held && p.pausedAt !== null) pausedTime += wallNow() - p.pausedAt; p.pausedAt = null; p.held = false; const queue = p.queue.splice(0); for (const item of queue) if (!cancelled.has(item.handle)) window.requestAnimationFrame(item.callback); };
+  };
+  // TSX preserves inferred function names in serialized closures with this helper.
+  await context.addInitScript({ content: `window.__name = function (target) { return target; }; (${installProbe.toString()})();` });
   context.on('page', page => {
-    page.on('pageerror', error => jsErrors.push(`${local ? 'file' : 'dev'}: ${error.message}`));
-    page.on('requestfailed', request => { if (!request.failure()?.errorText.includes('ERR_ABORTED')) failures.push(`${local ? 'file' : 'dev'}: ${request.url().slice(0, 200)} ${request.failure()?.errorText}`); });
-    page.on('response', response => { if (response.status() >= 400) failures.push(`${local ? 'file' : 'dev'}: HTTP ${response.status()} ${response.url().slice(0, 200)}`); });
+    page.on('pageerror', error => jsErrors.push(`${productionRuntime ? 'production' : 'dev'}: ${error.message}`));
+    page.on('requestfailed', request => { if (!request.failure()?.errorText.includes('ERR_ABORTED')) failures.push(`${productionRuntime ? 'production' : 'dev'}: ${request.url().slice(0, 200)} ${request.failure()?.errorText}`); });
+    page.on('response', response => { if (response.status() >= 400) failures.push(`${productionRuntime ? 'production' : 'dev'}: HTTP ${response.status()} ${response.url().slice(0, 200)}`); });
     page.on('request', request => {
       const url = request.url();
-      if (local && /^https?:/.test(url)) productionRequests.push(url);
+      if (productionRuntime && /^https?:/.test(url)) productionRequests.push(url);
       if (/^https?:/.test(url) && !/^http:\/\/127\.0\.0\.1:/.test(url)) externalRequests.push(url);
     });
   });
@@ -104,12 +123,13 @@ async function probe(context: BrowserContext, local = false) {
 async function ready(page: Page) {
   await page.locator('#game').waitFor();
   await page.waitForFunction(() => { const p = (window as any).__probe; return p.images.length >= 12 && p.images.every((img: any) => img.loaded || img.failed); }, undefined, { timeout: 30000, polling: 50 });
-  const assets = await page.evaluate(() => ({ images: (window as any).__probe.images, draws: (window as any).__probe.draws, dom: [...document.images].map(img => ({ complete: img.complete, width: img.naturalWidth })) }));
+  const assets = await page.evaluate(() => ({ images: (window as any).__probe.images, draws: (window as any).__probe.draws, dom: [...document.images].map(img => ({ complete: img.complete, width: img.naturalWidth })), sceneBackground: getComputedStyle(document.getElementById('game-shell')!).backgroundImage !== 'none' }));
   assert.equal(assets.images.filter((img: any) => img.failed).length, 0, JSON.stringify(assets.images.filter((img: any) => img.failed)));
-  assert.ok(assets.draws.some((img: any) => img.width > 1000 && img.height > 500), 'Painted PNG yard is loaded');
+  assert.ok(assets.images.some((img: any) => img.width === 1672 && img.height === 941 && img.loaded) && assets.sceneBackground, 'Original painted Ruse yard is loaded as the full-window stage background');
+  assert.ok(assets.draws.some((img: any) => img.loaded && img.crop), 'The canvas paints loaded authored sprite crops');
   return assets;
 }
-async function snapshot(page: Page): Promise<Session & { busy: boolean; displayedBalance: number; language: string; turbo: boolean }> {
+async function snapshot(page: Page): Promise<Session & { busy: boolean; displayedBalance: number; language: string; turbo: boolean; selectedXbet: string; spaceHeld: boolean }> {
   return page.evaluate(() => (window as any).__ruse.snapshot());
 }
 async function reset(page: Page, seed: number) {
@@ -122,7 +142,8 @@ async function gate(page: Page, condition: Gate) {
 async function held(page: Page) { await page.waitForFunction(() => (window as any).__probe.held, undefined, { timeout: 45000, polling: 40 }); }
 async function release(page: Page) { await page.evaluate(() => (window as any).__probe.release()); }
 async function choose(page: Page, choice: Choice) {
-  if (choice.kind === 'buy') { await page.locator('#buy').click(); await page.locator(`[data-tier="${choice.tier}"]`).click(); await page.locator('#confirm-play').click(); }
+  if (choice.kind === 'buy') { await page.locator('#buy').click(); await page.locator(`.buy-card[data-tier="${choice.tier}"]`).click(); await page.locator('#confirm-play').click(); }
+  else if (choice.kind === 'boost') { await page.locator('#xbet').selectOption('boost'); await page.locator('#spin').click(); }
   else if (choice.kind === 'xbet') { await page.locator('#xbet').selectOption(choice.character); await page.locator('#spin').click(); await page.locator('#confirm-play').click(); }
   else if (choice.kind === 'god') { await page.locator('#god').click(); await page.locator('#confirm-play').click(); }
   else await page.locator('#spin').click();
@@ -134,11 +155,11 @@ async function finish(page: Page, expected: Session, label: string) {
   await page.evaluate(() => (window as any).__ruse.skip());
   for (let count = 0; count < 5; count++) {
     if (!(await snapshot(page)).busy) break;
-    await page.waitForFunction(() => !(window as any).__ruse.snapshot().busy || !!document.getElementById('win-continue'), undefined, { timeout: 20000, polling: 40 });
+    await page.waitForFunction(() => !(window as any).__ruse.snapshot().busy || !!document.getElementById('win-continue'), undefined, { timeout: 180000, polling: 40 });
     if (await page.locator('#win-continue').count()) await page.locator('#win-continue').click();
   }
   await page.waitForFunction(() => !(window as any).__ruse.snapshot().busy, undefined, { timeout: 20000, polling: 40 });
-  const actual = await snapshot(page); const { busy, displayedBalance, language, turbo, ...session } = actual;
+  const actual = await snapshot(page); const { busy, displayedBalance, language, turbo, selectedXbet, spaceHeld, ...session } = actual;
   assert.deepEqual(session, acknowledgeRound(expected), `${label}: full receipt, RNG and credits`);
   assert.equal(displayedBalance, expected.balanceCents);
   const board = await page.evaluate(() => (window as any).__ruse.board()); const final = expected.pending!.spins.at(-1);
@@ -160,18 +181,12 @@ async function presentationCapture(page: Page, name: string, note: string) {
   const path = join(shots, `${name}.png`); await page.screenshot({ path, fullPage: true });
   presentationCaptures.push({ file: `docs/screenshots/${name}.png`, sha256: sha(await readFile(path)), viewport: page.viewportSize(), note });
 }
-function expected(seed: number, choice: Choice) { return playRound(createSession(seed, rich), choice); }
+function expected(seed: number, choice: Choice) { return playFixtureRound(createSession(seed, rich), choice); }
 function find(choice: Choice, predicate: (round: Round) => boolean, limit = 3000) {
   for (let seed = 1; seed <= limit; seed++) { const session = expected(seed, choice); if (predicate(session.pending!)) return { seed, session }; }
   throw new Error(`No honest fixture found for ${JSON.stringify(choice)} within ${limit} seeds`);
 }
 function features(round: Round): Feature[] { return round.spins.flatMap(spin => spin.cascades.flatMap(cascade => cascade.features)); }
-function wav() {
-  const samples = 2205; const buffer = Buffer.alloc(44 + samples * 2);
-  buffer.write('RIFF'); buffer.writeUInt32LE(buffer.length - 8, 4); buffer.write('WAVEfmt ', 8); buffer.writeUInt32LE(16, 16); buffer.writeUInt16LE(1, 20); buffer.writeUInt16LE(1, 22); buffer.writeUInt32LE(22050, 24); buffer.writeUInt32LE(44100, 28); buffer.writeUInt16LE(2, 32); buffer.writeUInt16LE(16, 34); buffer.write('data', 36); buffer.writeUInt32LE(samples * 2, 40);
-  for (let index = 0; index < samples; index++) buffer.writeInt16LE(Math.round(Math.sin(index / 22050 * 440 * Math.PI * 2) * 4000), 44 + index * 2);
-  return buffer;
-}
 
 async function development(page: Page, url: string) {
   await page.goto(url); const assets = await ready(page);
@@ -191,22 +206,79 @@ async function development(page: Page, url: string) {
   await page.locator('#language').click(); assert.equal(await page.locator('html').getAttribute('lang'), 'bg'); assert.match((await page.locator('#balance').textContent())!, /€/);
   pass('BG / EN setting persists across reload and all displayed credits use EUR');
 
-  const legacyWallet = JSON.stringify({ version: 1, balanceCents: 1234567, betCents: 50, rngState: 43, sequence: 17, pending: null, history: [] });
-  await page.evaluate(raw => { localStorage.setItem('ot-staroto-session-v1', raw); localStorage.removeItem('ot-staroto-session-v2'); }, legacyWallet);
+  const legacyWallet = JSON.stringify({ version: 2, balanceCents: 1234567, betCents: 50, rngState: 43, sequence: 17, pending: null, history: [] });
+  await page.evaluate(raw => { localStorage.setItem('ot-staroto-session-v2', raw); localStorage.removeItem('ot-staroto-session-v3'); }, legacyWallet);
   await page.reload(); await ready(page);
-  const migrated = await snapshot(page); assert.equal(migrated.version, 2); assert.equal(migrated.balanceCents, 1234567); assert.equal(migrated.betCents, 50); assert.equal(migrated.sequence, 0); assert.equal(migrated.pending, null); assert.deepEqual(migrated.history, []);
-  assert.equal(await page.evaluate(() => localStorage.getItem('ot-staroto-session-v1')), legacyWallet);
+  const migrated = await snapshot(page); assert.equal(migrated.version, 3); assert.equal(migrated.balanceCents, 1234567); assert.equal(migrated.betCents, 50); assert.equal(migrated.sequence, 0); assert.equal(migrated.pending, null); assert.deepEqual(migrated.history, []);
+  assert.equal(await page.evaluate(() => localStorage.getItem('ot-staroto-session-v2')), legacyWallet);
   await page.reload(); await ready(page); assert.equal((await snapshot(page)).balanceCents, migrated.balanceCents); assert.equal((await snapshot(page)).rngState, migrated.rngState);
-  pass('V1 settled wallet migrates once into V2 with the same credits and stake; original V1 bytes remain intact');
+  pass('V2 settled wallet migrates once into V3 with the same credits and stake; original V2 bytes remain intact');
+  const legacyPending = JSON.stringify({ ...JSON.parse(legacyWallet), pending: { id: 'preserved-v2-round', costCents: 1500, payoutCents: 420 } });
+  await page.evaluate(raw => { localStorage.setItem('ot-staroto-session-v2', raw); localStorage.removeItem('ot-staroto-session-v3'); }, legacyPending);
+  await page.reload(); await ready(page);
+  assert.equal((await snapshot(page)).version, 3); assert.equal((await snapshot(page)).balanceCents, 1_000_000); assert.equal((await snapshot(page)).pending, null);
+  assert.equal(await page.evaluate(() => localStorage.getItem('ot-staroto-session-v2')), legacyPending);
+  assert.match((await page.locator('#toast').textContent())!, /Незавършеният|unfinished/i);
+  pass('An unfinished V2 receipt remains byte-for-byte intact; V3 starts a separate ledger rather than reinterpreting old mathematics');
   await reset(page, 42);
   await page.locator('#turbo').click(); assert.equal((await snapshot(page)).turbo, true);
 
   if (!tailOnly) {
+  for (const focusSpin of [false, true]) {
+    await reset(page, 42); await page.keyboard.up('Space');
+    if (focusSpin) await page.locator('#spin').focus(); else await page.locator('#game').focus();
+    const one = expected(42, { kind: 'spin' }); await gate(page, { stage: 'drop' });
+    await page.keyboard.down('Space'); await held(page);
+    for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
+    assert.equal((await snapshot(page)).sequence, 1); assert.deepEqual((await snapshot(page)).pending, one.pending);
+    const pausedBoard = await page.evaluate(() => (window as any).__ruse.board());
+    await page.locator('#game').evaluate(element => { for (let repeat = 0; repeat < 100; repeat++) element.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await page.locator('#game').click({ clickCount: 5 });
+    assert.deepEqual(await page.evaluate(() => (window as any).__ruse.board()), pausedBoard, 'Trusted pointer clicks cannot finish or advance the active drop');
+    assert.equal((await snapshot(page)).busy, true); assert.deepEqual((await snapshot(page)).pending, one.pending);
+    await finish(page, one, `Held Space ${focusSpin ? 'on focused Spin button' : 'on game surface'}`);
+    for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
+    await page.locator('#game').evaluate(element => { for (let repeat = 0; repeat < 100; repeat++) element.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await page.locator('#game').click({ clickCount: 5 });
+    assert.equal((await snapshot(page)).sequence, 1); assert.equal((await snapshot(page)).pending, null); assert.equal((await snapshot(page)).balanceCents, one.balanceCents);
+    pass(`Holding Space ${focusSpin ? 'on focused Spin' : 'over the game'} through 200 repeats and settlement creates only one paid round; 210 board clicks, including trusted pointer clicks, cannot skip or spin`);
+    await page.keyboard.up('Space'); await page.locator('#game').focus(); await gate(page, { stage: 'drop' }); await page.keyboard.down('Space'); await held(page);
+    const second = playFixtureRound(acknowledgeRound(one), { kind: 'spin' }); assert.deepEqual((await snapshot(page)).pending, second.pending);
+    await page.keyboard.up('Space'); await finish(page, second, 'Fresh released Space starts exactly one further round');
+  }
+  await reset(page, 42); await page.keyboard.up('Space'); await page.locator('#buy').click();
+  await page.locator('.buy-card[data-tier="ruse"]').focus(); await page.keyboard.down('Space');
+  await page.locator('#confirm-play').waitFor();
+  for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
+  assert.equal((await snapshot(page)).sequence, 0); assert.equal((await snapshot(page)).pending, null);
+  pass('Holding Space on a bonus card cannot carry through its newly opened confirmation or purchase the bonus');
+  await page.keyboard.up('Space'); await page.locator('#confirm-play').focus(); await gate(page, { kind: 'scatter' }); await page.keyboard.down('Space'); await held(page);
+  for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
+  const keyboardBuy = expected(42, { kind: 'buy', tier: 'ruse' }); assert.deepEqual((await snapshot(page)).pending, keyboardBuy.pending); assert.equal((await snapshot(page)).sequence, 1);
+  await finish(page, keyboardBuy, 'Deliberate keyboard-confirmed purchase');
+  for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
+  assert.equal((await snapshot(page)).sequence, 1); assert.equal((await snapshot(page)).pending, null);
+  await page.keyboard.up('Space');
+  pass('A separate Space press confirms one bonus; held repeats cannot buy or start another round after its win dialog');
+
   const doubleClick = expected(42, { kind: 'spin' }); await reset(page, 42); await gate(page, { stage: 'drop' });
   await page.locator('#spin').click({ clickCount: 2 }); await held(page);
   assert.deepEqual((await snapshot(page)).pending, doubleClick.pending);
   pass('Two immediate Spin clicks create one committed round and one debit');
   await finish(page, doubleClick, 'Rapid double-click spin');
+
+  const boost = find({ kind: 'boost' }, round => !!round.triggerTier);
+  await reset(page, boost.seed); await page.locator('#xbet').selectOption('boost');
+  assert.match((await page.locator('#xbet-hint').textContent())!, /5[×x]|5.*(ШАНС|chance)/i);
+  assert.match((await page.locator('#round-cost').textContent())!, /0[,\.]60/);
+  await gate(page, { kind: 'scatter', min: .08, max: .9 }); await page.locator('#spin').click();
+  assert.equal(await page.locator('#confirm-play').count(), 0, 'Selected bonus boost applies immediately to this new paid spin');
+  await held(page);
+  assert.deepEqual((await snapshot(page)).pending, boost.session.pending); assert.equal(boost.session.pending!.costCents, 60);
+  assert.ok(boost.session.pending!.triggerTier); assert.equal((await snapshot(page)).displayedBalance, rich - 60);
+  pass('Bonus-chance xBet visibly prices the spin at 3× and its real recorded Scatters award a bonus; advertised trigger chance is 5×', { seed: boost.seed, costCents: 60, tier: boost.session.pending!.triggerTier });
+  await capture(page, 'bonus-chance-boost', boost.seed, boost.session.pending!, 'The 3×-cost / 5×-bonus-chance xBet mode stages the honest recorded bonus trigger.');
+  await finish(page, boost.session, 'Bonus-chance xBet');
 
   for (const character of ['left', 'middle', 'right'] as Character[]) {
     const fixture = find({ kind: 'xbet', character }, round => features(round).some(f => f.character === character && (character !== 'right' || f.coinWaves.some(wave => wave.coins.some(coin => coin.kind === 'value')))));
@@ -242,11 +314,25 @@ async function development(page: Page, url: string) {
     await finish(page, fixture.session, `${character} xBet`);
   }
 
+  const animated = find({ kind: 'xbet', character: 'left' }, round => features(round).some(feature => feature.character === 'left' && feature.hits.length > 0));
+  await reset(page, animated.seed); await gate(page, { kind: 'wild', character: 'left', characterFrame: 0 }); await choose(page, { kind: 'xbet', character: 'left' });
+  for (let index = 0; index < 8; index++) {
+    if (index) await gate(page, { kind: 'wild', character: 'left', characterFrame: index });
+    await held(page);
+    const frame = await page.evaluate(() => (window as any).__ruse.board().characterFrames.find((frame: any) => frame.character === 'left'));
+    assert.equal(frame.index, index); assert.equal(frame.count, 8);
+    await capture(page, `animation-left-frame-${index + 1}`, animated.seed, animated.session.pending!, `Actually painted Wild-throw animation frame ${index + 1}/8; the payout receipt remains unchanged throughout.`);
+  }
+  const animationFrames = await page.evaluate(() => (window as any).__probe.frames.filter((frame: any) => frame.effect?.kind === 'wild').flatMap((frame: any) => frame.characterFrames.filter((pose: any) => pose.character === 'left')));
+  assert.deepEqual([...new Set(animationFrames.map((frame: any) => frame.index))].sort((a: any, b: any) => a - b), [0, 1, 2, 3, 4, 5, 6, 7]);
+  pass('The actual Wild throw paints all eight independent authored action frames in sequence', { seed: animated.seed, frames: 8 });
+  await finish(page, animated.session, 'Eight-frame character throw');
+
   for (const tier of TIER_ORDER) {
     const seed = 37; const session = expected(seed, { kind: 'buy', tier });
     await reset(page, seed); await page.locator('#buy').click();
-    assert.equal(await page.locator('[data-tier]').count(), 4);
-    const card = page.locator(`[data-tier="${tier}"]`); assert.match((await card.textContent())!, new RegExp(`${CONFIG.buyCosts[tier]}×`));
+    assert.equal(await page.locator('.buy-card[data-tier]').count(), 4);
+    const card = page.locator(`.buy-card[data-tier="${tier}"]`); assert.match((await card.textContent())!, new RegExp(`${CONFIG.buyCosts[tier]}×`));
     assert.equal(await card.locator('img').count(), TIER_CHARACTERS[tier].length);
     await card.click(); await gate(page, { kind: 'scatter', min: .04, max: .8 }); await page.locator('#confirm-play').click(); await held(page);
     const board = await page.evaluate(() => (window as any).__ruse.board());
@@ -337,7 +423,15 @@ async function development(page: Page, url: string) {
   assert.equal(reroll.collection, null);
   pass('The next reveal starts with only the previously retained collector, while all cleared cells reveal fresh outcomes');
   await capture(page, 'collector-fresh-reroll', collector.seed, collector.session.pending!, 'Only the retained collector is present when the cleared positions begin revealing new coin outcomes.');
-  await release(page); await gate(page, { stage: 'coin-collect', coinWave: absorptionWave.index, min: .89, max: .999, collectionConsumesCollector: true }); await held(page);
+  await gate(page, { stage: 'coin-collect', coinWave: absorptionWave.index, min: .4, max: .65, collectionConsumesCollector: true }); await held(page);
+  const transit = await page.evaluate(() => (window as any).__ruse.board());
+  assert.equal(transit.coinTransits.length, transit.collection.sources.length);
+  assert.ok(transit.coinTransits.some((coin: any) => coin.progress > 0 && coin.progress < 1));
+  assert.ok(transit.coinTransits.every((coin: any) => coin.target.reel === transit.collection.collector.reel && coin.target.row === transit.collection.collector.row && coin.progress >= 0 && coin.progress <= 1 && coin.arrival > .1 && coin.arrival <= .88));
+  assert.deepEqual(transit.coinTransits.map((coin: any) => coin.source), transit.collection.sources.map((coin: any) => coin.cell));
+  pass('Collector coins travel individually from their actual recorded sources to the new collector with staggered arrival times');
+  await capture(page, 'collector-flight', collector.seed, collector.session.pending!, 'Individual recorded coin transfers follow independent curved flights into the newly revealed collector.');
+  await gate(page, { stage: 'coin-collect', coinWave: absorptionWave.index, min: .89, max: .999, collectionConsumesCollector: true }); await held(page);
   const absorption = await page.evaluate(() => (window as any).__ruse.board());
   assert.equal(absorption.coinRevealRemaining, 0);
   assert.ok(absorptionWave.collections.some(collection => JSON.stringify(collection) === JSON.stringify(absorption.collection)));
@@ -354,7 +448,7 @@ async function development(page: Page, url: string) {
   const collectedFrames = await page.evaluate(() => (window as any).__probe.frames.filter((frame: any) => frame.coinPhase === 'collect'));
   assert.ok(collectedFrames.length > 0 && collectedFrames.every((frame: any) => frame.coinRevealRemaining === 0));
   pass('The terminal collector and fresh coins award their final recorded sum once; every collection frame follows complete reveals', { payoutCents: collectorFeature.payoutCents });
-  await capture(page, 'collector-final-award', collector.seed, collector.session.pending!, 'The final collector total and fresh values sum to the authoritative €4.20 feature award at €0.20 stake.');
+  await capture(page, 'collector-final-award', collector.seed, collector.session.pending!, 'The final collector total and fresh values sum to the authoritative recorded feature award at €0.20 stake.');
   await finish(page, collector.session, 'Collector reveal / clear / reroll chain');
 
   const natural = find({ kind: 'spin' }, round => !!round.triggerTier && round.spins.some(spin => spin.addedSpins > 0), 10000);
@@ -389,9 +483,14 @@ async function development(page: Page, url: string) {
     const displayed = await page.locator('#win-ratio').textContent(); const ratio = Number(displayed!.replace(/[×\s]/g, '').replace(',', '.'));
     assert.ok(ratio >= (tier === 2 ? 100 : tier === 3 ? 500 : 1000));
     assert.equal(await page.locator('.win-person').count(), 3);
-    await page.waitForFunction(() => [...document.querySelectorAll<HTMLImageElement>('.win-person')].every(image => image.complete && image.naturalWidth > 0), undefined, { polling: 20 });
-    const visible = await page.locator('.win-person').evaluateAll(images => images.map(img => ({ opacity: Number(getComputedStyle(img).opacity), complete: (img as HTMLImageElement).complete, width: (img as HTMLImageElement).naturalWidth })));
-    assert.ok(visible.every(img => img.complete && img.width > 0));
+    const visible = await page.locator('.win-person').evaluateAll(actors => actors.map(actor => {
+      const canvas = actor as HTMLCanvasElement;
+      const pixels = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data;
+      let painted = 0; for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) painted++;
+      return { opacity: Number(getComputedStyle(actor).opacity), frame: Number((actor as HTMLElement).dataset.frame), width: canvas.width, height: canvas.height, painted };
+    }));
+    assert.ok(visible[0].painted > 0 && visible[0].frame >= 0 && visible[0].frame <= 7, 'The left cast actor is painted from an authored eight-frame atlas');
+    assert.ok(visible.every(actor => actor.width > 0 && actor.height > 0));
     await capture(page, `win-${tier === 2 ? 100 : tier === 3 ? 500 : 1000}`, threshold.seed, threshold.session.pending!, `Actual count-up crossing ${tier === 2 ? 100 : tier === 3 ? 500 : 1000}×; CSS cutscene escalation is driven by the counted amount.`);
     pass(`Count-up genuinely crosses ${tier === 2 ? 100 : tier === 3 ? 500 : 1000}× and advances its cutscene stage`, { ratio, visible });
     await release(page);
@@ -433,32 +532,47 @@ async function development(page: Page, url: string) {
   await finish(page, godMiss.session, 'God miss same-board settlement');
 
   await reset(page, 8); await page.locator('#settings').click();
+  assert.equal(await page.locator('input[type="file"], [data-audio], [data-remove], #audio-reset').count(), 0);
+  await page.waitForFunction(() => (window as any).__probe.audioDecodes.length >= 11 && (window as any).__probe.audioDecodes.every((decode: any) => decode.decoded), undefined, { timeout: 20000, polling: 40 });
+  const decoded = await page.evaluate(() => (window as any).__probe.audioDecodes);
+  assert.ok(decoded.every((decode: any) => decode.bytes > 44 && decode.duration > 0 && decode.channels > 0));
+  assert.ok((await page.evaluate(() => (window as any).__probe.audioStarts)).some((start: any) => !start.loop));
+  pass('All eleven filesystem WAV cues genuinely decode in Web Audio and sound effects play; Settings exposes no file uploads or track removal', decoded);
   await page.locator('#settings-language').selectOption('en');
   await page.locator('#volume').evaluate(element => { const input = element as HTMLInputElement; input.value = '31'; input.dispatchEvent(new Event('input', { bubbles: true })); });
   await page.locator('#default-music').uncheck();
-  await page.locator('input[data-audio="shot"]').setInputFiles({ name: 'test-shot.wav', mimeType: 'audio/wav', buffer: wav() });
-  await page.waitForFunction(() => document.getElementById('file-shot')?.textContent === 'test-shot.wav', undefined, { timeout: 15000, polling: 50 });
-  assert.equal(await page.locator('[data-remove="shot"]').isEnabled(), true);
+  await presentationCapture(page, 'filesystem-audio-settings', 'Sound settings offer only volume and music; WAV replacements belong to the source filesystem manifest.');
   await page.locator('#dialog-close').click(); await page.locator('#mute').click(); await page.reload(); await ready(page); await page.locator('#settings').click();
-  await page.waitForFunction(() => document.getElementById('file-shot')?.textContent === 'test-shot.wav', undefined, { polling: 50 });
   assert.equal(await page.locator('#volume').inputValue(), '31'); assert.equal(await page.locator('#default-music').isChecked(), false); assert.equal(await page.locator('#mute').getAttribute('aria-pressed'), 'true');
-  pass('Uploaded real WAV, volume, mute and synth setting persist via local IndexedDB / preferences');
-  await presentationCapture(page, 'local-audio-settings', 'Uploaded WAV and persisted sound preferences, with the scene blurred behind the settings dialog.');
-  await page.locator('[data-remove="shot"]').click(); await page.waitForFunction(() => document.getElementById('file-shot')?.textContent === 'Bundled synth', undefined, { polling: 50 });
-  await page.locator('#dialog-close').click(); await page.reload(); await ready(page); await page.locator('#settings').click(); assert.equal(await page.locator('[data-remove="shot"]').isDisabled(), true);
-  pass('Removing local audio deletes its stored track across reload'); await page.locator('#dialog-close').click();
+  assert.equal(await page.locator('input[type="file"], [data-audio], [data-remove]').count(), 0);
+  assert.equal(await page.evaluate(() => (window as any).__probe.audioStarts.length), 0, 'Reload must not autoplay before a real gesture');
+  pass('Volume, mute and music preferences persist across reload without autoplay or user-supplied audio storage');
+  await page.locator('#dialog-close').click(); await page.locator('#mute').click();
+  await page.waitForFunction(() => (window as any).__probe.audioDecodes.length >= 10 && (window as any).__probe.audioDecodes.every((decode: any) => decode.decoded), undefined, { timeout: 20000, polling: 40 });
+  assert.ok((await page.evaluate(() => (window as any).__probe.audioStarts)).every((start: any) => !start.loop));
+  await page.locator('#settings').click(); await page.locator('#default-music').check();
+  await page.waitForFunction(() => (window as any).__probe.audioStarts.some((start: any) => start.loop), undefined, { timeout: 10000, polling: 40 });
+  await page.locator('#dialog-close').click();
+  pass('A real unmute gesture decodes filesystem effects; disabled music stays silent until its setting explicitly starts the bundled loop');
 
-  await page.setViewportSize({ width: 400, height: 840 }); await presentationCapture(page, 'mobile', '400×840 mobile layout with the reels and controls on one stage.');
-  const size = await page.evaluate(() => ({ width: innerWidth, scroll: document.documentElement.scrollWidth, canvas: document.getElementById('game')!.getBoundingClientRect().width, buttons: ['spin', 'buy', 'god', 'settings'].map(id => { const b = document.getElementById(id)!.getBoundingClientRect(); return { id, width: b.width, x: b.x, right: b.right }; }) }));
-  assert.ok(size.scroll <= size.width + 1); assert.ok(size.canvas > 350); assert.ok(size.buttons.every(b => b.width >= 30 && b.x >= -1 && b.right <= 401));
-  pass('400×840 mobile layout retains large reels and reachable controls without horizontal overflow', size);
-
-  await page.setViewportSize({ width: 640, height: 360 });
-  const landscape = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, scroll: document.documentElement.scrollWidth, controls: ['spin', 'buy', 'god', 'settings', 'language', 'bet', 'xbet'].map(id => { const box = document.getElementById(id)!.getBoundingClientRect(); return { id, x: box.x, y: box.y, width: box.width, height: box.height, right: box.right, bottom: box.bottom }; }) }));
-  assert.ok(landscape.scroll <= landscape.width + 1);
-  assert.ok(landscape.controls.every(control => control.width >= 24 && control.height >= 24 && control.x >= -1 && control.y >= -1 && control.right <= 641 && control.bottom <= 361), JSON.stringify(landscape));
-  pass('640×360 landscape keeps Spin, feature buys, settings, language and stake controls fully within the viewport', landscape);
-  await presentationCapture(page, 'landscape', 'Compact 640×360 landscape layout with the Spin button and every game control fully visible.');
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 400, height: 840 }, { width: 640, height: 360 }]) {
+    await page.setViewportSize(viewport);
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+    const layout = await page.evaluate(() => {
+      const rect = (element: Element) => { const box = element.getBoundingClientRect(); return { x: box.x, y: box.y, width: box.width, height: box.height, right: box.right, bottom: box.bottom }; };
+      const canvas = rect(document.getElementById('game')!);
+      const board = { x: canvas.x + canvas.width * 200 / 1240, y: canvas.y + canvas.height * 170 / 900, width: canvas.width * 840 / 1240, height: canvas.height * 630 / 900 };
+      return { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth, scrollHeight: document.documentElement.scrollHeight, shell: rect(document.getElementById('game-shell')!), stage: rect(document.querySelector('.stage')!), canvas, board, controls: ['spin', 'buy', 'god', 'settings', 'language', 'bet', 'xbet', 'turbo', 'mute'].map(id => ({ id, ...rect(document.getElementById(id)!) })) };
+    });
+    assert.ok(layout.scrollWidth <= viewport.width + 1 && layout.scrollHeight <= viewport.height + 1, JSON.stringify(layout));
+    for (const area of [layout.shell, layout.stage]) { assert.ok(Math.abs(area.x) <= 1 && Math.abs(area.y) <= 1); assert.ok(Math.abs(area.width - viewport.width) <= 1 && Math.abs(area.height - viewport.height) <= 1); }
+    assert.ok(layout.board.x >= -1 && layout.board.y >= -1 && layout.board.x + layout.board.width <= viewport.width + 1 && layout.board.y + layout.board.height <= viewport.height + 1, `Every one of the 30 logical cells remains within the viewport: ${JSON.stringify(layout)}`);
+    const minimumControl = 24;
+    assert.ok(layout.controls.every(control => control.width >= minimumControl && control.height >= minimumControl && control.x >= -1 && control.y >= -1 && control.right <= viewport.width + 1 && control.bottom <= viewport.height + 1), JSON.stringify(layout));
+    assert.ok(layout.controls.every(control => !(control.x < layout.board.x + layout.board.width && control.right > layout.board.x && control.y < layout.board.y + layout.board.height && control.bottom > layout.board.y)), 'The compact HUD does not obscure any reel cell');
+    pass(`${viewport.width}×${viewport.height}: the scene fills the whole window, all 30 cells fit and all controls remain reachable without overflow`, layout);
+    await presentationCapture(page, viewport.width === 400 ? 'mobile' : viewport.width === 640 ? 'landscape' : viewport.width === 1920 ? 'desktop-full-window' : 'desktop', 'The scene fills its actual window with every reel cell and control visible.');
+  }
 
   const reducedContext = await page.context().browser()!.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
   await probe(reducedContext); const reducedPage = await reducedContext.newPage();
@@ -481,7 +595,7 @@ async function production(browser: Awaited<ReturnType<typeof chromium.launch>>) 
   productionBundleHashes = Object.fromEntries([...bytes].map(([path, value]) => [path.slice(1), sha(value)]));
   const html = bytes.get('/index.html')!;
   assert.ok(html.length > 100);
-  const mime: Record<string, string> = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', png: 'image/png', svg: 'image/svg+xml', ttf: 'font/ttf', json: 'application/json' };
+  const mime: Record<string, string> = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', png: 'image/png', svg: 'image/svg+xml', ttf: 'font/ttf', json: 'application/json', wav: 'audio/wav' };
   const staticServer = createHTTPServer((request, response) => {
     const pathname = new URL(request.url ?? '/', 'http://127.0.0.1').pathname;
     const content = bytes.get(pathname === '/' ? '/index.html' : pathname);
@@ -495,53 +609,77 @@ async function production(browser: Awaited<ReturnType<typeof chromium.launch>>) 
   await page.goto(`http://127.0.0.1:${(staticServer.address() as { port: number }).port}/`);
   await ready(page); assert.equal(await page.evaluate(() => '__ruse' in window), false);
   pass('Production server loads the exact built bundle and all art without development hooks', { bundleFiles: bytes.size, hashes: productionBundleHashes });
-  const seed = 42; const initial = createSession(seed, rich);
-  await page.evaluate(session => { localStorage.setItem('ot-staroto-session-v2', JSON.stringify(session)); localStorage.setItem('ot-staroto-settings-v1', JSON.stringify({ language: 'en', turbo: true, muted: true })); }, initial);
+  const initial = createSession(42, rich);
+  await page.evaluate(session => { localStorage.setItem('ot-staroto-session-v3', JSON.stringify(session)); localStorage.setItem('ot-staroto-settings-v1', JSON.stringify({ language: 'en', turbo: true, muted: true })); }, initial);
   await page.reload(); await ready(page);
-  const choice: Choice = { kind: 'buy', tier: 'ruse' }; const settled = playRound(initial, choice);
-  await page.locator('#buy').click(); await page.locator('[data-tier="ruse"]').click(); await page.locator('#confirm-play').click();
-  await page.waitForFunction(() => !!JSON.parse(localStorage.getItem('ot-staroto-session-v2')!).pending, undefined, { polling: 20 });
-  assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-staroto-session-v2')!)), settled);
-  await page.reload(); await ready(page); await page.locator('#game').click();
-  for (let attempt = 0; attempt < 5; attempt++) {
-    await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v2')!).pending || !!document.getElementById('win-continue'), undefined, { timeout: 20000, polling: 40 });
-    if (await page.locator('#win-continue').count()) await page.locator('#win-continue').click();
-    else break;
-  }
-  await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v2')!).pending, undefined, { polling: 40 });
-  assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-staroto-session-v2')!)), acknowledgeRound(settled));
-  await page.reload(); await ready(page); assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-staroto-session-v2')!)), acknowledgeRound(settled));
-  pass('Server-built purchased bonus survives pending reload, charges once and settles exact engine credits / RNG');
-  const next = playRound(acknowledgeRound(settled), { kind: 'spin' }); await page.locator('#spin').click(); await page.locator('#game').click();
-  for (let attempt = 0; attempt < 5; attempt++) {
-    await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v2')!).pending || !!document.getElementById('win-continue'), undefined, { timeout: 20000, polling: 40 });
-    if (await page.locator('#win-continue').count()) await page.locator('#win-continue').click(); else break;
-  }
-  assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-staroto-session-v2')!)), acknowledgeRound(next));
-  pass('Server-built base game remains playable after bought-bonus reload and settlement');
-  const xbet = playRound(acknowledgeRound(next), { kind: 'xbet', character: 'left' });
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('ot-staroto-session-v3')!)) as Promise<Session>;
+  const settle = async (receipt: Session) => {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v3')!).pending || !!document.getElementById('win-continue'), undefined, { timeout: 180000, polling: 40 });
+      if (await page.locator('#win-continue').count()) await page.locator('#win-continue').click(); else break;
+    }
+    await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v3')!).pending, undefined, { timeout: 180000, polling: 40 });
+    assert.deepEqual(await stored(), acknowledgeRound(receipt));
+  };
+  const assertCommitted = async (before: Session, choice: Choice, entropyBefore: number) => {
+    await page.waitForFunction(() => !!JSON.parse(localStorage.getItem('ot-staroto-session-v3')!).pending, undefined, { polling: 20 });
+    const committed = await stored(); const round = committed.pending!;
+    assert.deepEqual(deserializeSession(JSON.stringify(committed)), committed, 'Production receipt must independently replay its complete catalog outcome and recorded random draw tape');
+    assert.deepEqual(round.choice, choice); assert.equal(round.costCents, costCents(before.betCents, choice)); assert.equal(committed.sequence, before.sequence + 1);
+    assert.equal(committed.balanceCents, before.balanceCents - round.costCents + round.payoutCents);
+    assert.equal((round.outcome as any)?.source, 'crypto');
+    assert.ok(await page.evaluate(() => (window as any).__probe.entropyCalls.length) > entropyBefore, 'The production paid selection draws fresh CSPRNG entropy');
+    const tampered = structuredClone(committed); tampered.pending!.payoutCents += 1; tampered.history.at(-1)!.payoutCents += 1;
+    assert.equal(deserializeSession(JSON.stringify(tampered)), null, 'A tampered production receipt cannot be accepted on reload');
+    productionReceipts.push({ choice, sequence: committed.sequence, costCents: round.costCents, payoutCents: round.payoutCents, sha256: sha(JSON.stringify(round)), outcome: round.outcome });
+    return committed;
+  };
+  const entropyBeforeBuy = await page.evaluate(() => (window as any).__probe.entropyCalls.length);
+  await page.locator('#buy').click(); await page.locator('.buy-card[data-tier="ruse"]').click(); await page.locator('#confirm-play').click();
+  const settled = await assertCommitted(initial, { kind: 'buy', tier: 'ruse' }, entropyBeforeBuy);
+  await page.reload(); await ready(page); assert.deepEqual(await stored(), settled);
+  assert.equal(await page.evaluate(() => (window as any).__probe.entropyCalls.length), 0, 'Pending reload replays the committed draw tape instead of drawing another paid outcome');
+  await settle(settled);
+  await page.reload(); await ready(page); assert.deepEqual(await stored(), acknowledgeRound(settled));
+  pass('Production uses fresh CSPRNG draws, preserves a pending bought receipt across reload without new entropy, then settles its exact validated ledger');
+
+  const entropyBeforeSpin = await page.evaluate(() => (window as any).__probe.entropyCalls.length);
+  await page.locator('#spin').focus(); await page.keyboard.down('Space');
+  const next = await assertCommitted(acknowledgeRound(settled), { kind: 'spin' }, entropyBeforeSpin);
+  for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
+  await page.locator('#game').evaluate(element => { for (let repeat = 0; repeat < 100; repeat++) element.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+  assert.deepEqual(await stored(), next);
+  await settle(next);
+  for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
+  assert.deepEqual(await stored(), acknowledgeRound(next)); await page.keyboard.up('Space');
+  pass('Production focused-Spin held Space and board clicks cannot skip its real animation or create another round after settlement; a real CSPRNG receipt remains valid');
+
+  const entropyBeforeXbet = await page.evaluate(() => (window as any).__probe.entropyCalls.length);
   await page.locator('#xbet').selectOption('left'); await page.locator('#spin').click(); await page.locator('#confirm-play').click();
-  await page.waitForFunction(() => !!JSON.parse(localStorage.getItem('ot-staroto-session-v2')!).pending, undefined, { polling: 20 });
-  assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-staroto-session-v2')!)), xbet);
-  await page.locator('#game').click();
-  for (let attempt = 0; attempt < 5; attempt++) {
-    await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v2')!).pending || !!document.getElementById('win-continue'), undefined, { timeout: 20000, polling: 40 });
-    if (await page.locator('#win-continue').count()) await page.locator('#win-continue').click(); else break;
-  }
-  assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-staroto-session-v2')!)), acknowledgeRound(xbet));
-  pass('Server-built xBet guarantees its selected character and settles exact cents and RNG');
+  const xbet = await assertCommitted(acknowledgeRound(next), { kind: 'xbet', character: 'left' }, entropyBeforeXbet);
+  assert.ok(xbet.pending!.spins[0].initialGrid.flat().includes('left')); await settle(xbet);
+  pass('Production character xBet guarantees its selected badge, draws independent entropy and settles its strictly replayed credits');
+
+  const entropyBeforeBoost = await page.evaluate(() => (window as any).__probe.entropyCalls.length);
+  await page.locator('#xbet').selectOption('boost'); await page.locator('#spin').click();
+  const boosted = await assertCommitted(acknowledgeRound(xbet), { kind: 'boost' }, entropyBeforeBoost);
+  assert.equal(boosted.pending!.costCents, 3 * boosted.betCents); await settle(boosted);
+  pass('Production bonus-chance xBet charges exactly 3×, uses its separate weighted draw and remains playable after bought, normal and character rounds');
   await page.locator('#settings').click();
-  await page.locator('input[data-audio="shot"]').setInputFiles({ name: 'server-shot.wav', mimeType: 'audio/wav', buffer: wav() });
-  await page.waitForFunction(() => document.getElementById('file-shot')?.textContent === 'server-shot.wav', undefined, { polling: 50 });
-  await page.locator('#dialog-close').click(); await page.reload(); await ready(page); await page.locator('#settings').click();
-  await page.waitForFunction(() => document.getElementById('file-shot')?.textContent === 'server-shot.wav', undefined, { polling: 50 });
-  await page.locator('[data-remove="shot"]').click(); await page.waitForFunction(() => document.getElementById('file-shot')?.textContent === 'Bundled synth', undefined, { polling: 50 });
-  await page.locator('#dialog-close').click();
-  pass('Server-built decodes a local WAV and retains / removes it through IndexedDB across reload');
+  assert.equal(await page.locator('input[type="file"], [data-audio], [data-remove]').count(), 0);
+  await page.locator('#volume').evaluate(element => { const input = element as HTMLInputElement; input.value = '27'; input.dispatchEvent(new Event('input', { bubbles: true })); });
+  await page.locator('#default-music').uncheck(); await page.locator('#dialog-close').click();
+  await page.reload(); await ready(page); await page.locator('#settings').click();
+  assert.equal(await page.locator('#volume').inputValue(), '27'); assert.equal(await page.locator('#default-music').isChecked(), false); assert.equal(await page.locator('#mute').getAttribute('aria-pressed'), 'true');
+  await page.locator('#dialog-close').click(); await page.locator('#mute').click();
+  await page.waitForFunction(() => (window as any).__probe.audioDecodes.length >= 10 && (window as any).__probe.audioDecodes.every((decode: any) => decode.decoded), undefined, { timeout: 20000, polling: 40 });
+  const audioRequests = productionRequests.filter(url => new URL(url).pathname.includes('/audio/'));
+  assert.equal(new Set(audioRequests.map(url => new URL(url).pathname)).size, 11);
+  pass('Production server serves eleven built filesystem WAV cues, decodes them after interaction and preserves music / volume / mute without uploads', { requests: [...new Set(audioRequests)], decodes: await page.evaluate(() => (window as any).__probe.audioDecodes) });
   assert.ok(productionRequests.every(url => new URL(url).pathname === '/' || new URL(url).pathname === '/favicon.ico' || bytes.has(new URL(url).pathname)), 'Production requests only built files served by the local game server');
   const afterBundleHashes = Object.fromEntries(await Promise.all((await files(directory)).map(async path => [relative(directory, path).replaceAll('\\', '/'), sha(await readFile(path))])));
   assert.deepEqual(afterBundleHashes, productionBundleHashes, 'The built bundle must stay frozen while its server runtime is checked');
-  await presentationCapture(page, 'server-production', 'Exact production bundle served over HTTP after a bonus, base spin, xBet, pending reload and audio persistence checks.');
+  await presentationCapture(page, 'server-production', 'Exact production bundle served over HTTP after a bonus, base spin, xBet, pending reload and filesystem sound preference checks.');
   } finally { await context.close(); await new Promise<void>(ok => staticServer.close(() => ok())); }
 }
 
@@ -564,9 +702,13 @@ try {
   pass('No JavaScript errors, asset failures or external network requests in development and production servers');
   const source = await sourceHashes();
   if (!tailOnly) assert.deepEqual(source, initialSourceHashes, 'Source must stay frozen throughout verified browser checks');
-  const report = { capturedAt: new Date().toISOString(), variant: 'ot-staroto', mode: productionOnly ? 'production-only' : tailOnly ? 'tail-diagnostic' : 'full', checksPassed: checks.length, checks, sourceHashes: source, captures, presentationCaptures, jsErrors, assetFailures: failures, externalRequests, production: { path: 'dist/index.html', sha256: sha(await readFile(join(root, 'dist/index.html'))), bundleHashes: productionBundleHashes, requests: productionRequests } };
+  const report = { capturedAt: new Date().toISOString(), variant: 'ot-staroto', mode: productionOnly ? 'production-only' : tailOnly ? 'tail-diagnostic' : 'full', checksPassed: checks.length, checks, animationProbe: { description: 'Read-only requestAnimationFrame gates pause the presentation clock for screenshots; engine receipts and entropy remain unchanged.', authoredActionFrames: 8 }, sourceHashes: source, captures, presentationCaptures, jsErrors, assetFailures: failures, externalRequests, production: { path: 'dist/index.html', sha256: sha(await readFile(join(root, 'dist/index.html'))), bundleHashes: productionBundleHashes, requests: productionRequests, receipts: productionReceipts } };
   await writeFile(join(output, productionOnly ? 'production-browser.json' : tailOnly ? 'browser-tail.json' : 'browser.json'), JSON.stringify(report, null, 2) + '\n');
-  if (!productionOnly && !tailOnly) await writeFile(join(root, 'docs/browser-validation.json'), JSON.stringify(report, null, 2) + '\n');
+  if (!productionOnly && !tailOnly) {
+    await writeFile(join(root, 'docs/browser-validation.json'), JSON.stringify(report, null, 2) + '\n');
+    const currentScreenshots = new Set([...captures, ...presentationCaptures].map(capture => capture.file));
+    for (const path of await files(shots)) if (path.endsWith('.png') && !currentScreenshots.has(relative(root, path).replaceAll('\\', '/'))) await unlink(path);
+  }
   console.log(`Verified ${checks.length} browser checks; ${captures.length} documented receipt screenshots.`);
 } catch (error) {
   await writeFile(join(output, 'browser-failure.json'), JSON.stringify({ checksPassed: checks.length, checks, error: error instanceof Error ? error.stack : String(error), jsErrors, assetFailures: failures, externalRequests, serverOutput: serverOutput.slice(-4000) }, null, 2));

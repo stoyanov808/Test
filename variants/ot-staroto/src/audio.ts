@@ -1,179 +1,199 @@
-export type AudioSlot = 'music' | 'shot' | 'win' | 'feature';
-export type SoundCue = 'drop' | 'shot' | 'win' | 'feature' | 'bonus' | 'max' | 'coin' | 'scatter' | 'cascade' | string;
-export interface AudioTrack { slot: AudioSlot; name: string; blob: Blob }
+import { AUDIO_CUES, AUDIO_MAX_EFFECT_VOICES, AUDIO_MAX_SAME_CUE_VOICES, audioFileURL, type AudioCue, type AudioCueConfig } from './audio-config';
 
-const SLOTS: AudioSlot[] = ['music', 'shot', 'win', 'feature'];
-const LIMIT = 50 * 1024 * 1024;
+export type SoundCue = AudioCue | string;
 
-/** Local files stay in this browser. There is no network upload. */
+interface Voice {
+  source: AudioBufferSourceNode;
+  gain: GainNode;
+  cue: AudioCue;
+}
+
+/** File-backed effects. Only unlock() creates a context, after a user gesture. */
 export class AudioDirector {
   private context: AudioContext | null = null;
   private master: GainNode | null = null;
-  private voices: AudioBufferSourceNode[] = [];
-  private database: IDBDatabase | null = null;
-  private tracks = new Map<AudioSlot, AudioTrack>();
-  private buffers = new Map<AudioSlot, AudioBuffer>();
-  private music: HTMLAudioElement | null = null;
-  private musicURL: string | null = null;
-  private timer: number | null = null;
-  private step = 0;
+  private voices: Voice[] = [];
+  private music: Voice | null = null;
+  private files = new Map<string, Promise<ArrayBuffer | null>>();
+  private buffers = new Map<string, Promise<AudioBuffer | null>>();
+  private requestedAt = new Map<AudioCue, number>();
+  private initialization: Promise<void> | null = null;
+  private unlocking: Promise<void> | null = null;
+  private effectEpoch = 0;
+  private musicEpoch = 0;
   volume = .45;
   muted = false;
   defaultMusic = true;
 
-  async initialize() {
-    if (!('indexedDB' in window)) return;
-    this.database = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open('ot-staroto-local-audio', 1);
-      request.onupgradeneeded = () => request.result.createObjectStore('tracks', { keyPath: 'slot' });
-      request.onerror = () => reject(new Error('Audio storage unavailable'));
-      request.onsuccess = () => resolve(request.result);
-    });
-    const records = await new Promise<AudioTrack[]>((resolve, reject) => {
-      const request = this.database!.transaction('tracks').objectStore('tracks').getAll();
-      request.onsuccess = () => resolve(request.result as AudioTrack[]);
-      request.onerror = () => reject(new Error('Audio storage unavailable'));
-    });
-    records.filter(track => SLOTS.includes(track.slot) && track.blob instanceof Blob).forEach(track => this.tracks.set(track.slot, track));
-    this.syncMusic();
+  initialize(): Promise<void> {
+    // Fetching does not create/resume an AudioContext or start any sound.
+    this.initialization ??= Promise.all(
+      [...new Set(Object.values(AUDIO_CUES).map(config => config.file))].map(file => this.loadFile(file)),
+    ).then(() => {});
+    return this.initialization;
   }
 
-  trackName(slot: AudioSlot) { return this.tracks.get(slot)?.name ?? null; }
-
-  async unlock() {
-    if (!this.context) {
-      this.context = new AudioContext();
-      this.master = this.context.createGain();
-      this.master.connect(this.context.destination);
-      this.syncGain();
+  unlock(): Promise<void> {
+    if (this.unlocking) return this.unlocking;
+    try {
+      if (!this.context) {
+        const AudioContextClass = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (!AudioContextClass) return Promise.resolve();
+        this.context = new AudioContextClass();
+        this.master = this.context.createGain();
+        this.master.gain.value = this.muted ? 0 : this.volume;
+        this.master.connect(this.context.destination);
+      }
+      // Call resume synchronously inside the user gesture, before any fetching.
+      const resume = this.context.state === 'running' ? Promise.resolve() : this.context.resume();
+      const operation = resume.then(async () => {
+        // A first shot requested while unlock is pending waits for this operation.
+        await Promise.all(Object.values(AUDIO_CUES).filter(config => config !== AUDIO_CUES.music).map(config => this.loadBuffer(config.file)));
+        this.syncGain();
+        void this.syncMusic();
+      }).catch(() => {
+        // A denied gesture or unavailable decoder cannot interrupt the game.
+      });
+      this.unlocking = operation;
+      void operation.finally(() => { if (this.unlocking === operation) this.unlocking = null; });
+      return operation;
+    } catch {
+      return Promise.resolve();
     }
-    if (this.context.state !== 'running') await this.context.resume();
-    this.syncMusic();
   }
 
-  private async store(slot: AudioSlot, record: AudioTrack | null) {
-    if (!this.database) throw new Error('Audio storage unavailable');
-    await new Promise<void>((resolve, reject) => {
-      const transaction = this.database!.transaction('tracks', 'readwrite');
-      const object = transaction.objectStore('tracks');
-      if (record) object.put(record); else object.delete(slot);
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(new Error('Audio storage unavailable'));
-      transaction.onabort = () => reject(new Error('Audio storage unavailable'));
-    });
+  setVolume(volume: number) {
+    if (!Number.isFinite(volume)) return;
+    this.volume = Math.max(0, Math.min(1, volume));
+    this.syncGain();
   }
 
-  async upload(slot: AudioSlot, file: File) {
-    if (!file.size || file.size > LIMIT) throw new Error('size');
-    await this.unlock();
-    let buffer: AudioBuffer;
-    try { buffer = await this.context!.decodeAudioData(await file.arrayBuffer()); }
-    catch { throw new Error('decode'); }
-    if (!Number.isFinite(buffer.duration) || buffer.duration <= 0) throw new Error('decode');
-    const record: AudioTrack = { slot, name: file.name, blob: file };
-    await this.store(slot, record);
-    this.tracks.set(slot, record);
-    this.buffers.set(slot, buffer);
-    if (slot === 'music') this.replaceMusic();
+  setMuted(muted: boolean) {
+    this.muted = muted;
+    this.syncGain();
+    if (muted) {
+      // Pending decodes cannot start a stale shot after mute is selected.
+      this.effectEpoch++;
+      for (const voice of [...this.voices]) this.stopVoice(voice);
+      this.voices = [];
+    }
+    void this.syncMusic();
   }
 
-  async remove(slot: AudioSlot) {
-    await this.store(slot, null);
-    this.tracks.delete(slot);
-    this.buffers.delete(slot);
-    if (slot === 'music') this.replaceMusic();
+  setDefaultMusic(enabled: boolean) {
+    this.defaultMusic = enabled;
+    void this.syncMusic();
   }
-
-  async reset() { for (const slot of SLOTS) await this.remove(slot); }
-
-  setVolume(volume: number) { this.volume = Math.max(0, Math.min(1, volume)); this.syncGain(); this.syncMusic(); }
-  setMuted(muted: boolean) { this.muted = muted; this.syncGain(); this.syncMusic(); }
-  setDefaultMusic(enabled: boolean) { this.defaultMusic = enabled; this.syncMusic(); }
 
   private syncGain() {
     if (this.context && this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : this.volume, this.context.currentTime, .012);
   }
 
-  private replaceMusic() {
-    this.music?.pause();
-    this.music = null;
-    if (this.musicURL) URL.revokeObjectURL(this.musicURL);
-    this.musicURL = null;
-    this.syncMusic();
-  }
-
-  private syncMusic() {
-    if (!this.context || this.context.state !== 'running') return;
-    const track = this.tracks.get('music');
-    if (track && !this.music) {
-      this.musicURL = URL.createObjectURL(track.blob);
-      this.music = new Audio(this.musicURL);
-      this.music.loop = true;
+  private loadFile(file: string): Promise<ArrayBuffer | null> {
+    let pending = this.files.get(file);
+    if (!pending) {
+      pending = fetch(audioFileURL(file), { credentials: 'same-origin' })
+        .then(response => response.ok ? response.arrayBuffer() : null)
+        .catch(() => null);
+      this.files.set(file, pending);
     }
-    if (this.music) {
-      this.music.volume = this.muted ? 0 : this.volume * .65;
-      if (this.muted) this.music.pause(); else void this.music.play().catch(() => {});
+    return pending;
+  }
+
+  private loadBuffer(file: string): Promise<AudioBuffer | null> {
+    if (!this.context) return Promise.resolve(null);
+    let pending = this.buffers.get(file);
+    if (!pending) {
+      const context = this.context;
+      pending = this.loadFile(file).then(async bytes => {
+        if (!bytes) return null;
+        try { return await context.decodeAudioData(bytes.slice(0)); }
+        catch { return null; }
+      });
+      this.buffers.set(file, pending);
     }
-    const synth = !track && this.defaultMusic && !this.muted;
-    if (synth && this.timer === null) {
-      this.timer = window.setInterval(() => {
-        const notes = [65.41, 65.41, 77.78, 65.41, 58.27, 58.27, 77.78, 87.31];
-        this.tone(notes[this.step % notes.length], .2, 'triangle', .035);
-        if (this.step % 2) this.noise(.045, .015);
-        this.step++;
-      }, 350);
-    } else if (!synth && this.timer !== null) { clearInterval(this.timer); this.timer = null; }
+    return pending;
   }
 
-  private tone(frequency: number, duration: number, type: OscillatorType, gain: number, endFrequency?: number) {
-    if (!this.context || this.muted) return;
-    const oscillator = this.context.createOscillator();
-    const volume = this.context.createGain();
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(frequency, this.context.currentTime);
-    if (endFrequency) oscillator.frequency.exponentialRampToValueAtTime(endFrequency, this.context.currentTime + duration);
-    volume.gain.setValueAtTime(gain, this.context.currentTime);
-    volume.gain.exponentialRampToValueAtTime(.0001, this.context.currentTime + duration);
-    oscillator.connect(volume).connect(this.master!);
-    oscillator.start(); oscillator.stop(this.context.currentTime + duration);
+  private async resolveCue(cue: AudioCue, visited = new Set<AudioCue>()): Promise<{ cue: AudioCue; config: AudioCueConfig; buffer: AudioBuffer } | null> {
+    if (visited.has(cue)) return null;
+    visited.add(cue);
+    const config = AUDIO_CUES[cue];
+    const buffer = await this.loadBuffer(config.file);
+    if (buffer) return { cue, config, buffer };
+    return config.fallback ? this.resolveCue(config.fallback, visited) : null;
   }
 
-  private noise(duration: number, gain: number) {
-    if (!this.context || this.muted) return;
-    const count = Math.ceil(this.context.sampleRate * duration);
-    const buffer = this.context.createBuffer(1, count, this.context.sampleRate);
-    const data = buffer.getChannelData(0);
-    // Audio noise has no connection to the game's random generator.
-    for (let index = 0; index < count; index++) data[index] = Math.random() * 2 - 1;
+  private stopVoice(voice: Voice) {
+    if (!this.context) return;
+    try {
+      const time = this.context.currentTime;
+      voice.gain.gain.cancelScheduledValues(time);
+      voice.gain.gain.setTargetAtTime(0, time, .006);
+      voice.source.stop(time + .025);
+    } catch { /* A source can finish between selection and stopping. */ }
+  }
+
+  private async syncMusic() {
+    const epoch = ++this.musicEpoch;
+    const shouldPlay = !this.muted && this.defaultMusic && this.context?.state === 'running';
+    if (!shouldPlay) {
+      if (this.music) this.stopVoice(this.music);
+      this.music = null;
+      return;
+    }
+    if (this.music) return;
+    const resolved = await this.resolveCue('music');
+    if (!resolved || epoch !== this.musicEpoch || this.muted || !this.defaultMusic || this.context?.state !== 'running' || !this.master) return;
     const source = this.context.createBufferSource();
-    const volume = this.context.createGain();
-    volume.gain.value = gain;
-    source.buffer = buffer; source.connect(volume).connect(this.master!); source.start();
+    const gain = this.context.createGain();
+    source.buffer = resolved.buffer;
+    source.loop = true;
+    source.playbackRate.value = resolved.config.rate;
+    gain.gain.value = resolved.config.gain;
+    source.connect(gain).connect(this.master);
+    const voice: Voice = { source, gain, cue: 'music' };
+    this.music = voice;
+    source.onended = () => {
+      if (this.music === voice) this.music = null;
+      source.disconnect(); gain.disconnect();
+    };
+    source.start();
   }
 
-  async cue(cue: SoundCue) {
-    if (!this.context || this.muted) return;
-    const slot: AudioSlot = cue === 'shot' || cue === 'max' ? 'shot' : cue === 'win' || cue === 'coin' ? 'win' : 'feature';
-    const track = this.tracks.get(slot);
-    if (track) {
-      try {
-        let buffer = this.buffers.get(slot);
-        if (!buffer) { buffer = await this.context.decodeAudioData(await track.blob.arrayBuffer()); this.buffers.set(slot, buffer); }
-        const source = this.context.createBufferSource();
-        const gain = this.context.createGain();
-        gain.gain.value = 1;
-        if (this.voices.length >= 6) this.voices.shift()?.stop();
-        this.voices.push(source);
-        source.onended = () => { this.voices = this.voices.filter(voice => voice !== source); };
-        source.buffer = buffer; source.connect(gain).connect(this.master!); source.start();
-        // An uploaded full song must not become a minutes-long effect.
-        source.stop(this.context.currentTime + Math.min(buffer.duration, slot === 'win' ? 8 : 3));
-        return;
-      } catch { /* Fall back to a short bundled synth cue. */ }
+  async cue(requested: SoundCue): Promise<void> {
+    if (this.muted || !this.context) return;
+    const cue: AudioCue = Object.hasOwn(AUDIO_CUES, requested) ? requested as AudioCue : 'drop';
+    if (cue === 'music') { await this.syncMusic(); return; }
+    const config = AUDIO_CUES[cue];
+    const now = performance.now();
+    if (now - (this.requestedAt.get(cue) ?? -Infinity) < config.cooldownMs) return;
+    this.requestedAt.set(cue, now);
+    const epoch = this.effectEpoch;
+    if (this.unlocking) await this.unlocking;
+    const resolved = await this.resolveCue(cue);
+    if (!resolved || epoch !== this.effectEpoch || this.muted || this.context.state !== 'running' || !this.master) return;
+    // Clip old attacks gently, keeping dense flips and shot volleys controlled.
+    const sameCue = this.voices.filter(voice => voice.cue === cue);
+    if (sameCue.length >= AUDIO_MAX_SAME_CUE_VOICES) {
+      this.stopVoice(sameCue[0]);
+      this.voices = this.voices.filter(voice => voice !== sameCue[0]);
     }
-    if (cue === 'shot' || cue === 'max') { this.noise(.13, .16); this.tone(125, .16, 'square', .09, 36); }
-    else if (cue === 'win' || cue === 'coin') { this.tone(523, .2, 'sine', .1); window.setTimeout(() => this.tone(784, .22, 'sine', .08), 70); }
-    else if (cue === 'bonus' || cue === 'feature') { [196, 246.94, 293.66].forEach((note, index) => window.setTimeout(() => this.tone(note, .28, 'triangle', .12), index * 80)); }
-    else { this.noise(.035, .035); this.tone(cue === 'scatter' ? 440 : 92, .09, 'triangle', .055); }
+    if (this.voices.length >= AUDIO_MAX_EFFECT_VOICES) this.stopVoice(this.voices.shift()!);
+    const source = this.context.createBufferSource();
+    const gain = this.context.createGain();
+    source.buffer = resolved.buffer;
+    source.playbackRate.value = config.rate;
+    gain.gain.value = config.gain;
+    source.connect(gain).connect(this.master);
+    const voice: Voice = { source, gain, cue };
+    this.voices.push(voice);
+    source.onended = () => {
+      this.voices = this.voices.filter(active => active !== voice);
+      source.disconnect(); gain.disconnect();
+    };
+    const start = this.context.currentTime;
+    source.start(start);
+    source.stop(start + Math.min(resolved.buffer.duration / config.rate, config.duration));
   }
 }
