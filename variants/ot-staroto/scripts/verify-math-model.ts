@@ -15,7 +15,7 @@ export function verifyMathModel(root = here): void {
   const proof = JSON.parse(readFileSync(resolve(root, 'docs/mathematics-proof.json'), 'utf8'));
   const fail = (message: string): never => { throw new Error(`Frozen math model: ${message}. Run npm run math:build before starting or building the game.`); };
   if (!PAYLINE_REFERENCE_READY || !PAYLINES.length || PAYLINES.length > 100 || PAYLINES.some(line => line.length !== 6 || line.some(row => !Number.isInteger(row) || row < 0 || row > 4)) || new Set(PAYLINES.map(line => JSON.stringify(line))).size !== PAYLINES.length || proof.paylineCount !== PAYLINES.length || JSON.stringify(proof.paylineRows) !== JSON.stringify(PAYLINES)) fail('exact referenced payline chart is missing, invalid or inconsistent with its proof');
-  if (model.version !== 4 || model.targetRtp.numerator !== 193 || model.targetRtp.denominator !== 200 || JSON.stringify(model.betsCents) !== JSON.stringify(expectedBets)) fail('unsupported version, RTP or stake list');
+  if (model.version !== 5 || model.targetRtp.numerator !== 193 || model.targetRtp.denominator !== 200 || JSON.stringify(model.betsCents) !== JSON.stringify(expectedBets)) fail('unsupported version, RTP or stake list');
   if (createHash('sha256').update(bytes).digest('hex') !== proof.modelSha256) fail('model SHA does not match its proof');
   for (const [path, hash] of Object.entries(model.sourceHashes)) {
     if (createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex') !== hash) fail(`stale source ${path}`);
@@ -29,7 +29,7 @@ export function verifyMathModel(root = here): void {
     if (JSON.stringify(pool.choice) !== JSON.stringify(expectedChoice)) fail(`${name} choice does not match its priced mode`);
     if (!pool.seeds.length || pool.seeds.length !== pool.payouts.length || pool.triggerTiers.length !== pool.seeds.length || pool.shotCounts.length !== pool.seeds.length || pool.lockedReelCounts.length !== pool.seeds.length || pool.shotCounts.some(n => !Number.isInteger(n) || n < 0 || n > 6000) || pool.lockedReelCounts.some(n => !Number.isInteger(n) || n < 0 || n > 6) || pool.expansionCounts.length !== pool.seeds.length || pool.expansionCounts.some(n => !Number.isInteger(n) || n < 0 || n > 6) || pool.weights.length !== expectedBets.length || new Set(pool.seeds).size !== pool.seeds.length || pool.seeds.some(seed => !Number.isInteger(seed) || seed < 1 || seed > 0xffffffff)) fail(`${name} invalid seeds or dimensions`);
     if (['ordinary', 'buy-edge', 'buy-old'].includes(name) && !pool.expansionCounts.some(n => n >= 2)) fail(`${name} cannot produce multiple expanding reels`);
-    if (['buy-edge', 'buy-old'].includes(name) && !pool.lockedReelCounts.some(n => n > 0)) fail(`${name} has no shot-locked expanding reel`);
+    if (['buy-edge', 'buy-old'].includes(name) && !pool.lockedReelCounts.some(n => n > 0)) fail(`${name} has no bonus-sticky expanding reel`);
     if (name === 'natural-bonus' && (pool.entryScatters?.length !== pool.seeds.length || [3, 4, 5, 6].some(scatter => !pool.entryScatters!.includes(scatter)))) fail('natural entry does not support every scatter tier');
     for (const [stake, bet] of expectedBets.entries()) {
       const spec = pool.weights[stake], extra = new Set(spec.indices);

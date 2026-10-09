@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "paylineChart": [
     [
       0,
@@ -313,10 +313,10 @@
       ]
     ]
   },
-  "capturedAt": "2026-10-09T12:43:27.046Z",
+  "capturedAt": "2026-10-09T17:45:03.999Z",
   "variant": "ot-staroto",
   "mode": "full",
-  "checksPassed": 111,
+  "checksPassed": 122,
   "checks": [
     {
       "name": "Fixed lines pay one longest left-to-right run, stop at a gap, reject right-only runs and award six Wilds once"
@@ -495,10 +495,13 @@
       }
     },
     {
-      "name": "V3 settled wallet migrates once into V4 with the same credits and stake; original V3 bytes remain intact"
+      "name": "BG and EN rules both explain immediate bonus stickiness, the persistent character and the retained five-row total in the last row"
     },
     {
-      "name": "An unfinished V3 receipt remains byte-for-byte intact; V4 starts a separate ledger rather than reinterpreting old mathematics"
+      "name": "V4 settled wallet migrates once into V5 with the same credits and stake; original V4 bytes remain intact"
+    },
+    {
+      "name": "An unfinished V4 receipt remains byte-for-byte intact; V5 starts a separate ledger rather than reinterpreting old mathematics"
     },
     {
       "name": "Held Space on game surface: exact engine receipt, painted final grid, credits and RNG after skip",
@@ -575,7 +578,7 @@
       "name": "Bonus-chance xBet: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 60,
-        "payoutCents": 42,
+        "payoutCents": 22,
         "finalRng": 1432019588
       }
     },
@@ -585,7 +588,7 @@
     {
       "name": "Actual canvas descent uses independent timing, restrained rocking and contact squash without symbol overtaking",
       "details": {
-        "frames": 39,
+        "frames": 38,
         "uniqueStarts": 30,
         "uniqueFlights": 18
       }
@@ -712,20 +715,20 @@
           "row": 3
         },
         {
-          "reel": 1,
+          "reel": 2,
           "row": 1
         },
         {
-          "reel": 2,
-          "row": 4
-        },
-        {
           "reel": 3,
-          "row": 0
+          "row": 2
         },
         {
           "reel": 4,
           "row": 2
+        },
+        {
+          "reel": 5,
+          "row": 1
         }
       ]
     },
@@ -736,7 +739,7 @@
       "name": "edge purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 36000,
-        "payoutCents": 69036,
+        "payoutCents": 1210,
         "finalRng": 2499909283
       }
     },
@@ -753,19 +756,19 @@
         },
         {
           "reel": 2,
-          "row": 0
-        },
-        {
-          "reel": 3,
-          "row": 4
-        },
-        {
-          "reel": 4,
           "row": 2
         },
         {
+          "reel": 3,
+          "row": 1
+        },
+        {
+          "reel": 4,
+          "row": 4
+        },
+        {
           "reel": 5,
-          "row": 0
+          "row": 3
         }
       ]
     },
@@ -776,7 +779,7 @@
       "name": "old purchased bonus: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 50000,
-        "payoutCents": 107692,
+        "payoutCents": 12448,
         "finalRng": 2499909283
       }
     },
@@ -806,34 +809,34 @@
       }
     },
     {
+      "name": "A bonus Shooter becomes sticky immediately on expansion without a follow-up shot; his highlighted reel retains the character and full five-row total",
+      "details": {
+        "seed": 3,
+        "reel": 2,
+        "totalMultiplier": 15
+      }
+    },
+    {
+      "name": "A spent bonus Shooter still shows his character and the retained total rather than the reduced active global multiplier"
+    },
+    {
+      "name": "A no-shot expanded bonus Shooter survives the spin boundary with the same stationary five Wilds, persistent character and bottom total"
+    },
+    {
+      "name": "Automatic no-shot bonus Shooter persistence: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 36000,
+        "payoutCents": 14736,
+        "finalRng": 201886211
+      }
+    },
+    {
       "name": "Base game genuinely drops two independent Shooters on different reels and expands both in receipt order",
       "details": {
-        "seed": 3288,
+        "seed": 1006,
         "reels": [
           1,
-          5
-        ],
-        "multipliers": [
-          2,
-          2
-        ]
-      }
-    },
-    {
-      "name": "Base multiple-expanding-reel fixture: exact engine receipt, painted final grid, credits and RNG after skip",
-      "details": {
-        "costCents": 20,
-        "payoutCents": 1260,
-        "finalRng": 194777415
-      }
-    },
-    {
-      "name": "Bought bonus genuinely drops two independent Shooters on different reels and expands both in receipt order",
-      "details": {
-        "seed": 12,
-        "reels": [
-          3,
-          5
+          4
         ],
         "multipliers": [
           1,
@@ -842,11 +845,42 @@
       }
     },
     {
+      "name": "Base independent expanded reels each paint their own Shooter character and their own bottom-row total"
+    },
+    {
+      "name": "Base multiple-expanding-reel fixture: exact engine receipt, painted final grid, credits and RNG after skip",
+      "details": {
+        "costCents": 20,
+        "payoutCents": 1862,
+        "finalRng": 3051249040
+      }
+    },
+    {
+      "name": "Bought bonus genuinely drops two independent Shooters on different reels and expands both in receipt order",
+      "details": {
+        "seed": 32,
+        "reels": [
+          0,
+          2
+        ],
+        "multipliers": [
+          2,
+          1
+        ]
+      }
+    },
+    {
+      "name": "Bonus independent expanded reels each paint their own Shooter character and their own bottom-row total"
+    },
+    {
+      "name": "Multiple expanded bonus Shooter characters and full-reel totals all persist together on the next free spin"
+    },
+    {
       "name": "Bonus multiple-expanding-reel fixture: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 36000,
-        "payoutCents": 62646,
-        "finalRng": 805513228
+        "payoutCents": 399980,
+        "finalRng": 2164820134
       }
     },
     {
@@ -896,10 +930,22 @@
       }
     },
     {
-      "name": "A bonus follow-up shot doubles the recorded expanded column and locks all five Wild positions for the remaining bonus",
+      "name": "A normal-spin Shooter, his character and his reel total clear at the next paid spin instead of becoming sticky"
+    },
+    {
+      "name": "Base expanded Shooter clears on next paid spin: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
-        "seed": 127,
-        "reel": 2
+        "costCents": 20,
+        "payoutCents": 0,
+        "finalRng": 2925700776
+      }
+    },
+    {
+      "name": "A bonus follow-up shot doubles the already-sticky expanded column and updates the visible retained reel total atomically",
+      "details": {
+        "seed": 32,
+        "reel": 2,
+        "totalMultiplier": 10
       }
     },
     {
@@ -909,14 +955,14 @@
       "name": "Whole-reel sticky lock and rearm: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 36000,
-        "payoutCents": 71166,
-        "finalRng": 4287037366
+        "payoutCents": 399980,
+        "finalRng": 2164820134
       }
     },
     {
       "name": "A boosted base-game expansion and its shots cannot carry a transient Wild reel into the newly triggered bonus",
       "details": {
-        "seed": 14310,
+        "seed": 3729,
         "tier": "ruse"
       }
     },
@@ -924,8 +970,8 @@
       "name": "Natural bonus resets base transient expansions: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 60,
-        "payoutCents": 7842,
-        "finalRng": 884520947
+        "payoutCents": 1600,
+        "finalRng": 4259850055
       }
     },
     {
@@ -1086,7 +1132,7 @@
       "name": "Natural bonus with retrigger: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 20,
-        "payoutCents": 102,
+        "payoutCents": 14,
         "finalRng": 3574319073
       }
     },
@@ -1105,7 +1151,7 @@
       "name": "Reloaded pending super bonus charged exactly once: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 50000,
-        "payoutCents": 68976,
+        "payoutCents": 88,
         "finalRng": 1854893844
       }
     },
@@ -1115,7 +1161,7 @@
     {
       "name": "Count-up genuinely crosses 100× and advances its cutscene stage",
       "details": {
-        "ratio": 104.45,
+        "ratio": 126.4,
         "visible": [
           {
             "opacity": 1,
@@ -1144,7 +1190,7 @@
     {
       "name": "Count-up genuinely crosses 500× and advances its cutscene stage",
       "details": {
-        "ratio": 535.25,
+        "ratio": 546.95,
         "visible": [
           {
             "opacity": 1,
@@ -1173,7 +1219,7 @@
     {
       "name": "Count-up genuinely crosses 1000× and advances its cutscene stage",
       "details": {
-        "ratio": 1109.6,
+        "ratio": 1039.7,
         "visible": [
           {
             "opacity": 1,
@@ -1184,10 +1230,10 @@
           },
           {
             "opacity": 1,
-            "frame": 6,
-            "width": 484,
-            "height": 459,
-            "painted": 113663
+            "frame": 7,
+            "width": 327,
+            "height": 482,
+            "painted": 97616
           },
           {
             "opacity": 1,
@@ -1203,8 +1249,8 @@
       "name": "Large recorded win count-up: exact engine receipt, painted final grid, credits and RNG after skip",
       "details": {
         "costCents": 50000,
-        "payoutCents": 55236,
-        "finalRng": 402756614
+        "payoutCents": 44018,
+        "finalRng": 1552799316
       }
     },
     {
@@ -1880,8 +1926,8 @@
           "art/student-club-ink.png": "584eb581d68c69d22339739b28dcf8316b5190bdc223b17c0c22d5942ec9de97",
           "art/symbols-ink.png": "fbf982a2066dbfb1ec74620ee9814a348f631dad81c619469403653bbb097291",
           "art/wild-premium.svg": "15f89e75bd7cce0518c35f8c8245870f59010c80e3f1c143884809b2b6d6339e",
-          "assets/index-B01zqPHe.js": "c6fe09d32a7b4a9f486075bb9331a1947657173b88e8c806f53f73a4944bff9b",
           "assets/index-Busf6jVu.css": "65d8c53f46f3f93b6441031b477cb8e7cd22153657c3ce34365759d1e7eb8eea",
+          "assets/index-D_d18a01.js": "0fcb517c76976ecaa4f83cc7e91ec04126342e2ebfa5ac7e749c578afc1a1ff9",
           "audio/README.md": "82be675f0fd5a2576119ddd79ffbe96bdcb88bb392247002a1fd6891c323337d",
           "audio/bonus.wav": "ea76c3c066cde82acd79baf76b4fe230a3a37a79a229573f124c9f40df92b7a6",
           "audio/cascade.wav": "cde1e4014b5681970f48c690d54a1121f703e01156532679456e57240f6ec283",
@@ -1894,7 +1940,7 @@
           "audio/shot.wav": "37613a382c1a5b984ed3d109c2b5735d28627469f4778682883a41883e5f085a",
           "audio/win.wav": "c78e77dd7b84d81cc2442fe385c1c8ee3fca87cf45fcb15ed605228c85f9e022",
           "audio/yard-loop.wav": "6a521f27048270c5e5b15b022c5bffb67978f6318bdf32527021c34a20834706",
-          "index.html": "16d6c765950c2007509a371145e21d743ef996a883664c5cecd3e193aac113e1"
+          "index.html": "62ba75a62a4283b36fffbad4aa2b2f631341c22b1a472d3ba982c9dbc462771d"
         }
       }
     },
@@ -1902,7 +1948,10 @@
       "name": "Production uses fresh CSPRNG draws, preserves a pending bought receipt across reload without new entropy, then settles its exact validated ledger"
     },
     {
-      "name": "Production focused-Spin held Space and board clicks cannot skip its real animation or create another round after settlement; a real CSPRNG receipt remains valid"
+      "name": "Production focused-Spin held Space and board clicks preserve the exact committed or naturally settled receipt and cannot create another round after settlement",
+      "details": {
+        "settledDuringRepeatedInput": false
+      }
     },
     {
       "name": "Production character xBet guarantees its selected badge, draws independent entropy and settles its strictly replayed credits"
@@ -1914,34 +1963,1054 @@
       "name": "Production Shooter xBet draws fresh UI CSPRNG entropy, genuinely expands its dealt badge and settles the complete independently replayed receipt"
     },
     {
+      "name": "Production paints multiple authored Shooter characters and receipt-derived bottom-row totals through the next free-spin boundary without development hooks",
+      "details": {
+        "reels": [
+          2,
+          4
+        ],
+        "beforeRemaining": 10,
+        "nextRemaining": 9,
+        "totals": [
+          [
+            5,
+            5
+          ],
+          [
+            5,
+            5
+          ]
+        ]
+      }
+    },
+    {
       "name": "Production replays a genuine precommitted CSPRNG multi-Shooter bonus without development hooks or new entropy and settles its exact ledger",
       "details": {
         "description": "A complete pending bought-bonus receipt selected with fresh Node CSPRNG by the same production playRound API, then replayed in the real production browser. This is reload coverage, not a fresh UI selection or a forged fixture.",
-        "attemptedFreshSelections": 7,
-        "ledgerSha256": "ea02e0e6c2aca1c97d116c49fce9e4ee19374b5a17381767bd51eb67ad306684",
-        "roundSha256": "345ef35d3f76aad3e2c4f279f4ee8b4c5f78eebbe0eb278e49d2637f22efde15",
+        "attemptedFreshSelections": 114,
+        "ledgerSha256": "a8e4ce6ecc8b4dc26ef120d76c940be3de29c21f972ae0b5e44ebb219750ea14",
+        "roundSha256": "f64911aaf063c3a8c32021255f6c63654d6bab2199cbda3c0325d9fb99c08807",
         "expandedReels": [
           2,
-          3
+          4
         ],
-        "entropyCallsAfterReload": 0
+        "entropyCallsAfterReload": 0,
+        "paintedPersistence": [
+          {
+            "remaining": 10,
+            "reels": [
+              2,
+              4
+            ],
+            "totals": [
+              5,
+              5
+            ],
+            "ordinaryDescent": [],
+            "paintedFrame": {
+              "texts": [
+                {
+                  "text": "WILD",
+                  "x": 550,
+                  "y": 209
+                },
+                {
+                  "text": "REEL TOTAL",
+                  "x": 550,
+                  "y": 709
+                },
+                {
+                  "text": "×5",
+                  "x": 550,
+                  "y": 744
+                },
+                {
+                  "text": "BONUS STICKY",
+                  "x": 550,
+                  "y": 767
+                },
+                {
+                  "text": "WILD",
+                  "x": 830,
+                  "y": 209
+                },
+                {
+                  "text": "REEL TOTAL",
+                  "x": 830,
+                  "y": 709
+                },
+                {
+                  "text": "×5",
+                  "x": 830,
+                  "y": 744
+                },
+                {
+                  "text": "BONUS STICKY",
+                  "x": 830,
+                  "y": 767
+                },
+                {
+                  "text": "ОТ СТАРОТО",
+                  "x": 620,
+                  "y": 124.48028169014086
+                },
+                {
+                  "text": "ON THE EDGE",
+                  "x": 620,
+                  "y": 149.23661971830987
+                },
+                {
+                  "text": "EXPANDING WILD ×1",
+                  "x": 620,
+                  "y": 156
+                }
+              ],
+              "sprites": [
+                {
+                  "crop": [
+                    414,
+                    65,
+                    440,
+                    364
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 270,
+                    "f": 233
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    431,
+                    444,
+                    416,
+                    379
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 270,
+                    "f": 359
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    70,
+                    8,
+                    295,
+                    430
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 270,
+                    "f": 485
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    70,
+                    8,
+                    295,
+                    430
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 270,
+                    "f": 611
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    873,
+                    66,
+                    365,
+                    360
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 270,
+                    "f": 737
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    23,
+                    812,
+                    365,
+                    415
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 410,
+                    "f": 233
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    23,
+                    812,
+                    365,
+                    415
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 410,
+                    "f": 359
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    864,
+                    463,
+                    385,
+                    364
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 410,
+                    "f": 485
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    70,
+                    8,
+                    295,
+                    430
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 410,
+                    "f": 611
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    0,
+                    0,
+                    360,
+                    360
+                  ],
+                  "imageWidth": 360,
+                  "imageHeight": 360,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 410,
+                    "f": 737
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    70,
+                    8,
+                    295,
+                    430
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 690,
+                    "f": 233
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    864,
+                    463,
+                    385,
+                    364
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 690,
+                    "f": 359
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    431,
+                    444,
+                    416,
+                    379
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 690,
+                    "f": 485
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    875,
+                    881,
+                    346,
+                    332
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 690,
+                    "f": 611
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    10,
+                    470,
+                    425,
+                    344
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 690,
+                    "f": 737
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    875,
+                    881,
+                    346,
+                    332
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": 233
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    875,
+                    881,
+                    346,
+                    332
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": 359
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    70,
+                    8,
+                    295,
+                    430
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": 485
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    70,
+                    8,
+                    295,
+                    430
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": 611
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    70,
+                    8,
+                    295,
+                    430
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": 737
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    280,
+                    24,
+                    301,
+                    463
+                  ],
+                  "imageWidth": 1536,
+                  "imageHeight": 1024,
+                  "matrix": {
+                    "a": -1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 550,
+                    "f": 681.5599975585938
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    241,
+                    535,
+                    484,
+                    459
+                  ],
+                  "imageWidth": 1536,
+                  "imageHeight": 1024,
+                  "matrix": {
+                    "a": -1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 830,
+                    "f": 681.5599975585938
+                  },
+                  "loaded": true
+                }
+              ]
+            }
+          },
+          {
+            "remaining": 9,
+            "reels": [
+              2,
+              4
+            ],
+            "totals": [
+              5,
+              5
+            ],
+            "ordinaryDescent": [
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9896551375717109,
+                  "b": 0.015616361276713911,
+                  "c": -0.016070859836126817,
+                  "d": 1.0184580594798145,
+                  "e": 271.1232604980469,
+                  "f": 199.0640869140625
+                },
+                "loaded": true
+              }
+            ],
+            "paintedFrame": {
+              "texts": [
+                {
+                  "text": "WILD",
+                  "x": 550,
+                  "y": 209
+                },
+                {
+                  "text": "REEL TOTAL",
+                  "x": 550,
+                  "y": 709
+                },
+                {
+                  "text": "×5",
+                  "x": 550,
+                  "y": 744
+                },
+                {
+                  "text": "BONUS STICKY",
+                  "x": 550,
+                  "y": 767
+                },
+                {
+                  "text": "WILD",
+                  "x": 830,
+                  "y": 209
+                },
+                {
+                  "text": "REEL TOTAL",
+                  "x": 830,
+                  "y": 709
+                },
+                {
+                  "text": "×5",
+                  "x": 830,
+                  "y": 744
+                },
+                {
+                  "text": "BONUS STICKY",
+                  "x": 830,
+                  "y": 767
+                },
+                {
+                  "text": "ОТ СТАРОТО",
+                  "x": 620,
+                  "y": 124.48028169014086
+                },
+                {
+                  "text": "ON THE EDGE",
+                  "x": 620,
+                  "y": 149.23661971830987
+                }
+              ],
+              "sprites": [
+                {
+                  "crop": [
+                    875,
+                    881,
+                    346,
+                    332
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9921134565302168,
+                    "b": -0.004513443336629084,
+                    "c": 0.004614422539158353,
+                    "d": 1.014309996552319,
+                    "e": 269.6266784667969,
+                    "f": -401.7153015136719
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    864,
+                    463,
+                    385,
+                    364
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9908342840474219,
+                    "b": -0.00405480866377477,
+                    "c": 0.004160419291954092,
+                    "d": 1.0166413294191858,
+                    "e": 269.7915344238281,
+                    "f": -247.0552215576172
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    445,
+                    841,
+                    365,
+                    377
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.990723351127906,
+                    "b": -0.010798700070320497,
+                    "c": 0.011081832432063886,
+                    "d": 1.0166992408565336,
+                    "e": 269.162109375,
+                    "f": -97.82418060302734
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    10,
+                    470,
+                    425,
+                    344
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9898353470062927,
+                    "b": -0.022684912474578912,
+                    "c": 0.023324458506137024,
+                    "d": 1.0177413514391165,
+                    "e": 268.8192443847656,
+                    "f": 55.984642028808594
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    70,
+                    8,
+                    295,
+                    430
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9896551375717109,
+                    "b": 0.015616361276713911,
+                    "c": -0.016070859836126817,
+                    "d": 1.0184580594798145,
+                    "e": 271.1232604980469,
+                    "f": 199.0640869140625
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    0,
+                    0,
+                    360,
+                    360
+                  ],
+                  "imageWidth": 360,
+                  "imageHeight": 360,
+                  "matrix": {
+                    "a": 0.993303951752702,
+                    "b": 0.013901869272260703,
+                    "c": -0.014162112255828736,
+                    "d": 1.0118986010715418,
+                    "e": 410.4037170410156,
+                    "f": -437.617431640625
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    10,
+                    470,
+                    425,
+                    344
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9929013195140469,
+                    "b": -0.016774397548843918,
+                    "c": 0.017105581333921215,
+                    "d": 1.0125045759795865,
+                    "e": 409.3554382324219,
+                    "f": -302.61102294921875
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    414,
+                    65,
+                    440,
+                    364
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9924476079167907,
+                    "b": -0.01680938713837384,
+                    "c": 0.017163035515223853,
+                    "d": 1.0133274581313896,
+                    "e": 408.5304260253906,
+                    "f": -168.52561950683594
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    23,
+                    812,
+                    365,
+                    415
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9919906204523357,
+                    "b": -0.00010356324464592987,
+                    "c": 0.00010591973388984569,
+                    "d": 1.0145624820732546,
+                    "e": 410.04644775390625,
+                    "f": -18.810516357421875
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    414,
+                    65,
+                    440,
+                    364
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9911243573784857,
+                    "b": 0.008940895144660677,
+                    "c": -0.009165504368116627,
+                    "d": 1.0160229462398036,
+                    "e": 410.68353271484375,
+                    "f": 116.15769958496094
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    873,
+                    66,
+                    365,
+                    360
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 690,
+                    "f": -504.1000061035156
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    23,
+                    812,
+                    365,
+                    415
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 690,
+                    "f": -378.1000061035156
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    70,
+                    8,
+                    295,
+                    430
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 690,
+                    "f": -252.10000610351562
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    864,
+                    463,
+                    385,
+                    364
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9985928170085357,
+                    "b": 0.002405613167586208,
+                    "c": -0.0024151467936720634,
+                    "d": 1.002550315519792,
+                    "e": 690.2050170898438,
+                    "f": -121.33816528320312
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    23,
+                    812,
+                    365,
+                    415
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 0.9972713362041556,
+                    "b": 0.006916454825303291,
+                    "c": -0.006969316278644132,
+                    "d": 1.0048933352684815,
+                    "e": 690.36328125,
+                    "f": 18.90972900390625
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    431,
+                    444,
+                    416,
+                    379
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": -504.1000061035156
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    10,
+                    470,
+                    425,
+                    344
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": -378.1000061035156
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    414,
+                    65,
+                    440,
+                    364
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": -252.10000610351562
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    445,
+                    841,
+                    365,
+                    377
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": -126.0999984741211
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    23,
+                    812,
+                    365,
+                    415
+                  ],
+                  "imageWidth": 1254,
+                  "imageHeight": 1254,
+                  "matrix": {
+                    "a": 1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 970,
+                    "f": -0.10000000149011612
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    280,
+                    24,
+                    301,
+                    463
+                  ],
+                  "imageWidth": 1536,
+                  "imageHeight": 1024,
+                  "matrix": {
+                    "a": -1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 550,
+                    "f": 681.5599975585938
+                  },
+                  "loaded": true
+                },
+                {
+                  "crop": [
+                    280,
+                    24,
+                    301,
+                    463
+                  ],
+                  "imageWidth": 1536,
+                  "imageHeight": 1024,
+                  "matrix": {
+                    "a": -1,
+                    "b": 0,
+                    "c": 0,
+                    "d": 1,
+                    "e": 830,
+                    "f": 681.5599975585938
+                  },
+                  "loaded": true
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "name": "Production server serves eleven built filesystem WAV cues, decodes them after interaction and preserves music / volume / mute without uploads",
       "details": {
         "requests": [
-          "http://127.0.0.1:36159/audio/drop.wav",
-          "http://127.0.0.1:36159/audio/cascade.wav",
-          "http://127.0.0.1:36159/audio/reveal.wav",
-          "http://127.0.0.1:36159/audio/coin.wav",
-          "http://127.0.0.1:36159/audio/shot.wav",
-          "http://127.0.0.1:36159/audio/feature.wav",
-          "http://127.0.0.1:36159/audio/bonus.wav",
-          "http://127.0.0.1:36159/audio/win.wav",
-          "http://127.0.0.1:36159/audio/max.wav",
-          "http://127.0.0.1:36159/audio/scatter.wav",
-          "http://127.0.0.1:36159/audio/yard-loop.wav"
+          "http://127.0.0.1:37841/audio/drop.wav",
+          "http://127.0.0.1:37841/audio/cascade.wav",
+          "http://127.0.0.1:37841/audio/reveal.wav",
+          "http://127.0.0.1:37841/audio/coin.wav",
+          "http://127.0.0.1:37841/audio/shot.wav",
+          "http://127.0.0.1:37841/audio/feature.wav",
+          "http://127.0.0.1:37841/audio/bonus.wav",
+          "http://127.0.0.1:37841/audio/win.wav",
+          "http://127.0.0.1:37841/audio/max.wav",
+          "http://127.0.0.1:37841/audio/scatter.wav",
+          "http://127.0.0.1:37841/audio/yard-loop.wav"
         ],
         "decodes": [
           {
@@ -2027,7 +3096,7 @@
   },
   "sourceHashes": {
     "docs/research/le-zeus-payline-chart.json": "2631ca7cdc77d75e22a0dc5fccb65b6e91878bdd7d61362e6caf275e497f528d",
-    "package.json": "5ae7a6f615f5e5a049f36f4cf6ad8a24ade54d74a360a99ff7f178534af983a2",
+    "package.json": "68f8e58fad089a3290e030e3fe3427a008880ae0f5e86840bb142e5f573b6895",
     "public/Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652",
     "public/Oswald.ttf": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
     "public/art/character-left-motion-a.png": "25b2b4068eef81925020b7240245a0eea3e554ade90f3c78ef3eb9365fe13fc8",
@@ -2057,32 +3126,32 @@
     "public/audio/shot.wav": "37613a382c1a5b984ed3d109c2b5735d28627469f4778682883a41883e5f085a",
     "public/audio/win.wav": "c78e77dd7b84d81cc2442fe385c1c8ee3fca87cf45fcb15ed605228c85f9e022",
     "public/audio/yard-loop.wav": "6a521f27048270c5e5b15b022c5bffb67978f6318bdf32527021c34a20834706",
-    "scripts/browser-test.ts": "57022e3fd6fa83cca35ce478973307943b98de7b72cf601df3941b2de7879fc6",
+    "scripts/browser-test.ts": "d0e7a8891e01158e34a0ca5c2197ac21d767923ee65a20b1132efa442a34409c",
     "scripts/standalone.mjs": "c4f6e84ad1ef4988344fe96ad36dd4047309161f205bf8adef7e7c9a68b4ad86",
     "src/art.ts": "7c0310124610a38e9ccf4ebe56314e7670bddccbcdde849bed3d9b5783b99327",
     "src/audio-config.ts": "02930cf7ac469057e629ade6a7678502a34013f4ffe2a820e683ce89e822b383",
     "src/audio.ts": "e7549c94413f0b28131599baedac1aa3c55706156fa135539d1ca64bf5f5e39e",
-    "src/engine.ts": "7ed0fc5efa02a5c453febd32b07c5c751d22b7075c02419e3af20f90fd708225",
-    "src/main.ts": "9c0b235ab18dca7b0ac63b32bfb87dbb5e11325b3bbb282e4e16a7ab91fddd29",
-    "src/math-model.json": "6f682f54985d232c8f09f3c0cd7ef136b1958aba5e81d85a148d56ff6269923e",
-    "src/math-model.ts": "2842948d150e9fa08dd0bdac0a6c6d8dc3f25973a18794b33689fced5da4d77a",
+    "src/engine.ts": "9f55e3ad263820d5295b1d8486817acfc6da0642c46a9fa978ba05c09b36c1a8",
+    "src/main.ts": "816f9b1fec2e97fba21df7e46b2b28c7b40c92cfcce0450ee91473c004602eb6",
+    "src/math-model.json": "b81268b8cbc4e10bd95e67d1adfdf45af66914443029dd115cb66c76dd602cff",
+    "src/math-model.ts": "c19cab83b235b925c3e87f53d32a0b12e07466b6ca7ce57237ad662f45afed2c",
     "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
-    "src/renderer.ts": "6ff12252b66a0c879ff9fec4979f97486fcbf0736ce61095d54d9e134413b022",
+    "src/renderer.ts": "436809cd4fceaea0751c49919767e9b8e562d0cbdfaa5ce5f0e97fff78c4ed31",
     "src/style.css": "0502532e8a87e7d3a78618aab19886cc1d9d60c8470a6cc309cce03a7daf3390",
-    "src/types.ts": "326541f1fb58df10554db9ed4745f9f4773d80ce5147d892926d3cd03ae95432",
+    "src/types.ts": "732c1909a97e386dae03eb335065af37c555b58fca8bb0bda9e337b62dcfa642",
     "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
     "vite.config.ts": "f3c57d53264ff4136c91b8454e4fc934bbde5c13aafbe3867a08d537decc1170"
   },
   "captures": [
     {
       "file": "docs/screenshots/bonus-chance-boost.png",
-      "sha256": "cdeef09bd5a40a1c9ff54d0a4cd3f4e0e9dfdee93c5a6c222c4bb84bb6a958ac",
+      "sha256": "bbc6fe92f66b4a70be6c475b476ec4e3dc4f8ffe25964930c10d0ec7faa6a263",
       "seed": 17,
       "choice": {
         "kind": "boost"
       },
       "costCents": 60,
-      "payoutCents": 42,
+      "payoutCents": 22,
       "maxWin": false,
       "note": "The 3×-cost / 5×-bonus-chance xBet mode stages the honest recorded bonus trigger."
     },
@@ -2127,7 +3196,7 @@
     },
     {
       "file": "docs/screenshots/character-middle-impact.png",
-      "sha256": "deac0588cc5d8565f1a7f24b93007fdfe54b12dc7d3e08106c50afcd1b20aa7c",
+      "sha256": "7a519e16a588990977164d1b51b980adc0fb10d136aeb07b58ad29ee87dcdd88",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2140,7 +3209,7 @@
     },
     {
       "file": "docs/screenshots/character-right-reveal.png",
-      "sha256": "669b98b7170db1105fb17f38ec4b94b3939bbd0e1d79a4fd63b33827441787f9",
+      "sha256": "dd6a920f57523f6b93e83a2cc7d92e978db0294bc34a68c69bf339a368b317a3",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2153,7 +3222,7 @@
     },
     {
       "file": "docs/screenshots/character-right-impact.png",
-      "sha256": "b2b384fa1547969383f43bb78608abaaa9d86f914eebd38927991ed0e55ccc6e",
+      "sha256": "ca3cffa05afd75192c6ef2947a840088feb4470d4dbe97a0100598e16e38a73e",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2179,7 +3248,7 @@
     },
     {
       "file": "docs/screenshots/animation-left-frame-2.png",
-      "sha256": "0e8e75116d3a27ac38662c8cc6c3bd4858dc52f79396562af1be72f6f71a5a56",
+      "sha256": "977eef2fa2da838af2c6454cd17b3280c03b7d4f4cf39d0fc41e3ac0c1c701e4",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2192,7 +3261,7 @@
     },
     {
       "file": "docs/screenshots/animation-left-frame-3.png",
-      "sha256": "b76459667cfd7d77bc1c89c05690fd8ace5d9743c8f13c3665d284179b545379",
+      "sha256": "6a5f2f8c48de2f51a65a1e68180406e2c4c79ed387a3ad7fa3b4dc608b7b7452",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2205,7 +3274,7 @@
     },
     {
       "file": "docs/screenshots/animation-left-frame-4.png",
-      "sha256": "ebf8cd8504cf42dec759c35d6f1bb8295db716bd3a2217799f6f51b70919be4c",
+      "sha256": "d23774b5c1b1eaf2e4b0cdc2edeee70b0712303a7651c3567bf1f587d6e5e507",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2218,7 +3287,7 @@
     },
     {
       "file": "docs/screenshots/animation-left-frame-5.png",
-      "sha256": "cb460bea5f1abb70ca4fb27184a62a5559b447a25984a474f0f4a8974c61a523",
+      "sha256": "c3a6f7f6743f854c7ea1c0d1ccef390d62dda6c48f4c23b2229f283db85461d1",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2231,7 +3300,7 @@
     },
     {
       "file": "docs/screenshots/animation-left-frame-6.png",
-      "sha256": "aee7892f8e65917d6aaa7eff16ed68bf5ac4f63e33917a7e9970c30ea611025b",
+      "sha256": "50dee7a00a64f57f0f2011ebda97625f21953cc704cf51aaa5dc3280032152b1",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2244,7 +3313,7 @@
     },
     {
       "file": "docs/screenshots/animation-left-frame-7.png",
-      "sha256": "fa4e86f136e0abc475ccbb733aa55a137a9cc1ea7897d164605462e35d65a984",
+      "sha256": "c22aeb21cb5e5b9c3050a9a7e6e8587f85864e266279aac3e5d3e7694a3e40cf",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2257,7 +3326,7 @@
     },
     {
       "file": "docs/screenshots/animation-left-frame-8.png",
-      "sha256": "c93e42894d9697b67b2a44bba94abb6e82389abe54985b4aacd5be8068749bc8",
+      "sha256": "37e6f458013c3a44fd95cdd30220f594bbd0ddebcf77942a4d98aac0abd42a8e",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2270,7 +3339,7 @@
     },
     {
       "file": "docs/screenshots/bonus-ruse-scatters.png",
-      "sha256": "43b9cbdcc69b781654b70304b45d6761080749cd76bb95be1c9471c6ba965aeb",
+      "sha256": "255cf9dbb75d2263c807f607fd21525713bb0439d1d024506e9d5067478b27dc",
       "seed": 37,
       "choice": {
         "kind": "buy",
@@ -2296,7 +3365,7 @@
     },
     {
       "file": "docs/screenshots/bonus-lux-scatters.png",
-      "sha256": "a9525ed396a74714ba95316a02f42fa22744b790b7b338a6b8a1a5d376feb142",
+      "sha256": "832448456d3b23cc8ca21866b5702d1d56a35e58df4893f18d4b5dd31f302ed4",
       "seed": 37,
       "choice": {
         "kind": "buy",
@@ -2322,14 +3391,14 @@
     },
     {
       "file": "docs/screenshots/bonus-edge-scatters.png",
-      "sha256": "2cc9f1d62dd00c81da1a19b3b2cb9cbc519075ec360eb726456f894767d3778e",
+      "sha256": "1266af3b6d3df6e5ce95e272efa9b73eee8728ba8733a77bb8ae033ef4d4a8b6",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "edge"
       },
       "costCents": 36000,
-      "payoutCents": 69036,
+      "payoutCents": 1210,
       "maxWin": false,
       "note": "Bought invitations genuinely land before the bonus intro."
     },
@@ -2342,20 +3411,20 @@
         "tier": "edge"
       },
       "costCents": 36000,
-      "payoutCents": 69036,
+      "payoutCents": 1210,
       "maxWin": false,
       "note": "Real first free-spin counter and its entitled side characters."
     },
     {
       "file": "docs/screenshots/bonus-old-scatters.png",
-      "sha256": "8cfa69861feac8a440497fdc34c8eb6bb0f4c46a3976288c1a555f758a40876a",
+      "sha256": "a8b958df5d2ef9c358f2a25cc6110ec873e613e12bd3979380e772b002244e87",
       "seed": 37,
       "choice": {
         "kind": "buy",
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 107692,
+      "payoutCents": 12448,
       "maxWin": false,
       "note": "Bought invitations genuinely land before the bonus intro."
     },
@@ -2368,7 +3437,7 @@
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 107692,
+      "payoutCents": 12448,
       "maxWin": false,
       "note": "Real first free-spin counter and its entitled side characters."
     },
@@ -2387,7 +3456,7 @@
     },
     {
       "file": "docs/screenshots/animation-expansion-frame-2.png",
-      "sha256": "5dad8ef8dea3884bccc329b455c6818bee7dc011d575bdc1d839d00c93e0e550",
+      "sha256": "53a6ec5a788afc80f031a5fee7af6e0d25399f6937f7d48a9110495ba4130c21",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2400,7 +3469,7 @@
     },
     {
       "file": "docs/screenshots/animation-expansion-frame-3.png",
-      "sha256": "c65e0d932f3ab9a678b9a29f9d54a91717c15194ba3b85f13c57c69bff5e40d9",
+      "sha256": "0327a2bf2e448b739ad29c6359fd896c30faea75e95a3bb545b74f43b8e735b7",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2413,7 +3482,7 @@
     },
     {
       "file": "docs/screenshots/animation-expansion-frame-4.png",
-      "sha256": "9266a1107e6fad5fe5d45786cb59f6f2c35a6f24d0ac1353058c0786168a552b",
+      "sha256": "0632911e22421c945324ccacb46ba070703cae534adbd76a232ff25075c406d1",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2426,7 +3495,7 @@
     },
     {
       "file": "docs/screenshots/animation-expansion-frame-5.png",
-      "sha256": "dafa1aa176be7ffb952ea86b7a64e4080ae42589079c9b0b919a602c1657f727",
+      "sha256": "2b000b49af0a2a2f10158b0d58d266e00400275d6ea2b1794df834850c655cdc",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2439,7 +3508,7 @@
     },
     {
       "file": "docs/screenshots/animation-expansion-frame-6.png",
-      "sha256": "480acad0ebd756f81b26097269f78251d20865912997c0e6910c893fb860878c",
+      "sha256": "6facaca430b901d87e7f29f6b8767a4f2eaeb2756c29508e5c8169c7dacc5bcd",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2452,7 +3521,7 @@
     },
     {
       "file": "docs/screenshots/animation-expansion-frame-7.png",
-      "sha256": "2e4934b46df16545a938a11b1d59830e086a5ff592271f5b2a439cad6172042d",
+      "sha256": "b67c9823213a158a12beb0518e68b8c424d62e215c93fb7881c9e1f2c5c318d6",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2465,7 +3534,7 @@
     },
     {
       "file": "docs/screenshots/animation-expansion-frame-8.png",
-      "sha256": "e9e3c9fc0e072dc4aa006bab22ba48a03556b45ee39459b8013dc57d50e77b74",
+      "sha256": "995111645592bd8333216e9cc58653bd06b15ca33967e233baada73c899df885",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2478,7 +3547,7 @@
     },
     {
       "file": "docs/screenshots/shooter-expands-without-shots.png",
-      "sha256": "a6c17dabdb67ca20fa47aefb3c06ff7bd70e34972517691affa9a775b655c330",
+      "sha256": "a4edacbee1fc54f8785ec538ddc3c14b1080ad2099d390ca4b80bc2af373249f",
       "seed": 2,
       "choice": {
         "kind": "xbet",
@@ -2490,58 +3559,135 @@
       "note": "This genuine dealt Shooter expands its reel, but its recorded optional shooting phase is not awarded."
     },
     {
+      "file": "docs/screenshots/bonus-shooter-immediately-sticky.png",
+      "sha256": "64849ba31a3db69fc4c7e40d203b30ac20f275f56386fc2bae87de7e1a832937",
+      "seed": 3,
+      "choice": {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      "costCents": 36000,
+      "payoutCents": 14736,
+      "maxWin": false,
+      "note": "This honest bonus expansion has no follow-up shots. Its character remains on the highlighted reel and the retained five-row total is shown in that reel’s last row."
+    },
+    {
+      "file": "docs/screenshots/bonus-shooter-spent-retained-total.png",
+      "sha256": "8113bcc7c16405ed1ab5eec5f285cffbec33bddb557868f69dedb5db25403ca7",
+      "seed": 3,
+      "choice": {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      "costCents": 36000,
+      "payoutCents": 14736,
+      "maxWin": false,
+      "note": "After a paid line the used Wilds rest, but the Shooter character, reel highlight and bottom retained total stay visible."
+    },
+    {
+      "file": "docs/screenshots/bonus-shooter-next-spin-persistent.png",
+      "sha256": "3a917522e1db4d9bd156f9ae85022cd355ba97d46d0d827585da8ef91bada6aa",
+      "seed": 3,
+      "choice": {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      "costCents": 36000,
+      "payoutCents": 14736,
+      "maxWin": false,
+      "note": "On the next actual free-spin drop the same highlighted Shooter reel and retained total stay put while the other symbols fall."
+    },
+    {
       "file": "docs/screenshots/base-first-expanding-reel.png",
-      "sha256": "75722a793f9429a4e2d3e8af71b842179e6716fa555f0d0b8c31fce5617668fa",
-      "seed": 3288,
+      "sha256": "4e6333f8bc394a6a15427fef1f98e853c6eb8f3aea551601a7ff0799da9f27dc",
+      "seed": 1006,
       "choice": {
         "kind": "spin"
       },
       "costCents": 20,
-      "payoutCents": 1260,
+      "payoutCents": 1862,
       "maxWin": false,
       "note": "The first dropped Shooter expands its own recorded reel before the independently dropped second Shooter acts."
     },
     {
       "file": "docs/screenshots/base-two-expanding-reels.png",
-      "sha256": "45bfe33c32ad5482f5856b901b1b8da51bbc3f63a85aa91bb4f8a49236822efb",
-      "seed": 3288,
+      "sha256": "27de320da48b178230e4be15720a5c3d10459065ba10e7dec1edf589065e3bd6",
+      "seed": 1006,
       "choice": {
         "kind": "spin"
       },
       "costCents": 20,
-      "payoutCents": 1260,
+      "payoutCents": 1862,
       "maxWin": false,
       "note": "Two genuinely dropped Shooter badges expand two distinct reels in sequence, using their independent recorded factors."
     },
     {
+      "file": "docs/screenshots/base-two-shooter-characters.png",
+      "sha256": "1a25b09f8fd60efd4d3443e14b30cc4338aac1b0f0776602a2af24f7d47e56ef",
+      "seed": 1006,
+      "choice": {
+        "kind": "spin"
+      },
+      "costCents": 20,
+      "payoutCents": 1862,
+      "maxWin": false,
+      "note": "Both distinct expanded reels retain their own character and a bottom plate summing their own five Wild values."
+    },
+    {
       "file": "docs/screenshots/bonus-first-expanding-reel.png",
-      "sha256": "26fe256d51b691709f10caf79ca3fa837322a11778f8650070b068995529fab3",
-      "seed": 12,
+      "sha256": "6a5f270517f1ef24e76977a337598137becd7765ab4b2754b8ce233ba8aab851",
+      "seed": 32,
       "choice": {
         "kind": "buy",
         "tier": "edge"
       },
       "costCents": 36000,
-      "payoutCents": 62646,
-      "maxWin": false,
+      "payoutCents": 399980,
+      "maxWin": true,
       "note": "The first dropped Shooter expands its own recorded reel before the independently dropped second Shooter acts."
     },
     {
       "file": "docs/screenshots/bonus-two-expanding-reels.png",
-      "sha256": "3b0ace6d22bbeb0eb5a8f8a5e0b50374812bca67f8fc4422f5d57be528c6536c",
-      "seed": 12,
+      "sha256": "380f851ffeef49100467ac686df9a34e4c2b0e0804ee3b979da91f6c8e1bc156",
+      "seed": 32,
       "choice": {
         "kind": "buy",
         "tier": "edge"
       },
       "costCents": 36000,
-      "payoutCents": 62646,
-      "maxWin": false,
+      "payoutCents": 399980,
+      "maxWin": true,
       "note": "Two genuinely dropped Shooter badges expand two distinct reels in sequence, using their independent recorded factors."
     },
     {
+      "file": "docs/screenshots/bonus-two-shooter-characters.png",
+      "sha256": "9ca572dc68886064289354a133718a7d32eef616d83d68bd9db0cfc3d9f1c7f2",
+      "seed": 32,
+      "choice": {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      "costCents": 36000,
+      "payoutCents": 399980,
+      "maxWin": true,
+      "note": "Both distinct expanded reels retain their own character and a bottom plate summing their own five Wild values."
+    },
+    {
+      "file": "docs/screenshots/bonus-two-shooters-next-spin.png",
+      "sha256": "18dcf0cbe378232949797c3cec83e7a3c2e71ac74f76c4367817455ec2661eb4",
+      "seed": 32,
+      "choice": {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      "costCents": 36000,
+      "payoutCents": 399980,
+      "maxWin": true,
+      "note": "Both retained Shooter characters and their individual totals survive together into the next real free spin."
+    },
+    {
       "file": "docs/screenshots/optional-shot-regular-wild.png",
-      "sha256": "c16503f68207999fb0f759b467c1af02c0007bab00a46ee291aa21e6d0b33f50",
+      "sha256": "783c12477d21911a8893ef82e9ab8300a3728cdfdf67310505c051e2918c5fea",
       "seed": 1,
       "choice": {
         "kind": "xbet",
@@ -2554,7 +3700,7 @@
     },
     {
       "file": "docs/screenshots/optional-shot-repeated-wild.png",
-      "sha256": "8a7f415f0e93dfe21defc43c02ed42688a802926c1c343c1d37b58787019a27b",
+      "sha256": "01eb8248e9319a9318a92f5cde91d9d007374fe1b0a43f34efb7d45b005a7600",
       "seed": 231,
       "choice": {
         "kind": "xbet",
@@ -2567,7 +3713,7 @@
     },
     {
       "file": "docs/screenshots/base-expanded-reel-doubled.png",
-      "sha256": "ef629883a7e0fe93953a91e08399bacc58ccd2c4ea6d3a96e015a9bdd6168bfb",
+      "sha256": "851c4f802810ef2257c0b40dd419737560dc35d3589b3e79c1d1ef6250ed32be",
       "seed": 24,
       "choice": {
         "kind": "xbet",
@@ -2580,58 +3726,58 @@
     },
     {
       "file": "docs/screenshots/bonus-expanded-reel-locked.png",
-      "sha256": "d70e4a74f533d4e9e1540cfce0ec93df1f83aba17fdda152345ab6b0e9833d6b",
-      "seed": 127,
+      "sha256": "0a35b01e2852ca996663dc822e3ba746bb7fd60a2926bca039e5adfa387b1b8d",
+      "seed": 32,
       "choice": {
         "kind": "buy",
         "tier": "edge"
       },
       "costCents": 36000,
-      "payoutCents": 71166,
-      "maxWin": false,
-      "note": "A bonus shot locks the entire doubled Wild reel; all five positions retain their independent recorded multipliers."
+      "payoutCents": 399980,
+      "maxWin": true,
+      "note": "A bonus shot upgrades an already-sticky Shooter reel; the character stays and its bottom total immediately sums all five doubled positions."
     },
     {
       "file": "docs/screenshots/bonus-locked-reel-spent.png",
-      "sha256": "9a0930108e96796cb4a9a1d9e092d27b5b7e643d6a972ae443d423cc0e2087eb",
-      "seed": 127,
+      "sha256": "43e4b3258dec6b235a5fcc5cbf70bff7c778487cd22dc59e0553d49d2750da5d",
+      "seed": 32,
       "choice": {
         "kind": "buy",
         "tier": "edge"
       },
       "costCents": 36000,
-      "payoutCents": 71166,
-      "maxWin": false,
+      "payoutCents": 399980,
+      "maxWin": true,
       "note": "Locked Wilds dim after paying a batch and remain in their reel while ordinary symbols tumble."
     },
     {
       "file": "docs/screenshots/bonus-locked-reel-rearmed.png",
-      "sha256": "ab97f170710c51c28fe111c185750db2426d68be0b393b84ec239a6b4d2b0ed3",
-      "seed": 127,
+      "sha256": "18dcf0cbe378232949797c3cec83e7a3c2e71ac74f76c4367817455ec2661eb4",
+      "seed": 32,
       "choice": {
         "kind": "buy",
         "tier": "edge"
       },
       "costCents": 36000,
-      "payoutCents": 71166,
-      "maxWin": false,
+      "payoutCents": 399980,
+      "maxWin": true,
       "note": "The next real free spin reactivates the locked reel; each of its five Wilds remains stationary while fresh symbols fall independently."
     },
     {
       "file": "docs/screenshots/base-expansion-bonus-reset.png",
-      "sha256": "6849fd5ab25852972f1841f735d5531754a9b91800ef78e1172ee3ee968ad7a3",
-      "seed": 14310,
+      "sha256": "d45bf540c7da264301d0edcef1d38944e5e3436ece59881017fb236b49de7115",
+      "seed": 3729,
       "choice": {
         "kind": "boost"
       },
       "costCents": 60,
-      "payoutCents": 7842,
+      "payoutCents": 1600,
       "maxWin": false,
       "note": "A real boosted base round triggers a bonus after shooting; its transient expanded reels and Wild multipliers reset before the first free-spin drop."
     },
     {
       "file": "docs/screenshots/wild-completes-and-pays.png",
-      "sha256": "8df2ccdf3fbc5c7be093344b3e7b5000f7ed39d18cc438429db3393a1560b03d",
+      "sha256": "90227c0684f6f957055ab685328b37f6a09078415aaa34b6f7be5e8ee10dee03",
       "seed": 2,
       "choice": {
         "kind": "xbet",
@@ -2708,7 +3854,7 @@
     },
     {
       "file": "docs/screenshots/collector-clears-and-stays.png",
-      "sha256": "ffae192663072366740c3a27cd48e426f9e952c6d70c540eff669821be1c7ca5",
+      "sha256": "f2a3bc2c3ba88f27ea44eebeac3ac3c89750dbfc4969a77e72e36bb32c0cbe8e",
       "seed": 2061,
       "choice": {
         "kind": "xbet",
@@ -2721,7 +3867,7 @@
     },
     {
       "file": "docs/screenshots/collector-fresh-reroll.png",
-      "sha256": "c7558ee418ecef4018be81d09191e11b9ecbefd6e5e581ae9eb2787ffd1d3fb6",
+      "sha256": "fce41ca27d844b0f26491298aa6c04d3c338edc64c8d3cc2b6c6b83309da65c9",
       "seed": 2061,
       "choice": {
         "kind": "xbet",
@@ -2747,7 +3893,7 @@
     },
     {
       "file": "docs/screenshots/collector-chain-absorption.png",
-      "sha256": "22894e8ebbbf6ebab7100a9ff243b6768791ada40cac45888584cea6777df0b8",
+      "sha256": "40e63be3b8a7c073a3d3cf47eed120bee3038f40fa2f77a7e1eb56a39cc1d730",
       "seed": 2061,
       "choice": {
         "kind": "xbet",
@@ -2773,7 +3919,7 @@
     },
     {
       "file": "docs/screenshots/bonus-retrigger.png",
-      "sha256": "26626c5a8676e2e27eb7da0dfe4da77f70da5b30576cca3e0153bf13f0af11e6",
+      "sha256": "c8a851e82cc13954b340da22c5845f73f23e8c5d73c05c18c193137229a26cb0",
       "seed": 1,
       "choice": {
         "kind": "buy",
@@ -2786,46 +3932,46 @@
     },
     {
       "file": "docs/screenshots/win-100.png",
-      "sha256": "18e8c23596089dd54eda370840874fc41acf8f205ad6d6dd94d56784e2debada",
-      "seed": 6,
+      "sha256": "b14eaa273acea34bac61dbeb377769d8db25d1818dd6637aff3e9f2dfedc6a2a",
+      "seed": 23,
       "choice": {
         "kind": "buy",
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 55236,
+      "payoutCents": 44018,
       "maxWin": false,
       "note": "Actual count-up crossing 100×; CSS cutscene escalation is driven by the counted amount."
     },
     {
       "file": "docs/screenshots/win-500.png",
-      "sha256": "51593b5b79bc15f1de0b2c5d3809e1498c57b0b6c04ff2cd20ff0425d21208a7",
-      "seed": 6,
+      "sha256": "28f42e73396616d00148b4acba955f59bbdb0785ad728f89ec7f0aef2d632d25",
+      "seed": 23,
       "choice": {
         "kind": "buy",
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 55236,
+      "payoutCents": 44018,
       "maxWin": false,
       "note": "Actual count-up crossing 500×; CSS cutscene escalation is driven by the counted amount."
     },
     {
       "file": "docs/screenshots/win-1000.png",
-      "sha256": "8f902a3589fd5636d19a7c381b1b9d8319068c30afd4a93a6e51efab864894c8",
-      "seed": 6,
+      "sha256": "19ad1607e06aa005e5211228f8e2105b67e82470c25ef1f1be335d92cbe97ac3",
+      "seed": 23,
       "choice": {
         "kind": "buy",
         "tier": "old"
       },
       "costCents": 50000,
-      "payoutCents": 55236,
+      "payoutCents": 44018,
       "maxWin": false,
       "note": "Actual count-up crossing 1000×; CSS cutscene escalation is driven by the counted amount."
     },
     {
       "file": "docs/screenshots/god-shot.png",
-      "sha256": "1b8fd704fadddd59ebe2b3dd7143ed52f42458de0527305d0b99560924ce6f20",
+      "sha256": "612edce7fdc51e0a62ea78b92cb2f28ec1c117eca7ce5986cb7fc520df26cdc3",
       "seed": 3,
       "choice": {
         "kind": "god"
@@ -2837,7 +3983,7 @@
     },
     {
       "file": "docs/screenshots/max-win.png",
-      "sha256": "55d049001901cae3e24d8c061cb90ecf5927847ceeed3b08099c058d3249e5b2",
+      "sha256": "181e28165f3e3380dfb6868b82ff1e758a207c309d5b8970743e98c4a8f52848",
       "seed": 3,
       "choice": {
         "kind": "god"
@@ -2890,7 +4036,7 @@
     },
     {
       "file": "docs/screenshots/desktop.png",
-      "sha256": "1256b7be46d77049e99f001ab22a0cdef4a92e6cbda2877172b998a3bad81f54",
+      "sha256": "f7b8ee70ab69e0b1c51ae3f46b01c60f0634b441c177e95b3c3e48158393ab27",
       "viewport": {
         "width": 1440,
         "height": 900
@@ -2925,8 +4071,26 @@
       "note": "The scene fills its actual window with every reel cell and control visible."
     },
     {
+      "file": "docs/screenshots/production-sticky-shooters-expanded.png",
+      "sha256": "d5bcd62a4c08838cd95e068b941a353250f9a9dba2d4e3214a28f38b1bb6dd75",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "note": "Actual production canvas draw calls paint both authored Shooter characters and receipt-derived bottom-row totals as both reels reveal their complete recorded Wild values, without development hooks or additional entropy."
+    },
+    {
+      "file": "docs/screenshots/production-sticky-shooters-next-spin.png",
+      "sha256": "84e468a6e89904765cb391d716e44403d69f383917ff9589106f6191147a0b51",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "note": "Actual production canvas draw calls paint both authored Shooter characters and receipt-derived bottom-row totals while ordinary symbols genuinely descend in the next free spin, without development hooks or additional entropy."
+    },
+    {
       "file": "docs/screenshots/server-production.png",
-      "sha256": "a4477bd000a26ac20c28a48850a0b10176137a4a3039aed616b6bfc877d5c6b8",
+      "sha256": "88ae9ede4c26ebf9bb827a5bec3c3f7e0745cbbef3f91f9c01159fb173c7ebaf",
       "viewport": {
         "width": 1440,
         "height": 900
@@ -2939,7 +4103,7 @@
   "externalRequests": [],
   "production": {
     "path": "dist/index.html",
-    "sha256": "16d6c765950c2007509a371145e21d743ef996a883664c5cecd3e193aac113e1",
+    "sha256": "62ba75a62a4283b36fffbad4aa2b2f631341c22b1a472d3ba982c9dbc462771d",
     "bundleHashes": {
       "Oswald-LICENSE.txt": "0fd731a904b729a4e02eaf5e8ebd06783edd9abe400e8882760160230675b652",
       "Oswald.ttf": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
@@ -2960,8 +4124,8 @@
       "art/student-club-ink.png": "584eb581d68c69d22339739b28dcf8316b5190bdc223b17c0c22d5942ec9de97",
       "art/symbols-ink.png": "fbf982a2066dbfb1ec74620ee9814a348f631dad81c619469403653bbb097291",
       "art/wild-premium.svg": "15f89e75bd7cce0518c35f8c8245870f59010c80e3f1c143884809b2b6d6339e",
-      "assets/index-B01zqPHe.js": "c6fe09d32a7b4a9f486075bb9331a1947657173b88e8c806f53f73a4944bff9b",
       "assets/index-Busf6jVu.css": "65d8c53f46f3f93b6441031b477cb8e7cd22153657c3ce34365759d1e7eb8eea",
+      "assets/index-D_d18a01.js": "0fcb517c76976ecaa4f83cc7e91ec04126342e2ebfa5ac7e749c578afc1a1ff9",
       "audio/README.md": "82be675f0fd5a2576119ddd79ffbe96bdcb88bb392247002a1fd6891c323337d",
       "audio/bonus.wav": "ea76c3c066cde82acd79baf76b4fe230a3a37a79a229573f124c9f40df92b7a6",
       "audio/cascade.wav": "cde1e4014b5681970f48c690d54a1121f703e01156532679456e57240f6ec283",
@@ -2974,93 +4138,93 @@
       "audio/shot.wav": "37613a382c1a5b984ed3d109c2b5735d28627469f4778682883a41883e5f085a",
       "audio/win.wav": "c78e77dd7b84d81cc2442fe385c1c8ee3fca87cf45fcb15ed605228c85f9e022",
       "audio/yard-loop.wav": "6a521f27048270c5e5b15b022c5bffb67978f6318bdf32527021c34a20834706",
-      "index.html": "16d6c765950c2007509a371145e21d743ef996a883664c5cecd3e193aac113e1"
+      "index.html": "62ba75a62a4283b36fffbad4aa2b2f631341c22b1a472d3ba982c9dbc462771d"
     },
     "requests": [
-      "http://127.0.0.1:36159/",
-      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
-      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
-      "http://127.0.0.1:36159/audio/drop.wav",
-      "http://127.0.0.1:36159/audio/cascade.wav",
-      "http://127.0.0.1:36159/audio/reveal.wav",
-      "http://127.0.0.1:36159/audio/coin.wav",
-      "http://127.0.0.1:36159/audio/shot.wav",
-      "http://127.0.0.1:36159/audio/feature.wav",
-      "http://127.0.0.1:36159/audio/bonus.wav",
-      "http://127.0.0.1:36159/audio/win.wav",
-      "http://127.0.0.1:36159/audio/max.wav",
-      "http://127.0.0.1:36159/audio/scatter.wav",
-      "http://127.0.0.1:36159/audio/yard-loop.wav",
-      "http://127.0.0.1:36159/",
-      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
-      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
-      "http://127.0.0.1:36159/audio/drop.wav",
-      "http://127.0.0.1:36159/audio/cascade.wav",
-      "http://127.0.0.1:36159/audio/reveal.wav",
-      "http://127.0.0.1:36159/audio/coin.wav",
-      "http://127.0.0.1:36159/audio/shot.wav",
-      "http://127.0.0.1:36159/audio/feature.wav",
-      "http://127.0.0.1:36159/audio/bonus.wav",
-      "http://127.0.0.1:36159/audio/win.wav",
-      "http://127.0.0.1:36159/audio/max.wav",
-      "http://127.0.0.1:36159/audio/scatter.wav",
-      "http://127.0.0.1:36159/audio/yard-loop.wav",
-      "http://127.0.0.1:36159/",
-      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
-      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
-      "http://127.0.0.1:36159/audio/drop.wav",
-      "http://127.0.0.1:36159/audio/cascade.wav",
-      "http://127.0.0.1:36159/audio/reveal.wav",
-      "http://127.0.0.1:36159/audio/coin.wav",
-      "http://127.0.0.1:36159/audio/shot.wav",
-      "http://127.0.0.1:36159/audio/feature.wav",
-      "http://127.0.0.1:36159/audio/bonus.wav",
-      "http://127.0.0.1:36159/audio/win.wav",
-      "http://127.0.0.1:36159/audio/max.wav",
-      "http://127.0.0.1:36159/audio/scatter.wav",
-      "http://127.0.0.1:36159/audio/yard-loop.wav",
-      "http://127.0.0.1:36159/",
-      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
-      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
-      "http://127.0.0.1:36159/audio/drop.wav",
-      "http://127.0.0.1:36159/audio/cascade.wav",
-      "http://127.0.0.1:36159/audio/reveal.wav",
-      "http://127.0.0.1:36159/audio/coin.wav",
-      "http://127.0.0.1:36159/audio/shot.wav",
-      "http://127.0.0.1:36159/audio/feature.wav",
-      "http://127.0.0.1:36159/audio/bonus.wav",
-      "http://127.0.0.1:36159/audio/win.wav",
-      "http://127.0.0.1:36159/audio/max.wav",
-      "http://127.0.0.1:36159/audio/scatter.wav",
-      "http://127.0.0.1:36159/audio/yard-loop.wav",
-      "http://127.0.0.1:36159/",
-      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
-      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
-      "http://127.0.0.1:36159/audio/drop.wav",
-      "http://127.0.0.1:36159/audio/cascade.wav",
-      "http://127.0.0.1:36159/audio/reveal.wav",
-      "http://127.0.0.1:36159/audio/coin.wav",
-      "http://127.0.0.1:36159/audio/shot.wav",
-      "http://127.0.0.1:36159/audio/feature.wav",
-      "http://127.0.0.1:36159/audio/bonus.wav",
-      "http://127.0.0.1:36159/audio/win.wav",
-      "http://127.0.0.1:36159/audio/max.wav",
-      "http://127.0.0.1:36159/audio/scatter.wav",
-      "http://127.0.0.1:36159/audio/yard-loop.wav",
-      "http://127.0.0.1:36159/",
-      "http://127.0.0.1:36159/assets/index-B01zqPHe.js",
-      "http://127.0.0.1:36159/assets/index-Busf6jVu.css",
-      "http://127.0.0.1:36159/audio/drop.wav",
-      "http://127.0.0.1:36159/audio/cascade.wav",
-      "http://127.0.0.1:36159/audio/reveal.wav",
-      "http://127.0.0.1:36159/audio/coin.wav",
-      "http://127.0.0.1:36159/audio/shot.wav",
-      "http://127.0.0.1:36159/audio/feature.wav",
-      "http://127.0.0.1:36159/audio/bonus.wav",
-      "http://127.0.0.1:36159/audio/win.wav",
-      "http://127.0.0.1:36159/audio/max.wav",
-      "http://127.0.0.1:36159/audio/scatter.wav",
-      "http://127.0.0.1:36159/audio/yard-loop.wav"
+      "http://127.0.0.1:37841/",
+      "http://127.0.0.1:37841/assets/index-D_d18a01.js",
+      "http://127.0.0.1:37841/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:37841/audio/drop.wav",
+      "http://127.0.0.1:37841/audio/cascade.wav",
+      "http://127.0.0.1:37841/audio/reveal.wav",
+      "http://127.0.0.1:37841/audio/coin.wav",
+      "http://127.0.0.1:37841/audio/shot.wav",
+      "http://127.0.0.1:37841/audio/feature.wav",
+      "http://127.0.0.1:37841/audio/bonus.wav",
+      "http://127.0.0.1:37841/audio/win.wav",
+      "http://127.0.0.1:37841/audio/max.wav",
+      "http://127.0.0.1:37841/audio/scatter.wav",
+      "http://127.0.0.1:37841/audio/yard-loop.wav",
+      "http://127.0.0.1:37841/",
+      "http://127.0.0.1:37841/assets/index-D_d18a01.js",
+      "http://127.0.0.1:37841/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:37841/audio/drop.wav",
+      "http://127.0.0.1:37841/audio/cascade.wav",
+      "http://127.0.0.1:37841/audio/reveal.wav",
+      "http://127.0.0.1:37841/audio/coin.wav",
+      "http://127.0.0.1:37841/audio/shot.wav",
+      "http://127.0.0.1:37841/audio/feature.wav",
+      "http://127.0.0.1:37841/audio/bonus.wav",
+      "http://127.0.0.1:37841/audio/win.wav",
+      "http://127.0.0.1:37841/audio/max.wav",
+      "http://127.0.0.1:37841/audio/scatter.wav",
+      "http://127.0.0.1:37841/audio/yard-loop.wav",
+      "http://127.0.0.1:37841/",
+      "http://127.0.0.1:37841/assets/index-D_d18a01.js",
+      "http://127.0.0.1:37841/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:37841/audio/drop.wav",
+      "http://127.0.0.1:37841/audio/cascade.wav",
+      "http://127.0.0.1:37841/audio/reveal.wav",
+      "http://127.0.0.1:37841/audio/coin.wav",
+      "http://127.0.0.1:37841/audio/shot.wav",
+      "http://127.0.0.1:37841/audio/feature.wav",
+      "http://127.0.0.1:37841/audio/bonus.wav",
+      "http://127.0.0.1:37841/audio/win.wav",
+      "http://127.0.0.1:37841/audio/max.wav",
+      "http://127.0.0.1:37841/audio/scatter.wav",
+      "http://127.0.0.1:37841/audio/yard-loop.wav",
+      "http://127.0.0.1:37841/",
+      "http://127.0.0.1:37841/assets/index-D_d18a01.js",
+      "http://127.0.0.1:37841/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:37841/audio/drop.wav",
+      "http://127.0.0.1:37841/audio/cascade.wav",
+      "http://127.0.0.1:37841/audio/reveal.wav",
+      "http://127.0.0.1:37841/audio/coin.wav",
+      "http://127.0.0.1:37841/audio/shot.wav",
+      "http://127.0.0.1:37841/audio/feature.wav",
+      "http://127.0.0.1:37841/audio/bonus.wav",
+      "http://127.0.0.1:37841/audio/win.wav",
+      "http://127.0.0.1:37841/audio/max.wav",
+      "http://127.0.0.1:37841/audio/scatter.wav",
+      "http://127.0.0.1:37841/audio/yard-loop.wav",
+      "http://127.0.0.1:37841/",
+      "http://127.0.0.1:37841/assets/index-D_d18a01.js",
+      "http://127.0.0.1:37841/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:37841/audio/drop.wav",
+      "http://127.0.0.1:37841/audio/cascade.wav",
+      "http://127.0.0.1:37841/audio/reveal.wav",
+      "http://127.0.0.1:37841/audio/coin.wav",
+      "http://127.0.0.1:37841/audio/shot.wav",
+      "http://127.0.0.1:37841/audio/feature.wav",
+      "http://127.0.0.1:37841/audio/bonus.wav",
+      "http://127.0.0.1:37841/audio/win.wav",
+      "http://127.0.0.1:37841/audio/max.wav",
+      "http://127.0.0.1:37841/audio/scatter.wav",
+      "http://127.0.0.1:37841/audio/yard-loop.wav",
+      "http://127.0.0.1:37841/",
+      "http://127.0.0.1:37841/assets/index-D_d18a01.js",
+      "http://127.0.0.1:37841/assets/index-Busf6jVu.css",
+      "http://127.0.0.1:37841/audio/drop.wav",
+      "http://127.0.0.1:37841/audio/cascade.wav",
+      "http://127.0.0.1:37841/audio/reveal.wav",
+      "http://127.0.0.1:37841/audio/coin.wav",
+      "http://127.0.0.1:37841/audio/shot.wav",
+      "http://127.0.0.1:37841/audio/feature.wav",
+      "http://127.0.0.1:37841/audio/bonus.wav",
+      "http://127.0.0.1:37841/audio/win.wav",
+      "http://127.0.0.1:37841/audio/max.wav",
+      "http://127.0.0.1:37841/audio/scatter.wav",
+      "http://127.0.0.1:37841/audio/yard-loop.wav"
     ],
     "receipts": [
       {
@@ -3070,15 +4234,15 @@
         },
         "sequence": 1,
         "costCents": 1900,
-        "payoutCents": 7936,
-        "sha256": "8698e813f82d7a2d15f03b46b21014cbfcc0f5788d52b343f5471a92c0a4e087",
+        "payoutCents": 80,
+        "sha256": "b6795170d85c05058cda4e73b487ec296a467011a76dbcc05ff16006710011fd",
         "outcome": {
           "pool": "buy-ruse",
-          "index": 4867,
-          "seed": 1452517059,
+          "index": 6997,
+          "seed": 3518863339,
           "draws": [
-            438866799,
-            3030027512
+            1077800403,
+            471385541
           ],
           "source": "crypto"
         },
@@ -3090,16 +4254,16 @@
         },
         "sequence": 2,
         "costCents": 20,
-        "payoutCents": 2,
-        "sha256": "23e93b4cc5d625d2d7fb682a53cf21eb76412afaa978b319fafb0a93dbacee36",
+        "payoutCents": 0,
+        "sha256": "14c819f02fe66cdd2fbd6a02a51f4b92abcca75cd6c9cf47690116d151d540dd",
         "outcome": {
           "pool": "ordinary",
-          "index": 3925,
-          "seed": 2840565836,
+          "index": 6447,
+          "seed": 2673802233,
           "draws": [
-            3906845418,
-            262537623,
-            946051402
+            835488675,
+            2482167423,
+            3939405476
           ],
           "source": "crypto"
         },
@@ -3112,14 +4276,16 @@
         },
         "sequence": 3,
         "costCents": 170,
-        "payoutCents": 712,
-        "sha256": "1e043ff915d5b9d6b418609b7fba514dcc0e2111b71c36d8de2d5da2771892c4",
+        "payoutCents": 140,
+        "sha256": "57a6c4cf756f184db38b1437902f845d0e4e9729dc37c62f7d225a76fd3ade19",
         "outcome": {
           "pool": "xbet-left",
-          "index": 1743,
-          "seed": 3354761520,
+          "index": 989,
+          "seed": 700957616,
           "draws": [
-            928922890
+            3656318818,
+            2685520171,
+            520394073
           ],
           "source": "crypto"
         },
@@ -3132,15 +4298,15 @@
         "sequence": 4,
         "costCents": 60,
         "payoutCents": 0,
-        "sha256": "b269e2343423b6e90758c50a8044ecdf87cf38c7cbab063912386b3723425cd0",
+        "sha256": "c227a319be5740c8e2021d7d96119364151ccde264b4ae55e5fcf0c51dad37cf",
         "outcome": {
           "pool": "ordinary",
-          "index": 5693,
-          "seed": 3983878735,
+          "index": 3105,
+          "seed": 920306418,
           "draws": [
-            608426790,
-            312466722,
-            2168062569
+            1252368015,
+            3758553474,
+            3871739236
           ],
           "source": "crypto"
         },
@@ -3153,14 +4319,14 @@
         },
         "sequence": 5,
         "costCents": 500,
-        "payoutCents": 92,
-        "sha256": "e222dc7cc875586dbb6a74f59a45ae0eaf927dedf1bdf638631230fd3e6e3687",
+        "payoutCents": 0,
+        "sha256": "8bb7d7025971b9e4779dfdcf6d9c1180260238c9cc54eee690014b77d7cd33a8",
         "outcome": {
           "pool": "xbet-middle",
-          "index": 3628,
-          "seed": 2483321364,
+          "index": 1183,
+          "seed": 3402426913,
           "draws": [
-            3844449422
+            1015544099
           ],
           "source": "crypto"
         },
@@ -3173,15 +4339,15 @@
         },
         "sequence": 1,
         "costCents": 36000,
-        "payoutCents": 62536,
-        "sha256": "345ef35d3f76aad3e2c4f279f4ee8b4c5f78eebbe0eb278e49d2637f22efde15",
+        "payoutCents": 3102,
+        "sha256": "f64911aaf063c3a8c32021255f6c63654d6bab2199cbda3c0325d9fb99c08807",
         "outcome": {
           "pool": "buy-edge",
-          "index": 3731,
-          "seed": 3318811011,
+          "index": 1740,
+          "seed": 2250833051,
           "draws": [
-            2325413186,
-            2923043414
+            2696317109,
+            2318805402
           ],
           "source": "crypto"
         },
@@ -3190,14 +4356,1013 @@
     ],
     "multiShooterReplay": {
       "description": "A complete pending bought-bonus receipt selected with fresh Node CSPRNG by the same production playRound API, then replayed in the real production browser. This is reload coverage, not a fresh UI selection or a forged fixture.",
-      "attemptedFreshSelections": 7,
-      "ledgerSha256": "ea02e0e6c2aca1c97d116c49fce9e4ee19374b5a17381767bd51eb67ad306684",
-      "roundSha256": "345ef35d3f76aad3e2c4f279f4ee8b4c5f78eebbe0eb278e49d2637f22efde15",
+      "attemptedFreshSelections": 114,
+      "ledgerSha256": "a8e4ce6ecc8b4dc26ef120d76c940be3de29c21f972ae0b5e44ebb219750ea14",
+      "roundSha256": "f64911aaf063c3a8c32021255f6c63654d6bab2199cbda3c0325d9fb99c08807",
       "expandedReels": [
         2,
-        3
+        4
       ],
-      "entropyCallsAfterReload": 0
+      "entropyCallsAfterReload": 0,
+      "paintedPersistence": [
+        {
+          "remaining": 10,
+          "reels": [
+            2,
+            4
+          ],
+          "totals": [
+            5,
+            5
+          ],
+          "ordinaryDescent": [],
+          "paintedFrame": {
+            "texts": [
+              {
+                "text": "WILD",
+                "x": 550,
+                "y": 209
+              },
+              {
+                "text": "REEL TOTAL",
+                "x": 550,
+                "y": 709
+              },
+              {
+                "text": "×5",
+                "x": 550,
+                "y": 744
+              },
+              {
+                "text": "BONUS STICKY",
+                "x": 550,
+                "y": 767
+              },
+              {
+                "text": "WILD",
+                "x": 830,
+                "y": 209
+              },
+              {
+                "text": "REEL TOTAL",
+                "x": 830,
+                "y": 709
+              },
+              {
+                "text": "×5",
+                "x": 830,
+                "y": 744
+              },
+              {
+                "text": "BONUS STICKY",
+                "x": 830,
+                "y": 767
+              },
+              {
+                "text": "ОТ СТАРОТО",
+                "x": 620,
+                "y": 124.48028169014086
+              },
+              {
+                "text": "ON THE EDGE",
+                "x": 620,
+                "y": 149.23661971830987
+              },
+              {
+                "text": "EXPANDING WILD ×1",
+                "x": 620,
+                "y": 156
+              }
+            ],
+            "sprites": [
+              {
+                "crop": [
+                  414,
+                  65,
+                  440,
+                  364
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 270,
+                  "f": 233
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  431,
+                  444,
+                  416,
+                  379
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 270,
+                  "f": 359
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 270,
+                  "f": 485
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 270,
+                  "f": 611
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  873,
+                  66,
+                  365,
+                  360
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 270,
+                  "f": 737
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  23,
+                  812,
+                  365,
+                  415
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 410,
+                  "f": 233
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  23,
+                  812,
+                  365,
+                  415
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 410,
+                  "f": 359
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  864,
+                  463,
+                  385,
+                  364
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 410,
+                  "f": 485
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 410,
+                  "f": 611
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  0,
+                  0,
+                  360,
+                  360
+                ],
+                "imageWidth": 360,
+                "imageHeight": 360,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 410,
+                  "f": 737
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 690,
+                  "f": 233
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  864,
+                  463,
+                  385,
+                  364
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 690,
+                  "f": 359
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  431,
+                  444,
+                  416,
+                  379
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 690,
+                  "f": 485
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  875,
+                  881,
+                  346,
+                  332
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 690,
+                  "f": 611
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  10,
+                  470,
+                  425,
+                  344
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 690,
+                  "f": 737
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  875,
+                  881,
+                  346,
+                  332
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": 233
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  875,
+                  881,
+                  346,
+                  332
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": 359
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": 485
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": 611
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": 737
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  280,
+                  24,
+                  301,
+                  463
+                ],
+                "imageWidth": 1536,
+                "imageHeight": 1024,
+                "matrix": {
+                  "a": -1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 550,
+                  "f": 681.5599975585938
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  241,
+                  535,
+                  484,
+                  459
+                ],
+                "imageWidth": 1536,
+                "imageHeight": 1024,
+                "matrix": {
+                  "a": -1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 830,
+                  "f": 681.5599975585938
+                },
+                "loaded": true
+              }
+            ]
+          }
+        },
+        {
+          "remaining": 9,
+          "reels": [
+            2,
+            4
+          ],
+          "totals": [
+            5,
+            5
+          ],
+          "ordinaryDescent": [
+            {
+              "crop": [
+                70,
+                8,
+                295,
+                430
+              ],
+              "imageWidth": 1254,
+              "imageHeight": 1254,
+              "matrix": {
+                "a": 0.9896551375717109,
+                "b": 0.015616361276713911,
+                "c": -0.016070859836126817,
+                "d": 1.0184580594798145,
+                "e": 271.1232604980469,
+                "f": 199.0640869140625
+              },
+              "loaded": true
+            }
+          ],
+          "paintedFrame": {
+            "texts": [
+              {
+                "text": "WILD",
+                "x": 550,
+                "y": 209
+              },
+              {
+                "text": "REEL TOTAL",
+                "x": 550,
+                "y": 709
+              },
+              {
+                "text": "×5",
+                "x": 550,
+                "y": 744
+              },
+              {
+                "text": "BONUS STICKY",
+                "x": 550,
+                "y": 767
+              },
+              {
+                "text": "WILD",
+                "x": 830,
+                "y": 209
+              },
+              {
+                "text": "REEL TOTAL",
+                "x": 830,
+                "y": 709
+              },
+              {
+                "text": "×5",
+                "x": 830,
+                "y": 744
+              },
+              {
+                "text": "BONUS STICKY",
+                "x": 830,
+                "y": 767
+              },
+              {
+                "text": "ОТ СТАРОТО",
+                "x": 620,
+                "y": 124.48028169014086
+              },
+              {
+                "text": "ON THE EDGE",
+                "x": 620,
+                "y": 149.23661971830987
+              }
+            ],
+            "sprites": [
+              {
+                "crop": [
+                  875,
+                  881,
+                  346,
+                  332
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9921134565302168,
+                  "b": -0.004513443336629084,
+                  "c": 0.004614422539158353,
+                  "d": 1.014309996552319,
+                  "e": 269.6266784667969,
+                  "f": -401.7153015136719
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  864,
+                  463,
+                  385,
+                  364
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9908342840474219,
+                  "b": -0.00405480866377477,
+                  "c": 0.004160419291954092,
+                  "d": 1.0166413294191858,
+                  "e": 269.7915344238281,
+                  "f": -247.0552215576172
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  445,
+                  841,
+                  365,
+                  377
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.990723351127906,
+                  "b": -0.010798700070320497,
+                  "c": 0.011081832432063886,
+                  "d": 1.0166992408565336,
+                  "e": 269.162109375,
+                  "f": -97.82418060302734
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  10,
+                  470,
+                  425,
+                  344
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9898353470062927,
+                  "b": -0.022684912474578912,
+                  "c": 0.023324458506137024,
+                  "d": 1.0177413514391165,
+                  "e": 268.8192443847656,
+                  "f": 55.984642028808594
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9896551375717109,
+                  "b": 0.015616361276713911,
+                  "c": -0.016070859836126817,
+                  "d": 1.0184580594798145,
+                  "e": 271.1232604980469,
+                  "f": 199.0640869140625
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  0,
+                  0,
+                  360,
+                  360
+                ],
+                "imageWidth": 360,
+                "imageHeight": 360,
+                "matrix": {
+                  "a": 0.993303951752702,
+                  "b": 0.013901869272260703,
+                  "c": -0.014162112255828736,
+                  "d": 1.0118986010715418,
+                  "e": 410.4037170410156,
+                  "f": -437.617431640625
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  10,
+                  470,
+                  425,
+                  344
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9929013195140469,
+                  "b": -0.016774397548843918,
+                  "c": 0.017105581333921215,
+                  "d": 1.0125045759795865,
+                  "e": 409.3554382324219,
+                  "f": -302.61102294921875
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  414,
+                  65,
+                  440,
+                  364
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9924476079167907,
+                  "b": -0.01680938713837384,
+                  "c": 0.017163035515223853,
+                  "d": 1.0133274581313896,
+                  "e": 408.5304260253906,
+                  "f": -168.52561950683594
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  23,
+                  812,
+                  365,
+                  415
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9919906204523357,
+                  "b": -0.00010356324464592987,
+                  "c": 0.00010591973388984569,
+                  "d": 1.0145624820732546,
+                  "e": 410.04644775390625,
+                  "f": -18.810516357421875
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  414,
+                  65,
+                  440,
+                  364
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9911243573784857,
+                  "b": 0.008940895144660677,
+                  "c": -0.009165504368116627,
+                  "d": 1.0160229462398036,
+                  "e": 410.68353271484375,
+                  "f": 116.15769958496094
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  873,
+                  66,
+                  365,
+                  360
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 690,
+                  "f": -504.1000061035156
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  23,
+                  812,
+                  365,
+                  415
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 690,
+                  "f": -378.1000061035156
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  70,
+                  8,
+                  295,
+                  430
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 690,
+                  "f": -252.10000610351562
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  864,
+                  463,
+                  385,
+                  364
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9985928170085357,
+                  "b": 0.002405613167586208,
+                  "c": -0.0024151467936720634,
+                  "d": 1.002550315519792,
+                  "e": 690.2050170898438,
+                  "f": -121.33816528320312
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  23,
+                  812,
+                  365,
+                  415
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 0.9972713362041556,
+                  "b": 0.006916454825303291,
+                  "c": -0.006969316278644132,
+                  "d": 1.0048933352684815,
+                  "e": 690.36328125,
+                  "f": 18.90972900390625
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  431,
+                  444,
+                  416,
+                  379
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": -504.1000061035156
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  10,
+                  470,
+                  425,
+                  344
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": -378.1000061035156
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  414,
+                  65,
+                  440,
+                  364
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": -252.10000610351562
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  445,
+                  841,
+                  365,
+                  377
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": -126.0999984741211
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  23,
+                  812,
+                  365,
+                  415
+                ],
+                "imageWidth": 1254,
+                "imageHeight": 1254,
+                "matrix": {
+                  "a": 1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 970,
+                  "f": -0.10000000149011612
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  280,
+                  24,
+                  301,
+                  463
+                ],
+                "imageWidth": 1536,
+                "imageHeight": 1024,
+                "matrix": {
+                  "a": -1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 550,
+                  "f": 681.5599975585938
+                },
+                "loaded": true
+              },
+              {
+                "crop": [
+                  280,
+                  24,
+                  301,
+                  463
+                ],
+                "imageWidth": 1536,
+                "imageHeight": 1024,
+                "matrix": {
+                  "a": -1,
+                  "b": 0,
+                  "c": 0,
+                  "d": 1,
+                  "e": 830,
+                  "f": 681.5599975585938
+                },
+                "loaded": true
+              }
+            ]
+          }
+        }
+      ]
     }
   }
 }

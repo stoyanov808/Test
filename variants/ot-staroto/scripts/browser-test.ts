@@ -16,7 +16,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const tailOnly = process.argv.includes('--tail-only');
 const output = join(root, 'test-results');
 const publishedShots = join(root, 'docs/screenshots');
-const shots = join(output, 'v4-browser-screenshots');
+const shots = join(output, 'v5-browser-screenshots');
 const require = createRequire(import.meta.url);
 const rich = 100_000_000;
 const checks: { name: string; details?: unknown }[] = [];
@@ -27,7 +27,7 @@ const jsErrors: string[] = [];
 const externalRequests: string[] = [];
 const productionRequests: string[] = [];
 const productionReceipts: { choice: Choice; sequence: number; costCents: number; payoutCents: number; sha256: string; outcome: Round['outcome']; selection: 'fresh-ui-csprng' | 'node-csprng-precommitted-reload' }[] = [];
-let productionMultiShooterReplay: { description: string; attemptedFreshSelections: number; ledgerSha256: string; roundSha256: string; expandedReels: number[]; entropyCallsAfterReload: number } | undefined;
+let productionMultiShooterReplay: { description: string; attemptedFreshSelections: number; ledgerSha256: string; roundSha256: string; expandedReels: number[]; entropyCallsAfterReload: number; paintedPersistence?: { remaining: number; reels: number[]; totals: number[]; ordinaryDescent: unknown[]; paintedFrame: unknown }[] } | undefined;
 let paylineReference: { path: string; sha256: string; sourceImplementationSha256: string; paths: number[][] };
 let productionBundleHashes: Record<string, string> = {};
 const sha = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
@@ -54,13 +54,13 @@ async function sourceHashes() {
   const paths = [...await files(join(root, 'src')), ...await files(join(root, 'public')), join(root, 'package.json'), join(root, 'vite.config.ts'), join(root, 'scripts/standalone.mjs'), join(root, 'docs/research/le-zeus-payline-chart.json'), fileURLToPath(import.meta.url)].filter(path => !path.endsWith('/README.md'));
   return Object.fromEntries(await Promise.all(paths.sort().map(async path => [relative(root, path), sha(await readFile(path))])));
 }
-type Gate = { stage?: string; kind?: string; character?: Character; min?: number; max?: number; tier?: number; afterSpin?: number; repeated?: boolean; labelPrefix?: string; coinWave?: number; collectionConsumesCollector?: boolean; godShot?: number; inactiveMin?: number; inactiveReel?: number; midDrop?: boolean; characterFrame?: number; expandedMin?: number; expansionReel?: number; activeLine?: number; columnShot?: boolean; sticky?: boolean; shotIndex?: number; shotSource?: Cell; lockedReel?: number };
+type Gate = { stage?: string; kind?: string; character?: Character; min?: number; max?: number; tier?: number; afterSpin?: number; repeated?: boolean; labelPrefix?: string; coinWave?: number; collectionConsumesCollector?: boolean; godShot?: number; inactiveMin?: number; inactiveReel?: number; midDrop?: boolean; characterFrame?: number; expandedMin?: number; expansionReel?: number; activeLine?: number; columnShot?: boolean; sticky?: boolean; shotIndex?: number; shotSource?: Cell; lockedReel?: number; shooterReel?: number; shooterMin?: number; shooterSticky?: boolean; productionRemaining?: number; productionReels?: number[]; productionTotals?: number[]; productionDrop?: boolean; productionAnimatingShooter?: boolean };
 async function probe(context: BrowserContext, productionRuntime = false) {
   const installProbe = () => {
     const w = window as any;
     const wallNow = performance.now.bind(performance); let pausedTime = 0; let p: any;
     Object.defineProperty(performance, 'now', { value: () => (p?.held && p.pausedAt !== null ? p.pausedAt : wallNow()) - pausedTime });
-    p = w.__probe = { gate: null, held: false, pausedAt: null, queue: [] as any[], frames: [] as any[], images: [] as any[], draws: [] as any[], audioDecodes: [] as any[], audioStarts: [] as any[], entropyCalls: [] as any[] };
+    p = w.__probe = { gate: null, held: false, pausedAt: null, queue: [] as any[], frames: [] as any[], images: [] as any[], draws: [] as any[], paint: { texts: [] as any[], sprites: [] as any[] }, audioDecodes: [] as any[], audioStarts: [] as any[], entropyCalls: [] as any[] };
     const descriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')!;
     Object.defineProperty(HTMLImageElement.prototype, 'src', { ...descriptor, set(value: string) {
       const record = { prefix: String(value).slice(0, 65), length: String(value).length, width: 0, height: 0, loaded: false, failed: false };
@@ -69,10 +69,24 @@ async function probe(context: BrowserContext, productionRuntime = false) {
       this.addEventListener('error', () => { record.failed = true; });
       descriptor.set!.call(this, value);
     }});
+    const originalClear = CanvasRenderingContext2D.prototype.clearRect;
+    CanvasRenderingContext2D.prototype.clearRect = function (this: CanvasRenderingContext2D, ...args: Parameters<typeof originalClear>) {
+      if (this.canvas.id === 'game') p.paint = { texts: [], sprites: [] };
+      return originalClear.apply(this, args);
+    };
+    const originalText = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (this: CanvasRenderingContext2D, ...args: Parameters<typeof originalText>) {
+      if (this.canvas.id === 'game') p.paint.texts.push({ text: args[0], x: args[1], y: args[2] });
+      return originalText.apply(this, args);
+    };
     const originalDraw = CanvasRenderingContext2D.prototype.drawImage;
     CanvasRenderingContext2D.prototype.drawImage = function (this: CanvasRenderingContext2D, ...args: any[]) {
       const img = args[0];
       if (img instanceof HTMLImageElement && p.draws.length < 30000) p.draws.push({ prefix: img.src.slice(0, 100), width: img.naturalWidth, height: img.naturalHeight, loaded: img.complete && img.naturalWidth > 0, crop: args.length === 9 ? args.slice(1, 5) : null, at: performance.now() });
+      if (this.canvas.id === 'game' && img instanceof HTMLImageElement && args.length === 9) {
+        const matrix = this.getTransform();
+        p.paint.sprites.push({ crop: args.slice(1, 5), imageWidth: img.naturalWidth, imageHeight: img.naturalHeight, matrix: { a: matrix.a, b: matrix.b, c: matrix.c, d: matrix.d, e: matrix.e, f: matrix.f }, loaded: img.complete && img.naturalWidth > 0 });
+      }
       return (originalDraw as any).apply(this, args);
     } as typeof originalDraw;
     const random = Crypto.prototype.getRandomValues;
@@ -101,10 +115,20 @@ async function probe(context: BrowserContext, productionRuntime = false) {
       if (b && p.frames.length < 6000) p.frames.push({ ...b, at: performance.now(), uiRemaining: document.getElementById('remaining')?.textContent });
       const g = p.gate;
       if (!g) return;
+      if (g.productionRemaining !== undefined) {
+        p.productionPaintFrames ??= [];
+        if (p.productionPaintFrames.length < 600) p.productionPaintFrames.push({ remaining: document.getElementById('remaining')?.textContent, paint: structuredClone(p.paint) });
+      }
       const effect = b?.effect;
       const tier = Number(document.getElementById('win-scene')?.dataset.tier ?? 0);
       const firstMoving = b?.movingCells?.find((cell: any) => !cell.stationary);
-      const match = (!g.stage || b?.stage === g.stage) && (!g.kind || effect?.kind === g.kind) && (!g.character || effect?.character === g.character) && (g.min === undefined || effect?.progress >= g.min) && (g.max === undefined || effect?.progress <= g.max) && (!g.tier || tier === g.tier) && (g.repeated === undefined || effect?.repeated === g.repeated) && (!g.labelPrefix || effect?.label?.startsWith(g.labelPrefix)) && (g.afterSpin === undefined || firstMoving?.sourceRow < 0 && b.remaining <= g.afterSpin) && (g.coinWave === undefined || b?.coinWave === g.coinWave) && (g.collectionConsumesCollector === undefined || !!b?.collection?.sources?.some((coin: any) => coin.kind === 'collector') === g.collectionConsumesCollector) && (g.godShot === undefined || effect?.shot === g.godShot) && (g.inactiveMin === undefined || b?.inactiveWilds?.length >= g.inactiveMin) && (g.inactiveReel === undefined || b?.inactiveWilds?.some((cell: any) => cell.reel === g.inactiveReel)) && (!g.midDrop || b?.movingCells?.some((cell: any) => cell.progress >= .4 && cell.progress <= .8)) && (g.characterFrame === undefined || b?.characterFrames?.some((frame: any) => frame.character === g.character && frame.index === g.characterFrame && frame.count === 8)) && (g.expandedMin === undefined || b?.expandedReels?.length >= g.expandedMin) && (g.expansionReel === undefined || effect?.source?.reel === g.expansionReel) && (g.activeLine === undefined || b?.activeLine === g.activeLine) && (g.columnShot === undefined || (effect?.boostedReel !== undefined) === g.columnShot) && (g.sticky === undefined || effect?.sticky === g.sticky) && (g.shotIndex === undefined || effect?.shot === g.shotIndex) && (!g.shotSource || effect?.source?.reel === g.shotSource.reel && effect?.source?.row === g.shotSource.row) && (g.lockedReel === undefined || b?.lockedReels?.includes(g.lockedReel));
+      const productionPaintMatches = g.productionRemaining === undefined || Number(document.getElementById('remaining')?.textContent) === g.productionRemaining && g.productionReels.every((reel: number, index: number) => {
+        const x = 200 + (reel + .5) * 140;
+        return p.paint.texts.some((text: any) => text.text === 'REEL TOTAL' && Math.abs(text.x - x) < .01 && text.y > 674)
+          && p.paint.texts.some((text: any) => text.text === `×${g.productionTotals[index].toLocaleString('en-IE')}` && Math.abs(text.x - x) < .01 && text.y > 674)
+          && p.paint.sprites.some((sprite: any) => sprite.loaded && (g.productionAnimatingShooter ? ['280,24,301,463', '935,51,336,436', '271,524,375,455', '935,529,371,450', '237,33,464,470', '931,10,396,494', '241,535,484,459', '984,513,327,482'].includes(sprite.crop.join(',')) : sprite.crop.join(',') === '280,24,301,463') && sprite.matrix.a < 0 && Math.abs(sprite.matrix.e - x) < .01 && Math.abs(sprite.matrix.f - (170 + 126 * 4.06)) < .01);
+      }) && (!g.productionDrop || p.paint.sprites.some((sprite: any) => sprite.loaded && sprite.imageWidth === 1254 && sprite.imageHeight === 1254 && sprite.matrix.f > 170 && sprite.matrix.f < 220 && Array.from({ length: 6 }, (_, reel) => reel).filter(reel => !g.productionReels.includes(reel)).some(reel => Math.abs(sprite.matrix.e - (200 + (reel + .5) * 140)) < 8)));
+      const match = (!g.stage || b?.stage === g.stage) && (!g.kind || effect?.kind === g.kind) && (!g.character || effect?.character === g.character) && (g.min === undefined || effect?.progress >= g.min) && (g.max === undefined || effect?.progress <= g.max) && (!g.tier || tier === g.tier) && (g.repeated === undefined || effect?.repeated === g.repeated) && (!g.labelPrefix || effect?.label?.startsWith(g.labelPrefix)) && (g.afterSpin === undefined || firstMoving?.sourceRow < 0 && b.remaining <= g.afterSpin) && (g.coinWave === undefined || b?.coinWave === g.coinWave) && (g.collectionConsumesCollector === undefined || !!b?.collection?.sources?.some((coin: any) => coin.kind === 'collector') === g.collectionConsumesCollector) && (g.godShot === undefined || effect?.shot === g.godShot) && (g.inactiveMin === undefined || b?.inactiveWilds?.length >= g.inactiveMin) && (g.inactiveReel === undefined || b?.inactiveWilds?.some((cell: any) => cell.reel === g.inactiveReel)) && (!g.midDrop || b?.movingCells?.some((cell: any) => cell.progress >= .4 && cell.progress <= .8)) && (g.characterFrame === undefined || b?.characterFrames?.some((frame: any) => frame.character === g.character && frame.index === g.characterFrame && frame.count === 8)) && (g.expandedMin === undefined || b?.expandedReels?.length >= g.expandedMin) && (g.expansionReel === undefined || effect?.source?.reel === g.expansionReel) && (g.activeLine === undefined || b?.activeLine === g.activeLine) && (g.columnShot === undefined || (effect?.boostedReel !== undefined) === g.columnShot) && (g.sticky === undefined || effect?.sticky === g.sticky) && (g.shotIndex === undefined || effect?.shot === g.shotIndex) && (!g.shotSource || effect?.source?.reel === g.shotSource.reel && effect?.source?.row === g.shotSource.row) && (g.lockedReel === undefined || b?.lockedReels?.includes(g.lockedReel)) && (g.shooterMin === undefined || b?.shooterReels?.length >= g.shooterMin) && (g.shooterReel === undefined || b?.shooterReels?.some((reel: any) => reel.reel === g.shooterReel && (g.shooterSticky === undefined || reel.sticky === g.shooterSticky))) && productionPaintMatches;
       if (match) { p.held = true; p.pausedAt = wallNow(); }
       }); return handle;
     };
@@ -149,7 +173,7 @@ async function choose(page: Page, choice: Choice) {
   else if (choice.kind === 'boost') { await page.locator('#xbet').selectOption('boost'); await page.locator('#spin').click(); }
   else if (choice.kind === 'xbet') { await page.locator('#xbet').selectOption(choice.character); await page.locator('#spin').click(); await page.locator('#confirm-play').click(); }
   else if (choice.kind === 'god') { await page.locator('#god').click(); await page.locator('#confirm-play').click(); }
-  else await page.locator('#spin').click();
+  else { await page.locator('#xbet').selectOption('off'); await page.locator('#spin').click(); }
   await page.waitForFunction(() => (window as any).__ruse.snapshot().busy, undefined, { polling: 20 });
 }
 async function finish(page: Page, expected: Session, label: string) {
@@ -198,6 +222,15 @@ function shotFeatures(round: Round) { return features(round).filter(feature => f
 /** Independent structural checks use the displayed path, not the evaluator's
  * result, to detect a skipped reel, duplicate line, or uncovered marked cell. */
 function auditReceipt(round: Round) {
+  for (let index = 1; index < round.spins.length; index++) {
+    const previous = round.spins[index - 1], spin = round.spins[index];
+    if (!previous.tier || !spin.tier) continue;
+    for (const reel of previous.finalExpandedReels) {
+      assert.ok(spin.initialExpandedReels.includes(reel), 'Every bonus Shooter stays expanded on the next free spin without requiring a follow-up hit');
+      assert.ok(spin.initialGrid[reel].every(symbol => symbol === 'wild'));
+      assert.deepEqual(spin.initialWildMultipliers[reel], previous.finalWildMultipliers[reel], 'The full retained reel carries the last recorded values into the next free spin');
+    }
+  }
   for (const spin of round.spins) for (const cascade of spin.cascades) {
     assert.equal(new Set(cascade.wins.map(win => win.line)).size, cascade.wins.length, 'A payline awards only its longest run once per batch');
     const inactive = new Set(cascade.inactiveWilds.map(cellKey));
@@ -221,7 +254,7 @@ function auditReceipt(round: Round) {
     assert.deepEqual(cellKeys(cascade.removed), [...new Set(removable.map(cellKey))].sort(), 'Shared payline cells clear once, and sticky Wilds stay');
     let previousGrid = cascade.grid.map(column => [...column]);
     let previousMultipliers = cascade.wildMultipliers.map(column => [...column]);
-    const shotLockedReels = new Set<number>();
+    const stickyShooterReels = new Set<number>(spin.tier ? spin.initialExpandedReels : []);
     const initialExpansions = cascade.features.filter(feature => feature.phase === 'expand');
     const firstShots = cascade.features.findIndex(feature => feature.phase === 'shots');
     if (firstShots >= 0) assert.ok(initialExpansions.every(feature => cascade.features.indexOf(feature) < firstShots), 'All dropped Shooters expand before any optional shots');
@@ -232,6 +265,10 @@ function auditReceipt(round: Round) {
         assert.deepEqual(feature.targets, Array.from({ length: 5 }, (_, row) => ({ reel: feature.source.reel, row })));
         assert.deepEqual(feature.hits.map(hit => hit.cell), feature.targets);
         for (const hit of feature.hits) { assert.equal(feature.gridAfter[hit.cell.reel][hit.cell.row], 'wild'); assert.equal(feature.wildMultipliersAfter[hit.cell.reel][hit.cell.row], hit.multiplier); }
+        if (spin.tier) {
+          stickyShooterReels.add(feature.source.reel);
+          for (const hit of feature.hits) assert.ok(cascade.stickyWilds[hit.cell.reel][hit.cell.row] >= hit.multiplier, 'Bonus expansion itself makes every row sticky, independently of optional shots');
+        }
         assert.equal(feature.coins.length, 0);
       }
       if (feature.phase === 'shots') {
@@ -251,7 +288,7 @@ function auditReceipt(round: Round) {
             assert.equal(hit.repeated, wasWild);
             assert.equal(hit.multiplier, wasWild ? (previousMultipliers[hit.cell.reel][hit.cell.row] || 1) * 2 : 1);
             previousGrid[hit.cell.reel][hit.cell.row] = 'wild'; previousMultipliers[hit.cell.reel][hit.cell.row] = hit.multiplier;
-            if (shot.sticky) { shotLockedReels.add(hit.cell.reel); assert.ok(cascade.stickyWilds[hit.cell.reel][hit.cell.row] >= hit.multiplier, 'Later recorded shots can further double a locked Wild'); }
+            if (shot.sticky) { stickyShooterReels.add(hit.cell.reel); assert.ok(cascade.stickyWilds[hit.cell.reel][hit.cell.row] >= hit.multiplier, 'Later recorded shots can further double a sticky Wild'); }
           }
         }
         assert.deepEqual(previousGrid, feature.gridAfter); assert.deepEqual(previousMultipliers, feature.wildMultipliersAfter);
@@ -265,11 +302,21 @@ function auditReceipt(round: Round) {
       }
       previousGrid = feature.gridAfter.map(column => [...column]); previousMultipliers = feature.wildMultipliersAfter.map(column => [...column]);
     }
-    for (const reel of shotLockedReels) for (let row = 0; row < 5; row++) {
+    for (const reel of stickyShooterReels) for (let row = 0; row < 5; row++) {
       assert.equal(cascade.resolvedGrid[reel][row], 'wild');
-      assert.equal(cascade.stickyWilds[reel][row], cascade.resolvedWildMultipliers[reel][row], 'A shot locks the whole reel with the final recorded multiplier after all subsequent features');
+      assert.equal(cascade.stickyWilds[reel][row], cascade.resolvedWildMultipliers[reel][row], 'The whole expanded bonus reel retains its final recorded multiplier after all subsequent features');
     }
   }
+}
+function shooterIdentity(board: any, reel: number, sticky: boolean) {
+  const displayed = board.shooterReels.find((record: any) => record.reel === reel);
+  assert.ok(displayed, `Reel ${reel + 1} keeps its visible Shooter identity`);
+  assert.equal(displayed.character, 'middle'); assert.equal(displayed.avatarVisible, true);
+  assert.equal(displayed.sticky, sticky); assert.equal(displayed.multiplierRow, 4, 'The retained total sits in the last row of its own reel');
+  assert.deepEqual(displayed.cellMultipliers, board.wildMultipliers[reel]);
+  assert.equal(displayed.totalMultiplier, board.wildMultipliers[reel].reduce((sum: number, value: number) => sum + value, 0), 'The displayed reel total sums all five retained values, including temporarily spent Wilds');
+  assert.deepEqual(displayed.inactiveRows, board.inactiveWilds.filter((cell: Cell) => cell.reel === reel).map((cell: Cell) => cell.row).sort((a: number, b: number) => a - b));
+  return displayed;
 }
 function lineBoundaryChecks() {
   const grid = (): Grid => Array.from({ length: 6 }, () => Array(5).fill('cash'));
@@ -309,6 +356,10 @@ async function development(page: Page, url: string) {
   await page.locator('#language').click(); assert.equal(await page.locator('html').getAttribute('lang'), 'bg'); assert.match((await page.locator('#balance').textContent())!, /€/);
   pass('BG / EN setting persists across reload and all displayed credits use EUR');
   await page.locator('#rules').click();
+  const bulgarianRules = await page.locator('.rules-copy').textContent();
+  assert.match(bulgarianRules!, /всеки разгънат Wild барабан остава лепкав до края на бонуса още от разгръщането/);
+  assert.match(bulgarianRules!, /Героят остава върху осветения барабан/);
+  assert.match(bulgarianRules!, /табелката на последния ред показва сумата от всичките му пет множителя, включително почиващите Wild/);
   const displayedLines = await page.locator('.payline-diagram').evaluateAll(elements => elements.map(element => {
     const cells = [...element.querySelectorAll<SVGRectElement>('rect.line-cell')];
     const columns = [...new Set(cells.map(cell => cell.x.baseVal.value))].sort((a, b) => a - b);
@@ -326,21 +377,28 @@ async function development(page: Page, url: string) {
   await presentationCapture(page, 'exact-payline-chart', 'The supplied and verified fixed-payline chart is shown in the rules; each path uses the same centralized rows as paid receipts.');
   pass('Rules display every verified fixed payline in its exact order and six-row path', { count: PAYLINES.length, rows: PAYLINES });
   await page.locator('#dialog-close').click();
+  await page.locator('#language').click(); await page.locator('#rules').click();
+  const englishRules = await page.locator('.rules-copy').textContent();
+  assert.match(englishRules!, /every expanded Wild reel stays sticky from the moment it expands until the bonus ends; no shot is needed/);
+  assert.match(englishRules!, /The Shooter remains on the highlighted reel/);
+  assert.match(englishRules!, /last-row plate shows the sum of all five retained cell multipliers, including resting Wilds/);
+  pass('BG and EN rules both explain immediate bonus stickiness, the persistent character and the retained five-row total in the last row');
+  await page.locator('#dialog-close').click(); await page.locator('#language').click();
 
-  const legacyWallet = JSON.stringify({ version: 3, balanceCents: 1234567, betCents: 50, rngState: 43, sequence: 0, pending: null, history: [] });
-  await page.evaluate(raw => { localStorage.setItem('ot-staroto-session-v3', raw); localStorage.removeItem('ot-staroto-session-v4'); }, legacyWallet);
+  const legacyWallet = JSON.stringify({ version: 4, balanceCents: 1234567, betCents: 50, rngState: 43, sequence: 0, pending: null, history: [] });
+  await page.evaluate(raw => { localStorage.setItem('ot-staroto-session-v4', raw); localStorage.removeItem('ot-staroto-session-v5'); }, legacyWallet);
   await page.reload(); await ready(page);
-  const migrated = await snapshot(page); assert.equal(migrated.version, 4); assert.equal(migrated.balanceCents, 1234567); assert.equal(migrated.betCents, 50); assert.equal(migrated.sequence, 0); assert.equal(migrated.pending, null); assert.deepEqual(migrated.history, []);
-  assert.equal(await page.evaluate(() => localStorage.getItem('ot-staroto-session-v3')), legacyWallet);
+  const migrated = await snapshot(page); assert.equal(migrated.version, 5); assert.equal(migrated.balanceCents, 1234567); assert.equal(migrated.betCents, 50); assert.equal(migrated.sequence, 0); assert.equal(migrated.pending, null); assert.deepEqual(migrated.history, []);
+  assert.equal(await page.evaluate(() => localStorage.getItem('ot-staroto-session-v4')), legacyWallet);
   await page.reload(); await ready(page); assert.equal((await snapshot(page)).balanceCents, migrated.balanceCents); assert.equal((await snapshot(page)).rngState, migrated.rngState);
-  pass('V3 settled wallet migrates once into V4 with the same credits and stake; original V3 bytes remain intact');
-  const legacyPending = JSON.stringify({ ...JSON.parse(legacyWallet), pending: { id: 'preserved-v3-round', costCents: 1500, payoutCents: 420 } });
-  await page.evaluate(raw => { localStorage.setItem('ot-staroto-session-v3', raw); localStorage.removeItem('ot-staroto-session-v4'); }, legacyPending);
+  pass('V4 settled wallet migrates once into V5 with the same credits and stake; original V4 bytes remain intact');
+  const legacyPending = JSON.stringify({ ...JSON.parse(legacyWallet), pending: { id: 'preserved-v4-round', costCents: 1500, payoutCents: 420 } });
+  await page.evaluate(raw => { localStorage.setItem('ot-staroto-session-v4', raw); localStorage.removeItem('ot-staroto-session-v5'); }, legacyPending);
   await page.reload(); await ready(page);
-  assert.equal((await snapshot(page)).version, 4); assert.equal((await snapshot(page)).balanceCents, 1_000_000); assert.equal((await snapshot(page)).pending, null);
-  assert.equal(await page.evaluate(() => localStorage.getItem('ot-staroto-session-v3')), legacyPending);
+  assert.equal((await snapshot(page)).version, 5); assert.equal((await snapshot(page)).balanceCents, 1_000_000); assert.equal((await snapshot(page)).pending, null);
+  assert.equal(await page.evaluate(() => localStorage.getItem('ot-staroto-session-v4')), legacyPending);
   assert.match((await page.locator('#toast').textContent())!, /Незавършеният|unfinished/i);
-  pass('An unfinished V3 receipt remains byte-for-byte intact; V4 starts a separate ledger rather than reinterpreting old mathematics');
+  pass('An unfinished V4 receipt remains byte-for-byte intact; V5 starts a separate ledger rather than reinterpreting old mathematics');
   await reset(page, 42);
   await page.locator('#turbo').click(); assert.equal((await snapshot(page)).turbo, true);
 
@@ -503,9 +561,48 @@ async function development(page: Page, url: string) {
   assert.equal(await page.evaluate(() => (window as any).__probe.frames.filter((frame: any) => frame.effect?.kind === 'shot').length), 0);
   pass('A genuine Shooter can expand without follow-up shots; the renderer does not invent an unrecorded shooting phase', { seed: noFollowUp.seed });
 
+  const automaticSticky = find({ kind: 'buy', tier: 'edge' }, round => {
+    const spin = round.spins[0], next = round.spins[1], first = spin.cascades[0];
+    const expander = first.features.find(feature => feature.phase === 'expand');
+    return !!next && !!expander && !first.features.some(feature => feature.phase === 'shots')
+      && first.wins.some(win => win.cells.some(cell => cell.reel === expander.source.reel))
+      && spin.inactiveWilds.some(cell => cell.reel === expander.source.reel)
+      && next.initialExpandedReels.includes(expander.source.reel)
+      && next.initialGrid.flat().some(symbol => symbol !== 'wild')
+      && next.spinsRemainingBefore < spin.spinsRemainingBefore;
+  }, 10000);
+  const automaticSpin = automaticSticky.session.pending!.spins[0], automaticNext = automaticSticky.session.pending!.spins[1];
+  const automaticFeature = automaticSpin.cascades[0].features.find(feature => feature.phase === 'expand')!, automaticReel = automaticFeature.source.reel;
+  await reset(page, automaticSticky.seed); await gate(page, { stage: 'win', shooterReel: automaticReel, shooterSticky: true }); await choose(page, { kind: 'buy', tier: 'edge' }); await held(page);
+  const automaticBoard = await page.evaluate(() => (window as any).__ruse.board());
+  assert.ok(automaticBoard.lockedReels.includes(automaticReel));
+  assert.ok(automaticSpin.cascades[0].stickyWilds[automaticReel].every(value => value > 0));
+  const automaticAvatar = shooterIdentity(automaticBoard, automaticReel, true);
+  assert.equal(automaticAvatar.totalMultiplier, automaticFeature.hits.reduce((sum, hit) => sum + hit.multiplier, 0));
+  assert.equal(automaticBoard.followUpShots.length, 0, 'No shot is required to keep the bonus Shooter');
+  pass('A bonus Shooter becomes sticky immediately on expansion without a follow-up shot; his highlighted reel retains the character and full five-row total', { seed: automaticSticky.seed, reel: automaticReel, totalMultiplier: automaticAvatar.totalMultiplier });
+  await capture(page, 'bonus-shooter-immediately-sticky', automaticSticky.seed, automaticSticky.session.pending!, 'This honest bonus expansion has no follow-up shots. Its character remains on the highlighted reel and the retained five-row total is shown in that reel’s last row.');
+  await gate(page, { stage: 'clear', inactiveReel: automaticReel, shooterReel: automaticReel, shooterSticky: true }); await held(page);
+  const automaticSpent = await page.evaluate(() => (window as any).__ruse.board());
+  const automaticSpentAvatar = shooterIdentity(automaticSpent, automaticReel, true);
+  assert.ok(automaticSpentAvatar.inactiveRows.length > 0);
+  assert.equal(automaticSpentAvatar.totalMultiplier, automaticAvatar.totalMultiplier, 'Spending a Wild does not erase the retained reel total or character');
+  pass('A spent bonus Shooter still shows his character and the retained total rather than the reduced active global multiplier');
+  await capture(page, 'bonus-shooter-spent-retained-total', automaticSticky.seed, automaticSticky.session.pending!, 'After a paid line the used Wilds rest, but the Shooter character, reel highlight and bottom retained total stay visible.');
+  await gate(page, { stage: 'drop', afterSpin: automaticSpin.spinsRemainingBefore - 1, shooterReel: automaticReel, shooterSticky: true, midDrop: true }); await held(page);
+  const automaticRearmed = await page.evaluate(() => (window as any).__ruse.board()), automaticRearmedAvatar = shooterIdentity(automaticRearmed, automaticReel, true);
+  assert.deepEqual(automaticRearmed.wildMultipliers[automaticReel], automaticNext.initialWildMultipliers[automaticReel]);
+  assert.deepEqual(automaticRearmedAvatar.inactiveRows, []);
+  assert.equal(automaticRearmedAvatar.totalMultiplier, automaticSpin.finalWildMultipliers[automaticReel].reduce((sum, value) => sum + value, 0));
+  const retainedDrops = automaticRearmed.movingCells.filter((cell: any) => cell.reel === automaticReel);
+  assert.equal(retainedDrops.length, 5); assert.ok(retainedDrops.every((cell: any) => cell.sticky && cell.stationary && cell.symbol === 'wild'));
+  pass('A no-shot expanded bonus Shooter survives the spin boundary with the same stationary five Wilds, persistent character and bottom total');
+  await capture(page, 'bonus-shooter-next-spin-persistent', automaticSticky.seed, automaticSticky.session.pending!, 'On the next actual free-spin drop the same highlighted Shooter reel and retained total stay put while the other symbols fall.');
+  await finish(page, automaticSticky.session, 'Automatic no-shot bonus Shooter persistence');
+
   for (const bonus of [false, true]) {
     const choice: Choice = bonus ? { kind: 'buy', tier: 'edge' } : { kind: 'spin' };
-    const multi = find(choice, round => new Set(round.spins[0].cascades[0].features.filter(feature => feature.character === 'middle' && feature.phase === 'expand').map(feature => feature.expandedReel)).size >= 2, 100000);
+    const multi = find(choice, round => new Set(round.spins[0].cascades[0].features.filter(feature => feature.character === 'middle' && feature.phase === 'expand').map(feature => feature.expandedReel)).size >= 2 && (!bonus || !!round.spins[1] && round.spins[1].initialGrid.flat().some(symbol => symbol !== 'wild') && round.spins[1].spinsRemainingBefore < round.spins[0].spinsRemainingBefore), 100000);
     const firstTwo = multi.session.pending!.spins[0].cascades[0].features.filter(feature => feature.character === 'middle' && feature.phase === 'expand').slice(0, 2);
     await reset(page, multi.seed); await gate(page, { kind: 'expansion', character: 'middle', expansionReel: firstTwo[0].source.reel, min: .82, max: .97 }); await choose(page, choice); await held(page);
     const firstExpansion = await page.evaluate(() => (window as any).__ruse.board());
@@ -521,6 +618,22 @@ async function development(page: Page, url: string) {
     assert.ok(await page.evaluate(() => (window as any).__probe.frames.filter((frame: any) => frame.effect?.kind === 'shot').every((frame: any) => frame.expandedReels.length >= 2)), 'Both initial expanders finish before any optional shooting');
     pass(`${bonus ? 'Bought bonus' : 'Base game'} genuinely drops two independent Shooters on different reels and expands both in receipt order`, { seed: multi.seed, reels: firstTwo.map(feature => feature.source.reel), multipliers: firstTwo.map(feature => feature.expansionMultiplier) });
     await capture(page, `${bonus ? 'bonus' : 'base'}-two-expanding-reels`, multi.seed, multi.session.pending!, 'Two genuinely dropped Shooter badges expand two distinct reels in sequence, using their independent recorded factors.');
+    await gate(page, { shooterMin: 2 }); await held(page);
+    const completedMulti = await page.evaluate(() => (window as any).__ruse.board());
+    for (const feature of firstTwo) shooterIdentity(completedMulti, feature.source.reel, bonus);
+    pass(`${bonus ? 'Bonus' : 'Base'} independent expanded reels each paint their own Shooter character and their own bottom-row total`);
+    await capture(page, `${bonus ? 'bonus' : 'base'}-two-shooter-characters`, multi.seed, multi.session.pending!, 'Both distinct expanded reels retain their own character and a bottom plate summing their own five Wild values.');
+    if (bonus) {
+      await gate(page, { stage: 'drop', afterSpin: multi.session.pending!.spins[0].spinsRemainingBefore - 1, shooterMin: 2, midDrop: true }); await held(page);
+      const persistentMulti = await page.evaluate(() => (window as any).__ruse.board()), next = multi.session.pending!.spins[1];
+      for (const feature of firstTwo) {
+        assert.ok(next.initialExpandedReels.includes(feature.source.reel));
+        shooterIdentity(persistentMulti, feature.source.reel, true);
+        assert.deepEqual(persistentMulti.wildMultipliers[feature.source.reel], next.initialWildMultipliers[feature.source.reel]);
+      }
+      pass('Multiple expanded bonus Shooter characters and full-reel totals all persist together on the next free spin');
+      await capture(page, 'bonus-two-shooters-next-spin', multi.seed, multi.session.pending!, 'Both retained Shooter characters and their individual totals survive together into the next real free spin.');
+    }
     await finish(page, multi.session, `${bonus ? 'Bonus' : 'Base'} multiple-expanding-reel fixture`);
   }
 
@@ -559,9 +672,17 @@ async function development(page: Page, url: string) {
   const postBoost = await page.evaluate(() => (window as any).__ruse.board());
   for (const hit of boostShot.hits) { assert.equal(postBoost.wildMultipliers[hit.cell.reel][hit.cell.row], preBoost.wildMultipliers[hit.cell.reel][hit.cell.row] * 2); assert.equal(postBoost.wildMultipliers[hit.cell.reel][hit.cell.row], hit.multiplier); }
   assert.equal(postBoost.effect.boostedReel, boostShot.expandedReel); assert.equal(postBoost.effect.sticky, false); assert.equal(postBoost.lockedReels.length, 0);
+  assert.equal(shooterIdentity(postBoost, boostShot.expandedReel!, false).totalMultiplier, shooterIdentity(preBoost, boostShot.expandedReel!, false).totalMultiplier * 2);
   pass('Hitting an expanded reel doubles all five Wild multipliers atomically; a base-game shot does not lock it', { seed: columnBoost.seed, reel: boostShot.expandedReel, shot: boostIndex });
   await capture(page, 'base-expanded-reel-doubled', columnBoost.seed, columnBoost.session.pending!, 'A recorded base-game follow-up hit doubles the entire expanded Wild reel; it stays transient outside a bonus.');
   await finish(page, columnBoost.session, 'Base expanded-reel shot doubles all rows');
+  const baseAfterShooter = playFixtureRound(acknowledgeRound(columnBoost.session), { kind: 'spin' });
+  await gate(page, { stage: 'drop', midDrop: true }); await choose(page, { kind: 'spin' }); await held(page);
+  const clearedBaseShooter = await page.evaluate(() => (window as any).__ruse.board());
+  assert.deepEqual(clearedBaseShooter.shooterReels, []); assert.deepEqual(clearedBaseShooter.lockedReels, []);
+  assert.ok(baseAfterShooter.pending!.spins[0].initialWildMultipliers.flat().every(value => value === 0));
+  pass('A normal-spin Shooter, his character and his reel total clear at the next paid spin instead of becoming sticky');
+  await finish(page, baseAfterShooter, 'Base expanded Shooter clears on next paid spin');
 
   const locked = find({ kind: 'buy', tier: 'edge' }, round => {
     const spin = round.spins[0]; const next = round.spins[1];
@@ -573,11 +694,14 @@ async function development(page: Page, url: string) {
   const lockBoard = await page.evaluate(() => (window as any).__ruse.board());
   assert.ok(lockBoard.lockedReels.includes(lockedReel)); assert.deepEqual(lockBoard.effect.recipients, lockShot.hits.map(hit => hit.cell));
   for (const hit of lockShot.hits) assert.equal(lockBoard.wildMultipliers[hit.cell.reel][hit.cell.row], hit.multiplier);
-  pass('A bonus follow-up shot doubles the recorded expanded column and locks all five Wild positions for the remaining bonus', { seed: locked.seed, reel: lockedReel });
-  await capture(page, 'bonus-expanded-reel-locked', locked.seed, locked.session.pending!, 'A bonus shot locks the entire doubled Wild reel; all five positions retain their independent recorded multipliers.');
+  const shotAvatar = shooterIdentity(lockBoard, lockedReel, true);
+  assert.equal(shotAvatar.totalMultiplier, lockShot.hits.reduce((sum, hit) => sum + hit.multiplier, 0));
+  pass('A bonus follow-up shot doubles the already-sticky expanded column and updates the visible retained reel total atomically', { seed: locked.seed, reel: lockedReel, totalMultiplier: shotAvatar.totalMultiplier });
+  await capture(page, 'bonus-expanded-reel-locked', locked.seed, locked.session.pending!, 'A bonus shot upgrades an already-sticky Shooter reel; the character stays and its bottom total immediately sums all five doubled positions.');
   await gate(page, { stage: 'clear', lockedReel, inactiveReel: lockedReel }); await held(page);
   const lockDimmed = await page.evaluate(() => (window as any).__ruse.board());
   assert.ok(lockDimmed.inactiveWilds.some((cell: Cell) => cell.reel === lockedReel)); assert.ok(lockDimmed.grid[lockedReel].every((symbol: string) => symbol === 'wild'));
+  shooterIdentity(lockDimmed, lockedReel, true);
   await capture(page, 'bonus-locked-reel-spent', locked.seed, locked.session.pending!, 'Locked Wilds dim after paying a batch and remain in their reel while ordinary symbols tumble.');
   await gate(page, { stage: 'drop', afterSpin: lockedSpin.spinsRemainingBefore - 1, lockedReel, midDrop: true }); await held(page);
   const rearmedLock = await page.evaluate(() => (window as any).__ruse.board());
@@ -585,6 +709,7 @@ async function development(page: Page, url: string) {
   assert.ok(nextLockedSpin.initialExpandedReels.includes(lockedReel)); assert.equal(rearmedLock.inactiveWilds.length, 0); assert.ok(rearmedLock.grid[lockedReel].every((symbol: string) => symbol === 'wild'));
   assert.deepEqual(rearmedLock.wildMultipliers[lockedReel], nextLockedSpin.initialWildMultipliers[lockedReel]);
   const lockedDrops = rearmedLock.movingCells.filter((cell: any) => cell.reel === lockedReel); assert.equal(lockedDrops.length, 5); assert.ok(lockedDrops.every((cell: any) => cell.sticky && cell.stationary && cell.symbol === 'wild'));
+  shooterIdentity(rearmedLock, lockedReel, true);
   pass('The locked whole reel stays stationary and reactivates its saved multipliers on the next free-spin drop');
   await capture(page, 'bonus-locked-reel-rearmed', locked.seed, locked.session.pending!, 'The next real free spin reactivates the locked reel; each of its five Wilds remains stationary while fresh symbols fall independently.');
   await finish(page, locked.session, 'Whole-reel sticky lock and rearm');
@@ -595,6 +720,7 @@ async function development(page: Page, url: string) {
   await gate(page, { kind: 'scatter', min: .1, max: .9 }); await held(page); await gate(page, { stage: 'drop', midDrop: true }); await held(page);
   const enteredBonus = await page.evaluate(() => (window as any).__ruse.board()), firstBonusSpin = noCarry.session.pending!.spins[1];
   assert.deepEqual(firstBonusSpin.initialExpandedReels, []); assert.ok(firstBonusSpin.initialWildMultipliers.flat().every(value => value === 0)); assert.deepEqual(enteredBonus.expandedReelIds, []); assert.deepEqual(enteredBonus.lockedReels, []);
+  assert.deepEqual(enteredBonus.shooterReels, []);
   pass('A boosted base-game expansion and its shots cannot carry a transient Wild reel into the newly triggered bonus', { seed: noCarry.seed, tier: noCarry.session.pending!.triggerTier });
   await capture(page, 'base-expansion-bonus-reset', noCarry.seed, noCarry.session.pending!, 'A real boosted base round triggers a bonus after shooting; its transient expanded reels and Wild multipliers reset before the first free-spin drop.');
   await finish(page, noCarry.session, 'Natural bonus resets base transient expansions');
@@ -874,19 +1000,19 @@ async function production(browser: Awaited<ReturnType<typeof chromium.launch>>) 
   await ready(page); assert.equal(await page.evaluate(() => '__ruse' in window), false);
   pass('Production server loads the exact built bundle and all art without development hooks', { bundleFiles: bytes.size, hashes: productionBundleHashes });
   const initial = createSession(42, rich);
-  await page.evaluate(session => { localStorage.setItem('ot-staroto-session-v4', JSON.stringify(session)); localStorage.setItem('ot-staroto-settings-v1', JSON.stringify({ language: 'en', turbo: true, muted: true })); }, initial);
+  await page.evaluate(session => { localStorage.setItem('ot-staroto-session-v5', JSON.stringify(session)); localStorage.setItem('ot-staroto-settings-v1', JSON.stringify({ language: 'en', turbo: true, muted: true })); }, initial);
   await page.reload(); await ready(page);
-  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('ot-staroto-session-v4')!)) as Promise<Session>;
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('ot-staroto-session-v5')!)) as Promise<Session>;
   const settle = async (receipt: Session) => {
     for (let attempt = 0; attempt < 5; attempt++) {
-      await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v4')!).pending || !!document.getElementById('win-continue'), undefined, { timeout: 180000, polling: 40 });
+      await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v5')!).pending || !!document.getElementById('win-continue'), undefined, { timeout: 180000, polling: 40 });
       if (await page.locator('#win-continue').count()) await page.locator('#win-continue').click(); else break;
     }
-    await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v4')!).pending, undefined, { timeout: 180000, polling: 40 });
+    await page.waitForFunction(() => !JSON.parse(localStorage.getItem('ot-staroto-session-v5')!).pending, undefined, { timeout: 180000, polling: 40 });
     assert.deepEqual(await stored(), acknowledgeRound(receipt));
   };
   const assertCommitted = async (before: Session, choice: Choice, entropyBefore: number) => {
-    await page.waitForFunction(() => !!JSON.parse(localStorage.getItem('ot-staroto-session-v4')!).pending, undefined, { polling: 20 });
+    await page.waitForFunction(() => !!JSON.parse(localStorage.getItem('ot-staroto-session-v5')!).pending, undefined, { polling: 20 });
     const committed = await stored(); const round = committed.pending!;
     assert.deepEqual(deserializeSession(JSON.stringify(committed)), committed, 'Production receipt must independently replay its complete catalog outcome and recorded random draw tape');
     assert.deepEqual(round.choice, choice); assert.equal(round.costCents, costCents(before.betCents, choice)); assert.equal(committed.sequence, before.sequence + 1);
@@ -913,11 +1039,15 @@ async function production(browser: Awaited<ReturnType<typeof chromium.launch>>) 
   const next = await assertCommitted(acknowledgeRound(settled), { kind: 'spin' }, entropyBeforeSpin);
   for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
   await page.locator('#game').evaluate(element => { for (let repeat = 0; repeat < 100; repeat++) element.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-  assert.deepEqual(await stored(), next);
+  const duringRepeatedInput = await stored();
+  // A genuine zero-win turbo round can naturally finish during one hundred
+  // awaited key events. Both exact ledger states are valid; neither permits
+  // an extra sequence, debit, entropy draw or altered receipt.
+  assert.deepEqual(duringRepeatedInput, duringRepeatedInput.pending ? next : acknowledgeRound(next));
   await settle(next);
   for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
   assert.deepEqual(await stored(), acknowledgeRound(next)); await page.keyboard.up('Space');
-  pass('Production focused-Spin held Space and board clicks cannot skip its real animation or create another round after settlement; a real CSPRNG receipt remains valid');
+  pass('Production focused-Spin held Space and board clicks preserve the exact committed or naturally settled receipt and cannot create another round after settlement', { settledDuringRepeatedInput: duringRepeatedInput.pending === null });
 
   const entropyBeforeXbet = await page.evaluate(() => (window as any).__probe.entropyCalls.length);
   await page.locator('#xbet').selectOption('left'); await page.locator('#spin').click(); await page.locator('#confirm-play').click();
@@ -946,21 +1076,48 @@ async function production(browser: Awaited<ReturnType<typeof chromium.launch>>) 
   for (; attemptedFreshSelections < 1000 && !precommitted;) {
     attemptedFreshSelections++;
     const candidate = playRound(createSession(439, rich), { kind: 'buy', tier: 'edge' });
-    const first = candidate.pending!.spins[0].cascades[0];
-    if (new Set(first.features.filter(feature => feature.phase === 'expand').map(feature => feature.expandedReel)).size >= 2) precommitted = candidate;
+    const first = candidate.pending!.spins[0].cascades[0], reels = first.features.filter(feature => feature.phase === 'expand').map(feature => feature.expandedReel!);
+    const next = candidate.pending!.spins[1];
+    if (new Set(reels).size >= 2 && next && next.spinsRemainingBefore < candidate.pending!.spins[0].spinsRemainingBefore && next.initialGrid.some((column, reel) => !reels.includes(reel) && ['bottle', 'cash', 'chain', 'cassette', 'sneaker', 'crown', 'lighter', 'dice', 'ring'].includes(column[0])) && !first.features.some(feature => feature.phase === 'shots')) precommitted = candidate;
   }
   assert.ok(precommitted, 'An honest production CSPRNG receipt must cover two initial expanding Shooters');
   assert.equal(precommitted.pending!.outcome!.source, 'crypto'); auditReceipt(precommitted.pending!);
   assert.deepEqual(deserializeSession(JSON.stringify(precommitted)), precommitted);
   const committedRound = precommitted.pending!, committedReels = committedRound.spins[0].cascades[0].features.filter(feature => feature.phase === 'expand').map(feature => feature.expandedReel!);
-  await page.evaluate(session => localStorage.setItem('ot-staroto-session-v4', JSON.stringify(session)), precommitted);
+  await page.evaluate(session => localStorage.setItem('ot-staroto-session-v5', JSON.stringify(session)), precommitted);
   await page.reload(); await ready(page);
   assert.equal(await page.evaluate(() => '__ruse' in window), false);
   assert.deepEqual(await stored(), precommitted);
   assert.equal(await page.evaluate(() => (window as any).__probe.entropyCalls.length), 0);
+  // These production gates inspect only actual canvas draw calls and the public
+  // free-spin counter. The production bundle still has no engine/renderer hooks.
+  const paintedPersistence: { remaining: number; reels: number[]; totals: number[]; ordinaryDescent: unknown[]; paintedFrame: unknown }[] = [];
+  const firstCommitted = committedRound.spins[0], nextCommitted = committedRound.spins[1];
+  for (const [index, spin] of [firstCommitted, nextCommitted].entries()) {
+    const values = index === 0 ? firstCommitted.cascades[0].resolvedWildMultipliers : nextCommitted.initialWildMultipliers;
+    const totals = committedReels.map(reel => values[reel].reduce((sum, value) => sum + value, 0));
+    // A zero-win first spin goes directly from the last expansion drawing to
+    // settlement. Its real actor may still be in his authored action pose; an
+    // idle-only gate would incorrectly reject that honest presentation.
+    await gate(page, { productionRemaining: spin.spinsRemainingBefore, productionReels: committedReels, productionTotals: totals, productionDrop: index > 0, productionAnimatingShooter: index === 0 });
+    try { await held(page); } catch (error) {
+      await writeFile(join(output, 'production-paint-failure.json'), JSON.stringify({ index, expectedRemaining: spin.spinsRemainingBefore, committedReels, totals, precommitted, observed: await page.evaluate(() => ({ remaining: document.getElementById('remaining')?.textContent, language: document.documentElement.lang, paint: (window as any).__probe.paint, gate: (window as any).__probe.gate, frames: (window as any).__probe.productionPaintFrames })) }, null, 2));
+      await page.screenshot({ path: join(output, 'production-paint-failure.png'), fullPage: true });
+      throw error;
+    }
+    const paintedFrame = await page.evaluate(() => (window as any).__probe.paint);
+    const ordinaryDescent = paintedFrame.sprites.filter((sprite: any) => sprite.loaded && sprite.imageWidth === 1254 && sprite.imageHeight === 1254 && sprite.matrix.f > 170 && sprite.matrix.f < 220 && Array.from({ length: 6 }, (_, reel) => reel).filter(reel => !committedReels.includes(reel)).some(reel => Math.abs(sprite.matrix.e - (200 + (reel + .5) * 140)) < 8));
+    if (index > 0) assert.ok(ordinaryDescent.length > 0, 'Actual ordinary-symbol descent in the same painted frame proves the next free spin has started, independently of the earlier counter decrement');
+    paintedPersistence.push({ remaining: spin.spinsRemainingBefore, reels: committedReels, totals, ordinaryDescent, paintedFrame });
+    assert.equal(await page.evaluate(() => '__ruse' in window), false);
+    assert.equal(await page.evaluate(() => (window as any).__probe.entropyCalls.length), 0);
+    await presentationCapture(page, `production-sticky-shooters-${index ? 'next-spin' : 'expanded'}`, `Actual production canvas draw calls paint both authored Shooter characters and receipt-derived bottom-row totals${index ? ' while ordinary symbols genuinely descend in the next free spin' : ' as both reels reveal their complete recorded Wild values'}, without development hooks or additional entropy.`);
+  }
+  pass('Production paints multiple authored Shooter characters and receipt-derived bottom-row totals through the next free-spin boundary without development hooks', { reels: committedReels, beforeRemaining: firstCommitted.spinsRemainingBefore, nextRemaining: nextCommitted.spinsRemainingBefore, totals: paintedPersistence.map(frame => frame.totals) });
+  await release(page);
   await settle(precommitted);
   assert.equal(await page.evaluate(() => (window as any).__probe.entropyCalls.length), 0);
-  productionMultiShooterReplay = { description: 'A complete pending bought-bonus receipt selected with fresh Node CSPRNG by the same production playRound API, then replayed in the real production browser. This is reload coverage, not a fresh UI selection or a forged fixture.', attemptedFreshSelections, ledgerSha256: sha(JSON.stringify(precommitted)), roundSha256: sha(JSON.stringify(committedRound)), expandedReels: committedReels, entropyCallsAfterReload: 0 };
+  productionMultiShooterReplay = { description: 'A complete pending bought-bonus receipt selected with fresh Node CSPRNG by the same production playRound API, then replayed in the real production browser. This is reload coverage, not a fresh UI selection or a forged fixture.', attemptedFreshSelections, ledgerSha256: sha(JSON.stringify(precommitted)), roundSha256: sha(JSON.stringify(committedRound)), expandedReels: committedReels, entropyCallsAfterReload: 0, paintedPersistence };
   productionReceipts.push({ choice: committedRound.choice, sequence: precommitted.sequence, costCents: committedRound.costCents, payoutCents: committedRound.payoutCents, sha256: sha(JSON.stringify(committedRound)), outcome: committedRound.outcome, selection: 'node-csprng-precommitted-reload' });
   pass('Production replays a genuine precommitted CSPRNG multi-Shooter bonus without development hooks or new entropy and settles its exact ledger', productionMultiShooterReplay);
   await page.locator('#settings').click();
@@ -1009,7 +1166,7 @@ try {
   pass('No JavaScript errors, asset failures or external network requests in development and production servers');
   const source = await sourceHashes();
   if (!tailOnly) assert.deepEqual(source, initialSourceHashes, 'Source must stay frozen throughout verified browser checks');
-  const report = { version: 4, paylineChart: PAYLINES, paylineReference, capturedAt: new Date().toISOString(), variant: 'ot-staroto', mode: productionOnly ? 'production-only' : tailOnly ? 'tail-diagnostic' : 'full', checksPassed: checks.length, checks, animationProbe: { description: 'Read-only requestAnimationFrame gates pause the presentation clock for screenshots; engine receipts and entropy remain unchanged.', authoredActionFrames: 8 }, sourceHashes: source, captures, presentationCaptures, jsErrors, assetFailures: failures, externalRequests, production: { path: 'dist/index.html', sha256: sha(await readFile(join(root, 'dist/index.html'))), bundleHashes: productionBundleHashes, requests: productionRequests, receipts: productionReceipts, ...(productionMultiShooterReplay ? { multiShooterReplay: productionMultiShooterReplay } : {}) } };
+  const report = { version: 5, paylineChart: PAYLINES, paylineReference, capturedAt: new Date().toISOString(), variant: 'ot-staroto', mode: productionOnly ? 'production-only' : tailOnly ? 'tail-diagnostic' : 'full', checksPassed: checks.length, checks, animationProbe: { description: 'Read-only requestAnimationFrame gates pause the presentation clock for screenshots; engine receipts and entropy remain unchanged.', authoredActionFrames: 8 }, sourceHashes: source, captures, presentationCaptures, jsErrors, assetFailures: failures, externalRequests, production: { path: 'dist/index.html', sha256: sha(await readFile(join(root, 'dist/index.html'))), bundleHashes: productionBundleHashes, requests: productionRequests, receipts: productionReceipts, ...(productionMultiShooterReplay ? { multiShooterReplay: productionMultiShooterReplay } : {}) } };
   await writeFile(join(output, productionOnly ? 'production-browser.json' : tailOnly ? 'browser-tail.json' : 'browser.json'), JSON.stringify(report, null, 2) + '\n');
   if (!productionOnly && !tailOnly) {
     await mkdir(publishedShots, { recursive: true });

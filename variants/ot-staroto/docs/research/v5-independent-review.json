@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "checkedAtUTC": "2026-10-09T13:10:48.405483+00:00",
+  "modelVersion": 5,
+  "runtimeEdits": false,
+  "scope": "Independent exact rational/model/metric checks, raw sticky-Shooter receipt and payline reconstruction, deep receipt mutations and zero-entropy reload; read-only persistent-character renderer and settled-only UI migration inspection. Full browser release and packaging evidence are reviewed separately.",
+  "sourceHashes": {
+    "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+    "src/engine.ts": "9f55e3ad263820d5295b1d8486817acfc6da0642c46a9fa978ba05c09b36c1a8",
+    "src/types.ts": "732c1909a97e386dae03eb335065af37c555b58fca8bb0bda9e337b62dcfa642",
+    "src/math-model.ts": "c19cab83b235b925c3e87f53d32a0b12e07466b6ca7ce57237ad662f45afed2c",
+    "scripts/build-math-model.ts": "ae5fddab2b8e6ff149311ecf12ecc883129265156015f3fc57ab82b9bc21f209",
+    "src/math-model.json": "b81268b8cbc4e10bd95e67d1adfdf45af66914443029dd115cb66c76dd602cff",
+    "scripts/verify-math-outcomes.ts": "53c97a5ea664b5577a662efe857357d0c39c7d0da11719577b9f3a37d5a5bd82",
+    "src/main.ts": "816f9b1fec2e97fba21df7e46b2b28c7b40c92cfcce0450ee91473c004602eb6",
+    "src/renderer.ts": "436809cd4fceaea0751c49919767e9b8e562d0cbdfaa5ce5f0e97fff78c4ed31",
+    "src/art.ts": "7c0310124610a38e9ccf4ebe56314e7670bddccbcdde849bed3d9b5783b99327",
+    "src/style.css": "0502532e8a87e7d3a78618aab19886cc1d9d60c8470a6cc309cce03a7daf3390",
+    "src/audio.ts": "e7549c94413f0b28131599baedac1aa3c55706156fa135539d1ca64bf5f5e39e",
+    "src/audio-config.ts": "02930cf7ac469057e629ade6a7678502a34013f4ffe2a820e683ce89e822b383",
+    "public/art/student-club-ink.png": "584eb581d68c69d22339739b28dcf8316b5190bdc223b17c0c22d5942ec9de97",
+    "scripts/verify-math-model.ts": "e2a741c3436f7c68d8a995e90fdb2789f561810a8ebe1571678434c94a5ca51d"
+  },
+  "evidenceHashes": {
+    "docs/mathematics-proof.json": "98747a22baf09abb893355af7a33fc34c6a5c6bc3cf72e64439b7cb98b02893b",
+    "docs/research/le-zeus-payline-chart.json": "2631ca7cdc77d75e22a0dc5fccb65b6e91878bdd7d61362e6caf275e497f528d",
+    "docs/art/scene-cover-contact-sheet.png": "b28a2240f65a6faa93c38872ad391dda07ade95de5e802b3f92223fc2241da83",
+    "docs/mathematics-outcome-validation.json": "7d53c0610e88e2470421e983289f2fa9003b9907338f217af908b7b958072e9f",
+    "docs/mathematics-sample.json": "5b475fffa0e819eb5965ed8822ca54f236fefd9708c3aaefa63919046b6f0fbe"
+  },
+  "exactRationalProof": {
+    "status": "passed",
+    "method": "Independent Python integer and Fraction arithmetic, no repository verification functions imported",
+    "modelVersion": 5,
+    "paidModes": 10,
+    "stakes": 8,
+    "exactReturnRows": 80,
+    "targetReturn": "193/200",
+    "conditionalPools": 2,
+    "poolStakeEquations": 80,
+    "metricProbabilitiesChecked": 400,
+    "entries": 53248,
+    "completeStakeOutcomes": 425984,
+    "paylines": 19,
+    "largestIndividualOutcomeProbability": "9622857/3386165362",
+    "failures": 0,
+    "modelSha256": "b81268b8cbc4e10bd95e67d1adfdf45af66914443029dd115cb66c76dd602cff",
+    "proofSha256": "98747a22baf09abb893355af7a33fc34c6a5c6bc3cf72e64439b7cb98b02893b",
+    "sourceHashes": {
+      "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+      "src/engine.ts": "9f55e3ad263820d5295b1d8486817acfc6da0642c46a9fa978ba05c09b36c1a8",
+      "src/types.ts": "732c1909a97e386dae03eb335065af37c555b58fca8bb0bda9e337b62dcfa642",
+      "src/math-model.ts": "c19cab83b235b925c3e87f53d32a0b12e07466b6ca7ce57237ad662f45afed2c",
+      "scripts/build-math-model.ts": "ae5fddab2b8e6ff149311ecf12ecc883129265156015f3fc57ab82b9bc21f209"
+    },
+    "checkedAtUTC": "2026-10-09T13:06:11.037632+00:00",
+    "chartSha256": "2631ca7cdc77d75e22a0dc5fccb65b6e91878bdd7d61362e6caf275e497f528d",
+    "chartReview": "Independent direct visual transcription of all 19 inline diagrams; exact source/proof/evidence match. Prototype numbering follows diagram reading order.",
+    "scriptSha256": "1722ae4258790706a494e2f3cdbee65cd7e1c116a679819b9fd74b40f2a2d54f"
+  },
+  "deepReceiptReplay": {
+    "status": "passed",
+    "command": "/workspace/Test/node_modules/.bin/tsx /tmp/v5-independent-replay-audit.ts",
+    "modelVersion": 5,
+    "searchedFixtureSeeds": 13,
+    "checks": 22,
+    "rejectedMutations": 17,
+    "productionReloadEntropyCalls": 0,
+    "fixtureChoices": [
+      {
+        "kind": "spin"
+      },
+      {
+        "kind": "buy",
+        "tier": "edge"
+      },
+      {
+        "kind": "buy",
+        "tier": "lux"
+      }
+    ],
+    "results": [
+      {
+        "check": "ordinary unchanged complete pending and settled-history receipt replays",
+        "passed": true
+      },
+      {
+        "check": "shooter unchanged complete pending and settled-history receipt replays",
+        "passed": true
+      },
+      {
+        "check": "collector unchanged complete pending and settled-history receipt replays",
+        "passed": true
+      },
+      {
+        "check": "Changed payline number rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed winning path cell rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed immediate expanded-reel sticky cell rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed next-spin retained expanded-reel identity rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed retained expanded-reel multiplier rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed shooter phase rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed shot target rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed shot-lock decision rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed expanded reel hit count rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed expanded reel multiplier rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed collector reveal kind rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed collection amount rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed collected source value rejected",
+        "passed": true
+      },
+      {
+        "check": "Appended fixture draw rejected",
+        "passed": true
+      },
+      {
+        "check": "Legacy versions 1–4 pending receipts are rejected and only structurally checked settled virtual-wallet fields carry",
+        "passed": true
+      },
+      {
+        "check": "Appended production entropy word rejected",
+        "passed": true
+      },
+      {
+        "check": "Truncated production entropy tape rejected",
+        "passed": true
+      },
+      {
+        "check": "Changed production catalogue index rejected",
+        "passed": true
+      },
+      {
+        "check": "Production pending and settled reload use zero fresh entropy calls",
+        "passed": true
+      }
+    ],
+    "sourceHashes": {
+      "src/engine.ts": "9f55e3ad263820d5295b1d8486817acfc6da0642c46a9fa978ba05c09b36c1a8",
+      "src/types.ts": "732c1909a97e386dae03eb335065af37c555b58fca8bb0bda9e337b62dcfa642",
+      "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+      "src/math-model.ts": "c19cab83b235b925c3e87f53d32a0b12e07466b6ca7ce57237ad662f45afed2c",
+      "src/math-model.json": "b81268b8cbc4e10bd95e67d1adfdf45af66914443029dd115cb66c76dd602cff"
+    },
+    "failures": 0,
+    "scriptSha256": "8feace1cba4850a4605a29bc4aa29183cd4bae63f469eb322946d325fc967345",
+    "checkedAtUTC": "2026-10-09T13:09:23.290428+00:00",
+    "limits": [
+      "Legacy version rejection checks use matching v5 receipts with old version headers to prove old pending data cannot be reinterpreted and verify settled-only structural wallet checks; they do not replay obsolete commercial or v4 mathematics. Actual old-receipt migration checks belong to the separate engine/browser validation."
+    ]
+  },
+  "rawStickyShooterReview": {
+    "status": "passed",
+    "command": "/workspace/Test/node_modules/.bin/tsx /tmp/v5-independent-hybrid-audit.ts",
+    "focused": 11,
+    "rounds": 3000,
+    "spins": 27310,
+    "expansions": 2943,
+    "shotPhases": 726,
+    "shotEvents": 1463,
+    "lockedShots": 405,
+    "transientShots": 1058,
+    "multipleExpansionSpins": 189,
+    "rearmedLockedReels": 14286,
+    "partialClearIds": 213,
+    "immediateBonusLocks": 2443,
+    "noShotBonusLocks": 1743,
+    "retriggerCarry": 438,
+    "upgradeCarry": 0,
+    "allSixStickySpins": 0,
+    "baseResets": 100,
+    "forcedNaturalEntries": 100,
+    "modelVersion": 5,
+    "failures": 0,
+    "paylineCount": 19,
+    "sourceHashes": {
+      "src/engine.ts": "9f55e3ad263820d5295b1d8486817acfc6da0642c46a9fa978ba05c09b36c1a8",
+      "src/types.ts": "732c1909a97e386dae03eb335065af37c555b58fca8bb0bda9e337b62dcfa642",
+      "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
+      "src/math-model.ts": "c19cab83b235b925c3e87f53d32a0b12e07466b6ca7ce57237ad662f45afed2c",
+      "scripts/build-math-model.ts": "ae5fddab2b8e6ff149311ecf12ecc883129265156015f3fc57ab82b9bc21f209",
+      "scripts/verify-math-outcomes.ts": "53c97a5ea664b5577a662efe857357d0c39c7d0da11719577b9f3a37d5a5bd82"
+    },
+    "limits": [
+      "Raw procedural rounds and deterministic direct-feature cases; paid calibration is independently verified above.",
+      "100 of the 3,000 raw cases explicitly force natural entry tiers to exercise the base-to-bonus reset path.",
+      "No naturally occurring six-sticky-reel spin was observed in this sample. The direct six-expansion case reaches the real cap with one all-Wild award per payline, and spent-cell evaluation then returns no awards.",
+      "A planted Shooter reduces available scatter reels to at most five. An Edge-to-Old upgrade requires six scatters, so this naturally reachable carry example is not claimed. Read-only inspection verifies the active-tier update does not reset state.",
+      "No runtime edits were made by this reviewer."
+    ],
+    "scriptSha256": "25f747c5e14fab34cf9a02616fbc2bc69e754ad9dd1bb96fc4bbdd356b500433",
+    "checkedAtUTC": "2026-10-09T13:09:23.295320+00:00"
+  },
+  "readOnlyRuntimeInspection": {
+    "status": "passed",
+    "renderer": [
+      "Every bonus expansion immediately records its whole reel as locked; no shot is necessary.",
+      "Retained reel IDs and five cell values restore before the next free-spin drop; planDrop keeps each sticky cell stationary.",
+      "Highlighted full-column backgrounds retain the authored Shooter avatar on the reel; normal cell W sprites are suppressed for these columns.",
+      "The final-row plate sums all five retained cell multipliers, including resting Wilds. It remains separate from the active global multiplier.",
+      "Recorded whole-reel shot impacts double all five cell values and refresh the sum through the same renderer state.",
+      "Multiple retained avatars stay on their own columns; ordinary base-game reels lose the character and total on a following normal spin.",
+      "Observed focused highlight and next-drop captures show two persistent characters with bottom-row total plates; source inspection is not a substitute for the separate full production browser run."
+    ],
+    "playerRules": "BG and EN explain immediate bonus-wide stickiness, persistent character, sum of all five retained cell values on the final row, inactive rest/re-arm and base-only reset.",
+    "saveMigration": "Version 5 uses a fresh storage key and searches previous keys 4, 3, 2 and 1. Only structurally checked settled virtual-wallet fields carry; pending old receipts are not regenerated under new mathematics and old bytes remain untouched."
+  },
+  "limits": [
+    "96.5% is the exact expected weighted paid return, not a lower bound on individual sessions.",
+    "The supplied 19 paths and public payout brackets do not provide proprietary commercial odds or certification.",
+    "Focused visual captures were inspected before the separate full browser baseline; full-release screenshot and ZIP validation are recorded separately."
+  ],
+  "failures": 0,
+  "finalMathematicsEvidence": {
+    "status": "passed",
+    "modelVersion": 5,
+    "sourceHashesMatch": true,
+    "exactReturnRows": 80,
+    "catalogueEntries": 53248,
+    "completeStakeOutcomesReplayed": 425984,
+    "checkedImmediateBonusReelLocks": 167136,
+    "checkedRetainedBonusReels": 1082648,
+    "freshCryptoSampleRounds": 200000,
+    "fullReplayFailures": 0,
+    "sampleFailures": 0,
+    "limits": "Full replay and production sample are the engine owner’s reports; this reviewer independently verifies their pinned sources/counts/failure fields and the exact rational equality above."
+  },
+  "focusedRendererEvidenceReview": {
+    "status": "passed",
+    "method": "Actual Chromium HTTP renderer with QA-only controlled 4.17ms RAF timestamps. Procedural feature receipts and five test-only straight lines. Renderer entropy call throws.",
+    "checks": 16,
+    "bonusFrames": 1186,
+    "baseFrames": 892,
+    "carriedColumnStationary": true,
+    "rearmedNextSpin": true,
+    "baseLocks": false,
+    "errors": [],
+    "captureReview": "Viewed highlighted columns, the actual next-drop retained columns and the 320px renderer-only canvas capture. Authored Shooter bodies remain on their own columns above readable final-row ×90 and ×10 plates. This is focused fixture rendering, not a fullscreen production-layout check.",
+    "captureSha256": {
+      "ot-staroto-v5-column-highlight.png": "2ea6d4d471e848daceec2e9862afe29f348c14d7982a5f9882d3fbb520e44a73",
+      "ot-staroto-v5-column-rearmed.png": "a72d5c5f67474e8e22aa3c45591b848c2ed39dfdb0e9c3d2ca7d12cccff63b6e",
+      "ot-staroto-v5-shooter-320.png": "c4e79f855cdf39bd52dd23ce7f9e91e95903ad4b40f18aba129bae0c4c034446"
+    },
+    "limits": "Focused HTTP renderer run was executed by the renderer agent using procedural fixture receipts, test-only straight lines and a controlled clock; this reviewer inspected its report, images and source. Full production/browser checks are separate."
+  }
+}

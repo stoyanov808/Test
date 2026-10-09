@@ -47,6 +47,10 @@ interface Effect {
   coin?: Coin; collection?: CoinCollection;
 }
 interface ReelExpansion { reel: number; source: Cell; multiplier: number; cells: Cell[] }
+interface ShooterReelView {
+  reel: number; character: 'middle'; sticky: boolean; totalMultiplier: number;
+  cellMultipliers: number[]; inactiveRows: number[]; avatarVisible: true; multiplierRow: 4;
+}
 export interface RendererUpdate {
   spin: Spin | null; round: Round | null; global: number; remaining: number; tier: Tier | null; totalCents: number;
 }
@@ -63,6 +67,8 @@ export interface RendererInspection extends Omit<RendererUpdate, 'spin' | 'round
   winningLines: Win[]; activeLine: number | null; lineProgress: number;
   expandedReels: ReelExpansion[]; expansionProgress: number; expansionCells: Cell[];
   expandedReelIds: number[]; lockedReels: number[]; shooterPhase: 'expand' | 'shots' | null;
+  /** Retained reel values include resting Wilds; they are distinct from the active global multiplier. */
+  shooterReels: ShooterReelView[];
   followUpShots: NonNullable<Feature['shotEvents']>;
 }
 export interface RendererOptions {
@@ -211,7 +217,7 @@ export class GameRenderer {
     this.draw();
   }
 
-  setIdle(grid?: Grid, multipliers?: Matrix, marks?: boolean[][], inactiveWilds: Cell[] = []): void {
+  setIdle(grid?: Grid, multipliers?: Matrix, marks?: boolean[][], inactiveWilds: Cell[] = [], expandedReels: number[] = []): void {
     if (this.playing) return;
     this.grid = grid ? cloneGrid(grid) : Array.from({ length: COLS }, (_, reel) => Array.from({ length: ROWS }, (_, row) => REGULARS[(reel * 2 + row) % REGULARS.length]));
     this.wildMultipliers = multipliers ? cloneMatrix(multipliers) : emptyMatrix();
@@ -233,7 +239,7 @@ export class GameRenderer {
     this.resetLines();
     this.expandedReels = [];
     this.expansionCells = [];
-    this.expandedReelIds.clear();
+    this.expandedReelIds = new Set(expandedReels);
     this.lockedReels.clear();
     this.followUpShots = [];
     this.clearing.clear();
@@ -280,6 +286,7 @@ export class GameRenderer {
       expansionProgress: this.effect?.kind === 'expansion' ? this.effect.progress : 0,
       expansionCells: this.expansionCells.map(cell => ({ ...cell })),
       expandedReelIds: [...this.expandedReelIds], lockedReels: [...this.lockedReels],
+      shooterReels: this.shooterReelViews(),
       shooterPhase: this.effect?.character === 'middle' ? this.effect.kind === 'expansion' ? 'expand' : this.effect.kind === 'shot' ? 'shots' : null : null,
       followUpShots: this.followUpShots.map(shot => ({ ...shot, target: { ...shot.target }, hits: shot.hits.map(hit => ({ ...hit, cell: { ...hit.cell } })) })),
       global: this.global, remaining: this.remaining, tier: this.tier, totalCents: this.totalCents,
@@ -542,6 +549,8 @@ export class GameRenderer {
     const hits = feature.hits;
     this.stage = 'feature-middle-expand';
     this.expansionCells = [];
+    this.expandedReelIds.add(feature.expandedReel);
+    if (this.tier !== null) this.lockedReels.add(feature.expandedReel);
     this.effect = { kind: 'expansion', progress: 0, source: { ...feature.source }, target: { ...feature.source }, character: 'middle', value: feature.expansionMultiplier, recipients: hits.map(hit => ({ ...hit.cell })) };
     this.options.onSound?.('shot');
     const revealed = new Set<string>();
@@ -566,6 +575,7 @@ export class GameRenderer {
     }
     this.expandedReels.push({ reel: feature.expandedReel, source: { ...feature.source }, multiplier: feature.expansionMultiplier, cells: hits.map(hit => ({ ...hit.cell })) });
     this.expandedReelIds.add(feature.expandedReel);
+    if (this.tier !== null) this.lockedReels.add(feature.expandedReel);
     this.expansionCells = hits.map(hit => ({ ...hit.cell }));
     this.effect = null;
     this.syncGlobal();
@@ -880,13 +890,17 @@ export class GameRenderer {
     ctx.beginPath();
     ctx.rect(BOARD.x + 3, BOARD.y + 3, BOARD.w - 6, BOARD.h - 6);
     ctx.clip();
+    const shooterReels = this.shooterReelViews();
+    const shooterIds = new Set(shooterReels.map(reel => reel.reel));
     if (this.moving.length) {
       for (const cell of [...this.moving.filter(cell => !cell.sticky), ...this.moving.filter(cell => cell.sticky)]) {
+        if (cell.symbol === 'wild' && shooterIds.has(cell.reel)) continue;
         this.drawSymbol(cell.symbol, cell.x, cell.y, cell.rotation, cell.scaleX, cell.scaleY, this.inactiveWilds.has(key(cell)));
         if (cell.progress >= 1) this.drawMultiplier(cell, this.wildMultipliers[cell.reel]?.[cell.row] ?? 0);
       }
     } else {
       for (let reel = 0; reel < COLS; reel++) for (let row = 0; row < ROWS; row++) {
+        if (shooterIds.has(reel)) continue;
         const cell = { reel, row }, position = center(cell), removing = this.clearing.has(key(cell));
         const dissolve = removing ? this.clearCellProgress(cell) : 0;
         ctx.save();
@@ -910,7 +924,7 @@ export class GameRenderer {
         if (removing && dissolve > .08 && dissolve < .8 && !this.reducedMotion.matches) this.clearInk(position.x, position.y, dissolve, hash(`${this.round?.id ?? 0}:${this.spin?.index ?? 0}:${key(cell)}`));
       }
     }
-    this.drawReelLocks();
+    this.drawShooterReels(shooterReels);
     this.drawMarks();
     this.drawWinningLines();
     this.drawGodShotMarks();
@@ -1097,20 +1111,77 @@ export class GameRenderer {
     ctx.restore();
   }
 
-  private drawReelLocks(): void {
+  private shooterReelViews(): ShooterReelView[] {
+    return [...this.expandedReelIds].sort((a, b) => a - b).flatMap(reel => {
+      const cellMultipliers = this.wildMultipliers[reel];
+      if (!this.grid[reel]?.every(symbol => symbol === 'wild') || cellMultipliers?.length !== ROWS || !cellMultipliers.every(value => value > 0)) return [];
+      return [{ reel, character: 'middle' as const, sticky: this.lockedReels.has(reel), totalMultiplier: cellMultipliers.reduce((sum, value) => sum + value, 0), cellMultipliers: [...cellMultipliers], inactiveRows: Array.from({ length: ROWS }, (_, row) => row).filter(row => this.inactiveWilds.has(`${reel}:${row}`)), avatarVisible: true as const, multiplierRow: 4 as const }];
+    });
+  }
+
+  /** The character belongs to the expanded column, rather than to its original
+   * badge. The receipt's retained five cell values keep the plate readable even
+   * while winning Wilds rest, and when subsequent free spins begin to drop. */
+  private drawShooterReels(reels: ShooterReelView[]): void {
     const ctx = this.ctx;
-    for (const reel of this.lockedReels) {
-      const exhausted = Array.from({ length: ROWS }, (_, row) => this.inactiveWilds.has(`${reel}:${row}`)).every(Boolean);
-      const left = BOARD.x + reel * CW + 5, right = left + CW - 10;
-      ctx.save(); ctx.strokeStyle = exhausted ? '#887e67' : '#c3aa71'; ctx.lineWidth = 1.3; ctx.globalAlpha = exhausted ? .48 : .72;
-      ctx.strokeRect(left, BOARD.y + 5, right - left, BOARD.h - 10);
-      // A small padlock stays with the column through tumbles and later free
-      // spins. Its muted colour follows the same exhausted/recharged Wilds.
-      const x = right - 12, y = BOARD.y + 15;
-      ctx.fillStyle = '#19160e'; ctx.beginPath(); ctx.roundRect(x - 5, y - 2, 10, 9, 2); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.arc(x, y - 2, 3.5, Math.PI, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = exhausted ? '#887e67' : '#e3c992'; ctx.beginPath(); ctx.arc(x, y + 2, 1.2, 0, Math.PI * 2); ctx.fill();
+    for (const view of reels) {
+      const left = BOARD.x + view.reel * CW + 5, width = CW - 10, x = left + width / 2;
+      const resting = view.inactiveRows.length === ROWS;
+      const columnHit = this.effect?.kind === 'shot' && this.effect.boostedReel === view.reel;
+      const hitProgress = columnHit ? clamp((this.effect!.progress - .68) / .32) : 1;
+      const hitFlash = columnHit && hitProgress > 0 ? Math.sin(hitProgress * Math.PI) : 0;
+      const expansion = this.effect?.kind === 'expansion' && this.effect.source?.reel === view.reel;
+      const entrance = expansion ? smooth(clamp((this.effect!.progress - .65) / .35)) : 1;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(left, BOARD.y + 5, width, BOARD.h - 10); ctx.clip();
+      const shade = ctx.createLinearGradient(left, 0, left + width, 0);
+      shade.addColorStop(0, resting ? '#282219' : '#6d2920'); shade.addColorStop(.48, resting ? '#373024' : '#9b3c27'); shade.addColorStop(1, resting ? '#282219' : '#6d2920');
+      ctx.globalAlpha = .92 * entrance; ctx.fillStyle = shade; ctx.fillRect(left, BOARD.y + 5, width, BOARD.h - 10);
+      // Ink hatching, a gold spine and each row's small Wild cue make the entire
+      // reel legible without putting five generic W badges over the actor.
+      ctx.strokeStyle = resting ? 'rgba(176,150,99,.13)' : 'rgba(247,202,119,.13)'; ctx.lineWidth = 1;
+      for (let slash = -BOARD.h; slash < width + BOARD.h; slash += 19) { ctx.beginPath(); ctx.moveTo(left + slash, BOARD.y); ctx.lineTo(left + slash + BOARD.h * .36, BOARD.y + BOARD.h); ctx.stroke(); }
+      const glow = ctx.createRadialGradient(x, BOARD.y + BOARD.h * .40, 12, x, BOARD.y + BOARD.h * .40, CW * 1.45);
+      glow.addColorStop(0, resting ? 'rgba(220,198,156,.08)' : 'rgba(255,221,153,.32)'); glow.addColorStop(1, 'rgba(255,209,123,0)'); ctx.fillStyle = glow; ctx.fillRect(left, BOARD.y + 5, width, BOARD.h - 10);
+      for (let row = 0; row < ROWS; row++) {
+        const inactive = view.inactiveRows.includes(row), y = BOARD.y + row * CH + CH * .5;
+        ctx.strokeStyle = inactive ? '#8c8066' : '#f5d397'; ctx.lineWidth = 1.5; ctx.globalAlpha = entrance * (inactive ? .48 : .83);
+        for (const edge of [left + 9, left + width - 9]) { ctx.beginPath(); ctx.moveTo(edge, y - 10); ctx.lineTo(edge + (edge < x ? 3 : -3), y); ctx.lineTo(edge, y + 10); ctx.stroke(); }
+      }
+      ctx.globalAlpha = entrance;
+      const actorActive = this.effect?.character === 'middle' && this.effect.source?.reel === view.reel;
+      const sprite = characterFrameSprite('middle', actorActive ? this.characterAnimationState('middle').index : 0), image = this.images.get(sprite.url);
+      const feetY = BOARD.y + CH * 4.06, scale = CH * 3.72 / (sprite.referenceHeight ?? sprite.height);
+      const recoil = this.reducedMotion.matches ? 0 : hitFlash * 2.1;
+      if (image?.complete && image.naturalWidth) {
+        ctx.save(); ctx.translate(x + recoil, feetY); ctx.scale(-1, 1);
+        // Cropping at the reel edges preserves the authored body's proportions;
+        // no artwork is stretched to fill the tall column.
+        ctx.globalAlpha *= resting ? .72 : 1;
+        ctx.shadowColor = '#090807'; ctx.shadowBlur = 13; ctx.shadowOffsetY = 4;
+        ctx.drawImage(image, sprite.sx, sprite.sy, sprite.width, sprite.height, -(sprite.anchorX ?? sprite.width / 2) * scale, -(sprite.anchorY ?? sprite.height) * scale, sprite.width * scale, sprite.height * scale); ctx.restore();
+      }
+      this.inkText('WILD', x, BOARD.y + 39, 28, resting ? '#b6a380' : '#f7dfa7');
+      if (view.sticky) {
+        ctx.strokeStyle = resting ? '#aa9570' : '#f6d695'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(x - 5, BOARD.y + 53, 10, 10, 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, BOARD.y + 53, 3.5, Math.PI, Math.PI * 2); ctx.stroke();
+      }
+      // The last row is a single retained reel total: not a new multiplier and
+      // not the active-global sum, which excludes resting Wild cells.
+      const plateY = BOARD.y + CH * 4 + 13, plateHeight = CH - 24;
+      const plate = ctx.createLinearGradient(0, plateY, 0, plateY + plateHeight);
+      plate.addColorStop(0, '#292014'); plate.addColorStop(.45, '#110f0c'); plate.addColorStop(1, '#302216');
+      ctx.fillStyle = plate; ctx.strokeStyle = resting ? '#a08962' : '#efc37a'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(left + 8, plateY, width - 16, plateHeight, 6); ctx.fill(); ctx.stroke();
+      this.inkText(this.text('БАРАБАН', 'REEL TOTAL'), x, plateY + 22, 12, resting ? '#b9a480' : '#e7c68d');
+      const total = `×${view.totalMultiplier.toLocaleString(this.language === 'bg' ? 'bg-BG' : 'en-IE')}`;
+      this.inkText(total, x, plateY + 57, total.length > 7 ? 23 : total.length > 5 ? 27 : 33, resting ? '#dac39c' : '#ffe1a4');
+      this.inkText(resting ? this.text('ПРЕЗАРЕЖДА', 'RECHARGING') : view.sticky ? this.text('ДО КРАЯ НА БОНУСА', 'BONUS STICKY') : this.text('ТОЗИ РУНД', 'THIS ROUND'), x, plateY + 80, 10, resting ? '#a99471' : '#c7a36c');
       ctx.restore();
+      ctx.save(); ctx.shadowColor = resting ? 'transparent' : '#c96327'; ctx.shadowBlur = 8 + hitFlash * 19;
+      ctx.strokeStyle = resting ? '#b39968' : '#f4c875'; ctx.lineWidth = columnHit ? 2.5 + hitFlash * 1.5 : 2.5; ctx.globalAlpha = entrance * (resting ? .74 : .97);
+      ctx.strokeRect(left, BOARD.y + 5, width, BOARD.h - 10); ctx.restore();
     }
   }
 
@@ -1124,6 +1195,10 @@ export class GameRenderer {
   }
 
   private characterMuzzle(character: Character): { x: number; y: number } {
+    if (character === 'middle' && this.effect?.source && this.shooterReelViews().some(view => view.reel === this.effect!.source!.reel)) {
+      const sprite = characterFrameSprite('middle', 4), scale = CH * 3.72 / (sprite.referenceHeight ?? sprite.height);
+      return { x: BOARD.x + (this.effect.source.reel + .5) * CW - ((sprite.attachmentX ?? sprite.width / 2) - (sprite.anchorX ?? sprite.width / 2)) * scale, y: BOARD.y + CH * 4.06 + ((sprite.attachmentY ?? sprite.height * .28) - (sprite.anchorY ?? sprite.height)) * scale };
+    }
     const box = this.characterPlacement(character), sprite = characterFrameSprite(character, 4);
     const scale = Math.min(box.width / (sprite.referenceWidth ?? sprite.width), box.height / (sprite.referenceHeight ?? sprite.height));
     const flip = character === 'middle' ? -1 : 1;
@@ -1165,6 +1240,7 @@ export class GameRenderer {
     const ctx = this.ctx;
     for (const character of this.activeCharacters) {
       const active = this.effect?.character === character;
+      if (character === 'middle' && this.shooterReelViews().some(view => !active || this.effect?.source?.reel === view.reel)) continue;
       if (foregroundOnly && !active) continue;
       const state = this.characterAnimationState(character), p = state.progress;
       const sprite = characterFrameSprite(character, state.index), img = this.images.get(sprite.url);
@@ -1207,7 +1283,7 @@ export class GameRenderer {
     } else if (this.effect?.kind === 'expansion') {
       this.inkText(`${this.text('РАЗГЪВАЩ WILD', 'EXPANDING WILD')} ×${this.effect.value ?? 1}`, W / 2, BOARD.y - 14, 17, '#dfc17a');
     } else if (this.effect?.kind === 'shot' && this.effect.boostedReel !== undefined) {
-      const label = this.effect.sticky ? this.text('ЗАКЛЮЧЕН БАРАБАН', 'REEL LOCKED') : this.text('МНОЖИТЕЛ НА БАРАБАНА', 'REEL BOOST');
+      const label = this.text('ПОДСИЛЕН БАРАБАН', 'REEL BOOST');
       this.inkText(`${label} · ×2`, W / 2, BOARD.y - 14, 17, '#dfc17a');
     }
   }

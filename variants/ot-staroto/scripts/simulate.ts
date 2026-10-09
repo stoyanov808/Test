@@ -26,7 +26,7 @@ for (const [modeIndex, choice] of choices.entries()) {
   let session = createSession(seed, 8_000_000_000_000);
   let cost = 0, payout = 0, squares = 0, winningRounds = 0, capped = 0, bonusEntries = 0, spins = 0, cascades = 0, features = 0, regularPayout = 0, coinPayout = 0, godWins = 0, longestCascade = 0, longestBonus = 0, peakBetMultiple = 0;
   const extraTumbles: number[] = [], markedOccupancy: number[] = [], monetaryOccupancy: number[] = [], wavesPerReveal: number[] = [];
-  let wildAssistedWins = 0, coinCollections = 0, multiExpandingSpins = 0, expandingFeatures = 0, followupFeatures = 0, followupShots = 0, lockedReelHits = 0;
+  let wildAssistedWins = 0, coinCollections = 0, multiExpandingSpins = 0, expandingFeatures = 0, followupFeatures = 0, followupShots = 0, lockedReelHits = 0, immediateBonusLocks = 0, retainedBonusReels = 0;
   for (let i = 0; i < n; i++) {
     const balanceBefore = session.balanceCents;
     session = playRound(session, choice);
@@ -34,9 +34,17 @@ for (const [modeIndex, choice] of choices.entries()) {
     if (session.balanceCents !== balanceBefore - round.costCents + round.payoutCents || !Number.isSafeInteger(session.balanceCents)) throw new Error(`Accounting failure ${modeIndex}/${i}`);
     if (round.payoutCents > round.capCents || round.capCents !== round.betCents * CONFIG.maxWin || round.maxWin !== (round.payoutCents === round.capCents)) throw new Error(`Cap failure ${modeIndex}/${i}`);
     let receiptTotal = 0;
+    let previousSpin: typeof round.spins[number] | undefined;
     for (const spin of round.spins) {
       spins++; cascades += spin.cascades.length;
       const expanding = spin.cascades.flatMap(c => c.features).filter(f => f.character === 'middle' && f.phase === 'expand');
+      immediateBonusLocks += spin.tier !== null ? expanding.length : 0;
+      retainedBonusReels += spin.initialExpandedReels.length;
+      if (previousSpin) {
+        const expected = previousSpin.tier === null ? [] : previousSpin.finalExpandedReels;
+        if (JSON.stringify(expected) !== JSON.stringify(spin.initialExpandedReels)) throw new Error('Bonus expanded reel lost between free spins or base expansion carried');
+        for (const reel of expected) if (!spin.initialGrid[reel].every(s => s === 'wild') || JSON.stringify(spin.initialWildMultipliers[reel]) !== JSON.stringify(previousSpin.finalWildMultipliers[reel]) || spin.cascades[0].inactiveWilds.length) throw new Error('Bonus expanded reel lost saved multipliers or failed to rearm');
+      }
       const shooting = spin.cascades.flatMap(c => c.features).filter(f => f.phase === 'shots');
       followupFeatures += shooting.length; followupShots += shooting.reduce((n, f) => n + f.shotEvents!.length, 0); lockedReelHits += shooting.reduce((n, f) => n + f.shotEvents!.filter(e => e.sticky).length, 0);
       expandingFeatures += expanding.length; multiExpandingSpins += Number(new Set(expanding.map(f => f.expandedReel)).size >= 2);
@@ -53,6 +61,10 @@ for (const [modeIndex, choice] of choices.entries()) {
           features++;
           if (spin.tier && !TIER_CHARACTERS[spin.tier].includes(feature.character)) throw new Error('Ineligible bonus character');
           if (feature.character !== 'right' && feature.coins.length) throw new Error('Coin role failure');
+          if (feature.phase === 'expand') {
+            const reel = feature.expandedReel!;
+            if (spin.tier !== null ? !cascade.stickyWilds[reel].every((n, row) => n > 0 && n === cascade.resolvedWildMultipliers[reel][row]) : cascade.stickyWilds[reel].some(n => n > 0)) throw new Error('Expanded reel bonus placement or base transient rule failed');
+          }
           if (feature.character === 'right' && feature.targets.length) {
             markedOccupancy.push(feature.targets.length); wavesPerReveal.push(feature.coinWaves.length);
             for (const wave of feature.coinWaves) {
@@ -73,6 +85,7 @@ for (const [modeIndex, choice] of choices.entries()) {
       if (spinTotal !== spin.payoutCents) throw new Error('Spin ledger failure');
       receiptTotal += spinTotal;
       if (spin.roundTotalCents !== receiptTotal || receiptTotal > round.capCents) throw new Error('Round running-total failure');
+      previousSpin = spin;
     }
     if (choice.kind === 'god') {
       if (round.godGrid?.flat().filter(s => s === 'max').length !== 1) throw new Error('MAX symbol count failure');
@@ -97,15 +110,15 @@ for (const [modeIndex, choice] of choices.entries()) {
     extraTumblesP50: percentile(extraTumbles, .5), extraTumblesP95: percentile(extraTumbles, .95), extraTumblesP99: percentile(extraTumbles, .99),
     markedCellsAtRevealP50: percentile(markedOccupancy, .5), markedCellsAtRevealP95: percentile(markedOccupancy, .95), markedCellsAtRevealMax: markedOccupancy.reduce((a, b) => Math.max(a, b), 0),
     monetaryCellsPerWaveP50: percentile(monetaryOccupancy, .5), monetaryCellsPerWaveP95: percentile(monetaryOccupancy, .95), monetaryCellsPerWaveMax: monetaryOccupancy.reduce((a, b) => Math.max(a, b), 0),
-    wavesPerRevealP50: percentile(wavesPerReveal, .5), wavesPerRevealP95: percentile(wavesPerReveal, .95), longestCoinReveal: wavesPerReveal.reduce((a, b) => Math.max(a, b), 0), coinCollections, wildAssistedWins, multiExpandingSpins, expandingFeatures, followupFeatures, followupShots, lockedReelHits,
+    wavesPerRevealP50: percentile(wavesPerReveal, .5), wavesPerRevealP95: percentile(wavesPerReveal, .95), longestCoinReveal: wavesPerReveal.reduce((a, b) => Math.max(a, b), 0), coinCollections, wildAssistedWins, multiExpandingSpins, expandingFeatures, followupFeatures, followupShots, lockedReelHits, immediateBonusLocks, retainedBonusReels,
     accountingFailures: 0, capFailures: 0, safetyFailures: 0, entitlementFailures: 0 };
   rows.push(row); console.log(JSON.stringify(row));
 }
 for (const [file, hash] of Object.entries(sourceHashes)) if (sha(file) !== hash) throw new Error(`Source changed during sample: ${file}`);
 const report = {
-  sourceVersion: 4, generatedAt: new Date().toISOString(), config: CONFIG,
+  sourceVersion: CONFIG.version, generatedAt: new Date().toISOString(), config: CONFIG,
   sourceHashes,
-  notes: ['Weighted prototype mathematics with exact 96.5% expected return at every supported stake and mode; not a certified cash game.', 'Nine regular symbols pay the single longest 3/4/5/6 matching run from the first reel on each of the 19 user-referenced fixed paylines, including active Wild substitution and at least one actual regular of that type.', 'Badges and at most one scatter per reel enter only on each spin initial drop; refill draws regulars.', 'All landed Shooters expand before optional ordered shots. Ordinary shot Wilds are consumed with a winning batch; repeat hits double multipliers. Expanded-reel shots double all five Wilds and lock the full reel until the bonus ends.', 'Normal confidence intervals approximate sampling error; rare tails can remain unsampled. Individual finite samples may return less than 96%.', 'Production paid rounds use fresh independent Web Crypto ticket words; initial ledger seeds are reported but do not predetermine draws. Odds never depend on wallet balance or loss history.', 'God selects weighted complete real-board shooting outcomes, stops on an actual MAX hit, and settles misses on the same board. The weighted catalogue supersedes the old raw procedural 4.32/30 probability.', 'Every marked coin vacancy reveals a coin or effect. Coin reveals finish before modifiers and collector activation; collector repeats clear noncollectors; final retained collector and terminal value coins pay exactly once.'],
+  notes: ['Weighted prototype mathematics with exact 96.5% expected return at every supported stake and mode; not a certified cash game.', 'Nine regular symbols pay the single longest 3/4/5/6 matching run from the first reel on each of the 19 user-referenced fixed paylines, including active Wild substitution and at least one actual regular of that type.', 'Badges and at most one scatter per reel enter only on each spin initial drop; refill draws regulars.', 'All landed Shooters expand before optional ordered shots. Ordinary shot Wilds are consumed with a winning batch; repeat hits double multipliers. Every bonus Shooter expansion immediately locks its full reel until the bonus ends, independent of follow-up shots. Expanded-reel shots double all five saved Wild multipliers. Base expansions remain transient.', 'Normal confidence intervals approximate sampling error; rare tails can remain unsampled. Individual finite samples may return less than 96%.', 'Production paid rounds use fresh independent Web Crypto ticket words; initial ledger seeds are reported but do not predetermine draws. Odds never depend on wallet balance or loss history.', 'God selects weighted complete real-board shooting outcomes, stops on an actual MAX hit, and settles misses on the same board. The weighted catalogue supersedes the old raw procedural 4.32/30 probability.', 'Every marked coin vacancy reveals a coin or effect. Coin reveals finish before modifiers and collector activation; collector repeats clear noncollectors; final retained collector and terminal value coins pay exactly once.'],
   exactModel: { expectedReturn: MATH_MODEL.targetRtp.numerator / MATH_MODEL.targetRtp.denominator, proof: 'docs/mathematics-proof.json', modelSha256: sha('src/math-model.json'), baseBonusChance: 1 / 200, boostBonusChance: 1 / 40, boostedCostMultiplier: 3 },
 
   rows,

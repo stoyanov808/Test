@@ -154,15 +154,15 @@
       2
     ]
   ],
-  "modelVersion": 4,
-  "generatedAt": "2026-10-09T12:30:38.698Z",
-  "modelSha256": "6f682f54985d232c8f09f3c0cd7ef136b1958aba5e81d85a148d56ff6269923e",
+  "modelVersion": 5,
+  "generatedAt": "2026-10-09T13:04:54.451Z",
+  "modelSha256": "b81268b8cbc4e10bd95e67d1adfdf45af66914443029dd115cb66c76dd602cff",
   "sourceHashes": {
     "src/paylines.ts": "304ceacf2e35ce485e4c88272e6b5c025e3ca8e16a0fbc13a59f01dd62db486a",
-    "src/engine.ts": "7ed0fc5efa02a5c453febd32b07c5c751d22b7075c02419e3af20f90fd708225",
-    "src/types.ts": "326541f1fb58df10554db9ed4745f9f4773d80ce5147d892926d3cd03ae95432",
-    "src/math-model.ts": "2842948d150e9fa08dd0bdac0a6c6d8dc3f25973a18794b33689fced5da4d77a",
-    "scripts/build-math-model.ts": "dd8dc5cf2c9ed53fd97c99d573a4324f8e700210458a3fc709670e3d0f7c6daa"
+    "src/engine.ts": "9f55e3ad263820d5295b1d8486817acfc6da0642c46a9fa978ba05c09b36c1a8",
+    "src/types.ts": "732c1909a97e386dae03eb335065af37c555b58fca8bb0bda9e337b62dcfa642",
+    "src/math-model.ts": "c19cab83b235b925c3e87f53d32a0b12e07466b6ca7ce57237ad662f45afed2c",
+    "scripts/build-math-model.ts": "ae5fddab2b8e6ff149311ecf12ecc883129265156015f3fc57ab82b9bc21f209"
   },
   "targetRtp": {
     "numerator": 193,
@@ -514,400 +514,400 @@
       {
         "betCents": 10,
         "entries": 8192,
-        "calibrationEntries": 516,
+        "calibrationEntries": 7664,
         "largestEntryProbability": {
-          "numerator": "66424787",
-          "denominator": "166464760520",
-          "approximate": 0.0003990321242315989
+          "numerator": "36037197",
+          "denominator": "293713906800",
+          "approximate": 0.00012269489515366727
         },
-        "multiReelExpansionEntries": 48,
+        "multiReelExpansionEntries": 37,
         "multiReelExpansionProbability": {
-          "numerator": "2647149802",
-          "denominator": "166464760520"
+          "numerator": "1233758134",
+          "denominator": "293713906800"
         },
         "followupShotProbability": {
-          "numerator": "4329907902",
-          "denominator": "166464760520"
+          "numerator": "3394062290",
+          "denominator": "293713906800"
         },
         "bonusReelLockProbability": {
-          "numerator": "1810690402",
-          "denominator": "166464760520"
+          "numerator": "1725930128",
+          "denominator": "293713906800"
         },
-        "effectiveOutcomeCount": 6085.971226222352,
+        "effectiveOutcomeCount": 8188.888238939896,
         "hitProbability": {
-          "numerator": "159386866637",
-          "denominator": "166464760520"
+          "numerator": "278902618833",
+          "denominator": "293713906800"
         },
         "capProbability": {
-          "numerator": "0",
-          "denominator": "166464760520"
+          "numerator": "663819280",
+          "denominator": "293713906800"
         },
         "triggerTierProbabilities": {
           "ruse": {
-            "numerator": "159468038484",
-            "denominator": "166464760520"
+            "numerator": "283339049392",
+            "denominator": "293713906800"
           },
           "lux": {
-            "numerator": "4133076720",
-            "denominator": "166464760520"
+            "numerator": "8648927280",
+            "denominator": "293713906800"
           },
           "edge": {
-            "numerator": "2214158774",
-            "denominator": "166464760520"
+            "numerator": "1327638560",
+            "denominator": "293713906800"
           },
           "old": {
-            "numerator": "649486542",
-            "denominator": "166464760520"
+            "numerator": "398291568",
+            "denominator": "293713906800"
           }
         }
       },
       {
         "betCents": 20,
         "entries": 8192,
-        "calibrationEntries": 516,
+        "calibrationEntries": 7664,
         "largestEntryProbability": {
-          "numerator": "66424787",
-          "denominator": "166464760520",
-          "approximate": 0.0003990321242315989
+          "numerator": "36037197",
+          "denominator": "293713906800",
+          "approximate": 0.00012269489515366727
         },
-        "multiReelExpansionEntries": 48,
+        "multiReelExpansionEntries": 37,
         "multiReelExpansionProbability": {
-          "numerator": "2647149802",
-          "denominator": "166464760520"
+          "numerator": "1233758134",
+          "denominator": "293713906800"
         },
         "followupShotProbability": {
-          "numerator": "4329907902",
-          "denominator": "166464760520"
+          "numerator": "3394062290",
+          "denominator": "293713906800"
         },
         "bonusReelLockProbability": {
-          "numerator": "1810690402",
-          "denominator": "166464760520"
+          "numerator": "1725930128",
+          "denominator": "293713906800"
         },
-        "effectiveOutcomeCount": 6085.971226222352,
+        "effectiveOutcomeCount": 8188.888238939896,
         "hitProbability": {
-          "numerator": "159386866637",
-          "denominator": "166464760520"
+          "numerator": "278902618833",
+          "denominator": "293713906800"
         },
         "capProbability": {
-          "numerator": "0",
-          "denominator": "166464760520"
+          "numerator": "663819280",
+          "denominator": "293713906800"
         },
         "triggerTierProbabilities": {
           "ruse": {
-            "numerator": "159468038484",
-            "denominator": "166464760520"
+            "numerator": "283339049392",
+            "denominator": "293713906800"
           },
           "lux": {
-            "numerator": "4133076720",
-            "denominator": "166464760520"
+            "numerator": "8648927280",
+            "denominator": "293713906800"
           },
           "edge": {
-            "numerator": "2214158774",
-            "denominator": "166464760520"
+            "numerator": "1327638560",
+            "denominator": "293713906800"
           },
           "old": {
-            "numerator": "649486542",
-            "denominator": "166464760520"
+            "numerator": "398291568",
+            "denominator": "293713906800"
           }
         }
       },
       {
         "betCents": 50,
         "entries": 8192,
-        "calibrationEntries": 516,
+        "calibrationEntries": 7664,
         "largestEntryProbability": {
-          "numerator": "66424787",
-          "denominator": "166464760520",
-          "approximate": 0.0003990321242315989
+          "numerator": "36037197",
+          "denominator": "293713906800",
+          "approximate": 0.00012269489515366727
         },
-        "multiReelExpansionEntries": 48,
+        "multiReelExpansionEntries": 37,
         "multiReelExpansionProbability": {
-          "numerator": "2647149802",
-          "denominator": "166464760520"
+          "numerator": "1233758134",
+          "denominator": "293713906800"
         },
         "followupShotProbability": {
-          "numerator": "4329907902",
-          "denominator": "166464760520"
+          "numerator": "3394062290",
+          "denominator": "293713906800"
         },
         "bonusReelLockProbability": {
-          "numerator": "1810690402",
-          "denominator": "166464760520"
+          "numerator": "1725930128",
+          "denominator": "293713906800"
         },
-        "effectiveOutcomeCount": 6085.971226222352,
+        "effectiveOutcomeCount": 8188.888238939896,
         "hitProbability": {
-          "numerator": "159386866637",
-          "denominator": "166464760520"
+          "numerator": "278902618833",
+          "denominator": "293713906800"
         },
         "capProbability": {
-          "numerator": "0",
-          "denominator": "166464760520"
+          "numerator": "663819280",
+          "denominator": "293713906800"
         },
         "triggerTierProbabilities": {
           "ruse": {
-            "numerator": "159468038484",
-            "denominator": "166464760520"
+            "numerator": "283339049392",
+            "denominator": "293713906800"
           },
           "lux": {
-            "numerator": "4133076720",
-            "denominator": "166464760520"
+            "numerator": "8648927280",
+            "denominator": "293713906800"
           },
           "edge": {
-            "numerator": "2214158774",
-            "denominator": "166464760520"
+            "numerator": "1327638560",
+            "denominator": "293713906800"
           },
           "old": {
-            "numerator": "649486542",
-            "denominator": "166464760520"
+            "numerator": "398291568",
+            "denominator": "293713906800"
           }
         }
       },
       {
         "betCents": 100,
         "entries": 8192,
-        "calibrationEntries": 516,
+        "calibrationEntries": 7664,
         "largestEntryProbability": {
-          "numerator": "66424787",
-          "denominator": "166464760520",
-          "approximate": 0.0003990321242315989
+          "numerator": "36037197",
+          "denominator": "293713906800",
+          "approximate": 0.00012269489515366727
         },
-        "multiReelExpansionEntries": 48,
+        "multiReelExpansionEntries": 37,
         "multiReelExpansionProbability": {
-          "numerator": "2647149802",
-          "denominator": "166464760520"
+          "numerator": "1233758134",
+          "denominator": "293713906800"
         },
         "followupShotProbability": {
-          "numerator": "4329907902",
-          "denominator": "166464760520"
+          "numerator": "3394062290",
+          "denominator": "293713906800"
         },
         "bonusReelLockProbability": {
-          "numerator": "1810690402",
-          "denominator": "166464760520"
+          "numerator": "1725930128",
+          "denominator": "293713906800"
         },
-        "effectiveOutcomeCount": 6085.971226222352,
+        "effectiveOutcomeCount": 8188.888238939896,
         "hitProbability": {
-          "numerator": "159386866637",
-          "denominator": "166464760520"
+          "numerator": "278902618833",
+          "denominator": "293713906800"
         },
         "capProbability": {
-          "numerator": "0",
-          "denominator": "166464760520"
+          "numerator": "663819280",
+          "denominator": "293713906800"
         },
         "triggerTierProbabilities": {
           "ruse": {
-            "numerator": "159468038484",
-            "denominator": "166464760520"
+            "numerator": "283339049392",
+            "denominator": "293713906800"
           },
           "lux": {
-            "numerator": "4133076720",
-            "denominator": "166464760520"
+            "numerator": "8648927280",
+            "denominator": "293713906800"
           },
           "edge": {
-            "numerator": "2214158774",
-            "denominator": "166464760520"
+            "numerator": "1327638560",
+            "denominator": "293713906800"
           },
           "old": {
-            "numerator": "649486542",
-            "denominator": "166464760520"
+            "numerator": "398291568",
+            "denominator": "293713906800"
           }
         }
       },
       {
         "betCents": 200,
         "entries": 8192,
-        "calibrationEntries": 516,
+        "calibrationEntries": 7664,
         "largestEntryProbability": {
-          "numerator": "66424787",
-          "denominator": "166464760520",
-          "approximate": 0.0003990321242315989
+          "numerator": "36037197",
+          "denominator": "293713906800",
+          "approximate": 0.00012269489515366727
         },
-        "multiReelExpansionEntries": 48,
+        "multiReelExpansionEntries": 37,
         "multiReelExpansionProbability": {
-          "numerator": "2647149802",
-          "denominator": "166464760520"
+          "numerator": "1233758134",
+          "denominator": "293713906800"
         },
         "followupShotProbability": {
-          "numerator": "4329907902",
-          "denominator": "166464760520"
+          "numerator": "3394062290",
+          "denominator": "293713906800"
         },
         "bonusReelLockProbability": {
-          "numerator": "1810690402",
-          "denominator": "166464760520"
+          "numerator": "1725930128",
+          "denominator": "293713906800"
         },
-        "effectiveOutcomeCount": 6085.971226222352,
+        "effectiveOutcomeCount": 8188.888238939896,
         "hitProbability": {
-          "numerator": "159386866637",
-          "denominator": "166464760520"
+          "numerator": "278902618833",
+          "denominator": "293713906800"
         },
         "capProbability": {
-          "numerator": "0",
-          "denominator": "166464760520"
+          "numerator": "663819280",
+          "denominator": "293713906800"
         },
         "triggerTierProbabilities": {
           "ruse": {
-            "numerator": "159468038484",
-            "denominator": "166464760520"
+            "numerator": "283339049392",
+            "denominator": "293713906800"
           },
           "lux": {
-            "numerator": "4133076720",
-            "denominator": "166464760520"
+            "numerator": "8648927280",
+            "denominator": "293713906800"
           },
           "edge": {
-            "numerator": "2214158774",
-            "denominator": "166464760520"
+            "numerator": "1327638560",
+            "denominator": "293713906800"
           },
           "old": {
-            "numerator": "649486542",
-            "denominator": "166464760520"
+            "numerator": "398291568",
+            "denominator": "293713906800"
           }
         }
       },
       {
         "betCents": 500,
         "entries": 8192,
-        "calibrationEntries": 516,
+        "calibrationEntries": 7664,
         "largestEntryProbability": {
-          "numerator": "66424787",
-          "denominator": "166464760520",
-          "approximate": 0.0003990321242315989
+          "numerator": "36037197",
+          "denominator": "293713906800",
+          "approximate": 0.00012269489515366727
         },
-        "multiReelExpansionEntries": 48,
+        "multiReelExpansionEntries": 37,
         "multiReelExpansionProbability": {
-          "numerator": "2647149802",
-          "denominator": "166464760520"
+          "numerator": "1233758134",
+          "denominator": "293713906800"
         },
         "followupShotProbability": {
-          "numerator": "4329907902",
-          "denominator": "166464760520"
+          "numerator": "3394062290",
+          "denominator": "293713906800"
         },
         "bonusReelLockProbability": {
-          "numerator": "1810690402",
-          "denominator": "166464760520"
+          "numerator": "1725930128",
+          "denominator": "293713906800"
         },
-        "effectiveOutcomeCount": 6085.971226222352,
+        "effectiveOutcomeCount": 8188.888238939896,
         "hitProbability": {
-          "numerator": "159386866637",
-          "denominator": "166464760520"
+          "numerator": "278902618833",
+          "denominator": "293713906800"
         },
         "capProbability": {
-          "numerator": "0",
-          "denominator": "166464760520"
+          "numerator": "663819280",
+          "denominator": "293713906800"
         },
         "triggerTierProbabilities": {
           "ruse": {
-            "numerator": "159468038484",
-            "denominator": "166464760520"
+            "numerator": "283339049392",
+            "denominator": "293713906800"
           },
           "lux": {
-            "numerator": "4133076720",
-            "denominator": "166464760520"
+            "numerator": "8648927280",
+            "denominator": "293713906800"
           },
           "edge": {
-            "numerator": "2214158774",
-            "denominator": "166464760520"
+            "numerator": "1327638560",
+            "denominator": "293713906800"
           },
           "old": {
-            "numerator": "649486542",
-            "denominator": "166464760520"
+            "numerator": "398291568",
+            "denominator": "293713906800"
           }
         }
       },
       {
         "betCents": 1000,
         "entries": 8192,
-        "calibrationEntries": 516,
+        "calibrationEntries": 7664,
         "largestEntryProbability": {
-          "numerator": "66424787",
-          "denominator": "166464760520",
-          "approximate": 0.0003990321242315989
+          "numerator": "36037197",
+          "denominator": "293713906800",
+          "approximate": 0.00012269489515366727
         },
-        "multiReelExpansionEntries": 48,
+        "multiReelExpansionEntries": 37,
         "multiReelExpansionProbability": {
-          "numerator": "2647149802",
-          "denominator": "166464760520"
+          "numerator": "1233758134",
+          "denominator": "293713906800"
         },
         "followupShotProbability": {
-          "numerator": "4329907902",
-          "denominator": "166464760520"
+          "numerator": "3394062290",
+          "denominator": "293713906800"
         },
         "bonusReelLockProbability": {
-          "numerator": "1810690402",
-          "denominator": "166464760520"
+          "numerator": "1725930128",
+          "denominator": "293713906800"
         },
-        "effectiveOutcomeCount": 6085.971226222352,
+        "effectiveOutcomeCount": 8188.888238939896,
         "hitProbability": {
-          "numerator": "159386866637",
-          "denominator": "166464760520"
+          "numerator": "278902618833",
+          "denominator": "293713906800"
         },
         "capProbability": {
-          "numerator": "0",
-          "denominator": "166464760520"
+          "numerator": "663819280",
+          "denominator": "293713906800"
         },
         "triggerTierProbabilities": {
           "ruse": {
-            "numerator": "159468038484",
-            "denominator": "166464760520"
+            "numerator": "283339049392",
+            "denominator": "293713906800"
           },
           "lux": {
-            "numerator": "4133076720",
-            "denominator": "166464760520"
+            "numerator": "8648927280",
+            "denominator": "293713906800"
           },
           "edge": {
-            "numerator": "2214158774",
-            "denominator": "166464760520"
+            "numerator": "1327638560",
+            "denominator": "293713906800"
           },
           "old": {
-            "numerator": "649486542",
-            "denominator": "166464760520"
+            "numerator": "398291568",
+            "denominator": "293713906800"
           }
         }
       },
       {
         "betCents": 2000,
         "entries": 8192,
-        "calibrationEntries": 516,
+        "calibrationEntries": 7664,
         "largestEntryProbability": {
-          "numerator": "66424787",
-          "denominator": "166464760520",
-          "approximate": 0.0003990321242315989
+          "numerator": "36037197",
+          "denominator": "293713906800",
+          "approximate": 0.00012269489515366727
         },
-        "multiReelExpansionEntries": 48,
+        "multiReelExpansionEntries": 37,
         "multiReelExpansionProbability": {
-          "numerator": "2647149802",
-          "denominator": "166464760520"
+          "numerator": "1233758134",
+          "denominator": "293713906800"
         },
         "followupShotProbability": {
-          "numerator": "4329907902",
-          "denominator": "166464760520"
+          "numerator": "3394062290",
+          "denominator": "293713906800"
         },
         "bonusReelLockProbability": {
-          "numerator": "1810690402",
-          "denominator": "166464760520"
+          "numerator": "1725930128",
+          "denominator": "293713906800"
         },
-        "effectiveOutcomeCount": 6085.971226222352,
+        "effectiveOutcomeCount": 8188.888238939896,
         "hitProbability": {
-          "numerator": "159386866637",
-          "denominator": "166464760520"
+          "numerator": "278902618833",
+          "denominator": "293713906800"
         },
         "capProbability": {
-          "numerator": "0",
-          "denominator": "166464760520"
+          "numerator": "663819280",
+          "denominator": "293713906800"
         },
         "triggerTierProbabilities": {
           "ruse": {
-            "numerator": "159468038484",
-            "denominator": "166464760520"
+            "numerator": "283339049392",
+            "denominator": "293713906800"
           },
           "lux": {
-            "numerator": "4133076720",
-            "denominator": "166464760520"
+            "numerator": "8648927280",
+            "denominator": "293713906800"
           },
           "edge": {
-            "numerator": "2214158774",
-            "denominator": "166464760520"
+            "numerator": "1327638560",
+            "denominator": "293713906800"
           },
           "old": {
-            "numerator": "649486542",
-            "denominator": "166464760520"
+            "numerator": "398291568",
+            "denominator": "293713906800"
           }
         }
       }
@@ -2204,304 +2204,304 @@
       {
         "betCents": 10,
         "entries": 4096,
-        "calibrationEntries": 135,
+        "calibrationEntries": 147,
         "largestEntryProbability": {
-          "numerator": "9644419",
-          "denominator": "3161832622",
-          "approximate": 0.0030502623487702126
+          "numerator": "9622857",
+          "denominator": "3386165362",
+          "approximate": 0.002841815437600593
         },
         "multiReelExpansionEntries": 0,
         "multiReelExpansionProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "followupShotProbability": {
-          "numerator": "7512592",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
         "bonusReelLockProbability": {
-          "numerator": "0",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
-        "effectiveOutcomeCount": 744.3775364824344,
+        "effectiveOutcomeCount": 785.5405504932377,
         "hitProbability": {
-          "numerator": "3041161613",
-          "denominator": "3161832622"
+          "numerator": "3257853743",
+          "denominator": "3386165362"
         },
         "capProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "triggerTierProbabilities": {
           "lux": {
-            "numerator": "3161832622",
-            "denominator": "3161832622"
+            "numerator": "3386165362",
+            "denominator": "3386165362"
           }
         }
       },
       {
         "betCents": 20,
         "entries": 4096,
-        "calibrationEntries": 135,
+        "calibrationEntries": 147,
         "largestEntryProbability": {
-          "numerator": "9644419",
-          "denominator": "3161832622",
-          "approximate": 0.0030502623487702126
+          "numerator": "9622857",
+          "denominator": "3386165362",
+          "approximate": 0.002841815437600593
         },
         "multiReelExpansionEntries": 0,
         "multiReelExpansionProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "followupShotProbability": {
-          "numerator": "7512592",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
         "bonusReelLockProbability": {
-          "numerator": "0",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
-        "effectiveOutcomeCount": 744.3775364824344,
+        "effectiveOutcomeCount": 785.5405504932377,
         "hitProbability": {
-          "numerator": "3041161613",
-          "denominator": "3161832622"
+          "numerator": "3257853743",
+          "denominator": "3386165362"
         },
         "capProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "triggerTierProbabilities": {
           "lux": {
-            "numerator": "3161832622",
-            "denominator": "3161832622"
+            "numerator": "3386165362",
+            "denominator": "3386165362"
           }
         }
       },
       {
         "betCents": 50,
         "entries": 4096,
-        "calibrationEntries": 135,
+        "calibrationEntries": 147,
         "largestEntryProbability": {
-          "numerator": "9644419",
-          "denominator": "3161832622",
-          "approximate": 0.0030502623487702126
+          "numerator": "9622857",
+          "denominator": "3386165362",
+          "approximate": 0.002841815437600593
         },
         "multiReelExpansionEntries": 0,
         "multiReelExpansionProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "followupShotProbability": {
-          "numerator": "7512592",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
         "bonusReelLockProbability": {
-          "numerator": "0",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
-        "effectiveOutcomeCount": 744.3775364824344,
+        "effectiveOutcomeCount": 785.5405504932377,
         "hitProbability": {
-          "numerator": "3041161613",
-          "denominator": "3161832622"
+          "numerator": "3257853743",
+          "denominator": "3386165362"
         },
         "capProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "triggerTierProbabilities": {
           "lux": {
-            "numerator": "3161832622",
-            "denominator": "3161832622"
+            "numerator": "3386165362",
+            "denominator": "3386165362"
           }
         }
       },
       {
         "betCents": 100,
         "entries": 4096,
-        "calibrationEntries": 135,
+        "calibrationEntries": 147,
         "largestEntryProbability": {
-          "numerator": "9644419",
-          "denominator": "3161832622",
-          "approximate": 0.0030502623487702126
+          "numerator": "9622857",
+          "denominator": "3386165362",
+          "approximate": 0.002841815437600593
         },
         "multiReelExpansionEntries": 0,
         "multiReelExpansionProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "followupShotProbability": {
-          "numerator": "7512592",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
         "bonusReelLockProbability": {
-          "numerator": "0",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
-        "effectiveOutcomeCount": 744.3775364824344,
+        "effectiveOutcomeCount": 785.5405504932377,
         "hitProbability": {
-          "numerator": "3041161613",
-          "denominator": "3161832622"
+          "numerator": "3257853743",
+          "denominator": "3386165362"
         },
         "capProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "triggerTierProbabilities": {
           "lux": {
-            "numerator": "3161832622",
-            "denominator": "3161832622"
+            "numerator": "3386165362",
+            "denominator": "3386165362"
           }
         }
       },
       {
         "betCents": 200,
         "entries": 4096,
-        "calibrationEntries": 135,
+        "calibrationEntries": 147,
         "largestEntryProbability": {
-          "numerator": "9644419",
-          "denominator": "3161832622",
-          "approximate": 0.0030502623487702126
+          "numerator": "9622857",
+          "denominator": "3386165362",
+          "approximate": 0.002841815437600593
         },
         "multiReelExpansionEntries": 0,
         "multiReelExpansionProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "followupShotProbability": {
-          "numerator": "7512592",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
         "bonusReelLockProbability": {
-          "numerator": "0",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
-        "effectiveOutcomeCount": 744.3775364824344,
+        "effectiveOutcomeCount": 785.5405504932377,
         "hitProbability": {
-          "numerator": "3041161613",
-          "denominator": "3161832622"
+          "numerator": "3257853743",
+          "denominator": "3386165362"
         },
         "capProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "triggerTierProbabilities": {
           "lux": {
-            "numerator": "3161832622",
-            "denominator": "3161832622"
+            "numerator": "3386165362",
+            "denominator": "3386165362"
           }
         }
       },
       {
         "betCents": 500,
         "entries": 4096,
-        "calibrationEntries": 135,
+        "calibrationEntries": 147,
         "largestEntryProbability": {
-          "numerator": "9644419",
-          "denominator": "3161832622",
-          "approximate": 0.0030502623487702126
+          "numerator": "9622857",
+          "denominator": "3386165362",
+          "approximate": 0.002841815437600593
         },
         "multiReelExpansionEntries": 0,
         "multiReelExpansionProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "followupShotProbability": {
-          "numerator": "7512592",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
         "bonusReelLockProbability": {
-          "numerator": "0",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
-        "effectiveOutcomeCount": 744.3775364824344,
+        "effectiveOutcomeCount": 785.5405504932377,
         "hitProbability": {
-          "numerator": "3041161613",
-          "denominator": "3161832622"
+          "numerator": "3257853743",
+          "denominator": "3386165362"
         },
         "capProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "triggerTierProbabilities": {
           "lux": {
-            "numerator": "3161832622",
-            "denominator": "3161832622"
+            "numerator": "3386165362",
+            "denominator": "3386165362"
           }
         }
       },
       {
         "betCents": 1000,
         "entries": 4096,
-        "calibrationEntries": 135,
+        "calibrationEntries": 147,
         "largestEntryProbability": {
-          "numerator": "9644419",
-          "denominator": "3161832622",
-          "approximate": 0.0030502623487702126
+          "numerator": "9622857",
+          "denominator": "3386165362",
+          "approximate": 0.002841815437600593
         },
         "multiReelExpansionEntries": 0,
         "multiReelExpansionProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "followupShotProbability": {
-          "numerator": "7512592",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
         "bonusReelLockProbability": {
-          "numerator": "0",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
-        "effectiveOutcomeCount": 744.3775364824344,
+        "effectiveOutcomeCount": 785.5405504932377,
         "hitProbability": {
-          "numerator": "3041161613",
-          "denominator": "3161832622"
+          "numerator": "3257853743",
+          "denominator": "3386165362"
         },
         "capProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "triggerTierProbabilities": {
           "lux": {
-            "numerator": "3161832622",
-            "denominator": "3161832622"
+            "numerator": "3386165362",
+            "denominator": "3386165362"
           }
         }
       },
       {
         "betCents": 2000,
         "entries": 4096,
-        "calibrationEntries": 135,
+        "calibrationEntries": 147,
         "largestEntryProbability": {
-          "numerator": "9644419",
-          "denominator": "3161832622",
-          "approximate": 0.0030502623487702126
+          "numerator": "9622857",
+          "denominator": "3386165362",
+          "approximate": 0.002841815437600593
         },
         "multiReelExpansionEntries": 0,
         "multiReelExpansionProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "followupShotProbability": {
-          "numerator": "7512592",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
         "bonusReelLockProbability": {
-          "numerator": "0",
-          "denominator": "3161832622"
+          "numerator": "117471352",
+          "denominator": "3386165362"
         },
-        "effectiveOutcomeCount": 744.3775364824344,
+        "effectiveOutcomeCount": 785.5405504932377,
         "hitProbability": {
-          "numerator": "3041161613",
-          "denominator": "3161832622"
+          "numerator": "3257853743",
+          "denominator": "3386165362"
         },
         "capProbability": {
           "numerator": "0",
-          "denominator": "3161832622"
+          "denominator": "3386165362"
         },
         "triggerTierProbabilities": {
           "lux": {
-            "numerator": "3161832622",
-            "denominator": "3161832622"
+            "numerator": "3386165362",
+            "denominator": "3386165362"
           }
         }
       }
@@ -2510,304 +2510,304 @@
       {
         "betCents": 10,
         "entries": 4096,
-        "calibrationEntries": 336,
+        "calibrationEntries": 2007,
         "largestEntryProbability": {
-          "numerator": "57063881",
-          "denominator": "51908441376",
-          "approximate": 0.0010993179430423745
+          "numerator": "65836789",
+          "denominator": "150799389398",
+          "approximate": 0.0004365852492030924
         },
-        "multiReelExpansionEntries": 1920,
+        "multiReelExpansionEntries": 1360,
         "multiReelExpansionProbability": {
-          "numerator": "28418313460",
-          "denominator": "51908441376"
+          "numerator": "30644552050",
+          "denominator": "150799389398"
         },
         "followupShotProbability": {
-          "numerator": "37788334513",
-          "denominator": "51908441376"
+          "numerator": "64366092710",
+          "denominator": "150799389398"
         },
         "bonusReelLockProbability": {
-          "numerator": "24885272172",
-          "denominator": "51908441376"
+          "numerator": "131904230955",
+          "denominator": "150799389398"
         },
-        "effectiveOutcomeCount": 1953.791139791833,
+        "effectiveOutcomeCount": 2564.8839341957514,
         "hitProbability": {
-          "numerator": "51194540274",
-          "denominator": "51908441376"
+          "numerator": "146717508480",
+          "denominator": "150799389398"
         },
         "capProbability": {
-          "numerator": "627702691",
-          "denominator": "51908441376"
+          "numerator": "6200803250",
+          "denominator": "150799389398"
         },
         "triggerTierProbabilities": {
           "edge": {
-            "numerator": "51908441376",
-            "denominator": "51908441376"
+            "numerator": "150799389398",
+            "denominator": "150799389398"
           }
         }
       },
       {
         "betCents": 20,
         "entries": 4096,
-        "calibrationEntries": 336,
+        "calibrationEntries": 2007,
         "largestEntryProbability": {
-          "numerator": "57063881",
-          "denominator": "51908441376",
-          "approximate": 0.0010993179430423745
+          "numerator": "65836789",
+          "denominator": "150799389398",
+          "approximate": 0.0004365852492030924
         },
-        "multiReelExpansionEntries": 1920,
+        "multiReelExpansionEntries": 1360,
         "multiReelExpansionProbability": {
-          "numerator": "28418313460",
-          "denominator": "51908441376"
+          "numerator": "30644552050",
+          "denominator": "150799389398"
         },
         "followupShotProbability": {
-          "numerator": "37788334513",
-          "denominator": "51908441376"
+          "numerator": "64366092710",
+          "denominator": "150799389398"
         },
         "bonusReelLockProbability": {
-          "numerator": "24885272172",
-          "denominator": "51908441376"
+          "numerator": "131904230955",
+          "denominator": "150799389398"
         },
-        "effectiveOutcomeCount": 1953.791139791833,
+        "effectiveOutcomeCount": 2564.8839341957514,
         "hitProbability": {
-          "numerator": "51194540274",
-          "denominator": "51908441376"
+          "numerator": "146717508480",
+          "denominator": "150799389398"
         },
         "capProbability": {
-          "numerator": "627702691",
-          "denominator": "51908441376"
+          "numerator": "6200803250",
+          "denominator": "150799389398"
         },
         "triggerTierProbabilities": {
           "edge": {
-            "numerator": "51908441376",
-            "denominator": "51908441376"
+            "numerator": "150799389398",
+            "denominator": "150799389398"
           }
         }
       },
       {
         "betCents": 50,
         "entries": 4096,
-        "calibrationEntries": 336,
+        "calibrationEntries": 2007,
         "largestEntryProbability": {
-          "numerator": "57063881",
-          "denominator": "51908441376",
-          "approximate": 0.0010993179430423745
+          "numerator": "65836789",
+          "denominator": "150799389398",
+          "approximate": 0.0004365852492030924
         },
-        "multiReelExpansionEntries": 1920,
+        "multiReelExpansionEntries": 1360,
         "multiReelExpansionProbability": {
-          "numerator": "28418313460",
-          "denominator": "51908441376"
+          "numerator": "30644552050",
+          "denominator": "150799389398"
         },
         "followupShotProbability": {
-          "numerator": "37788334513",
-          "denominator": "51908441376"
+          "numerator": "64366092710",
+          "denominator": "150799389398"
         },
         "bonusReelLockProbability": {
-          "numerator": "24885272172",
-          "denominator": "51908441376"
+          "numerator": "131904230955",
+          "denominator": "150799389398"
         },
-        "effectiveOutcomeCount": 1953.791139791833,
+        "effectiveOutcomeCount": 2564.8839341957514,
         "hitProbability": {
-          "numerator": "51194540274",
-          "denominator": "51908441376"
+          "numerator": "146717508480",
+          "denominator": "150799389398"
         },
         "capProbability": {
-          "numerator": "627702691",
-          "denominator": "51908441376"
+          "numerator": "6200803250",
+          "denominator": "150799389398"
         },
         "triggerTierProbabilities": {
           "edge": {
-            "numerator": "51908441376",
-            "denominator": "51908441376"
+            "numerator": "150799389398",
+            "denominator": "150799389398"
           }
         }
       },
       {
         "betCents": 100,
         "entries": 4096,
-        "calibrationEntries": 336,
+        "calibrationEntries": 2007,
         "largestEntryProbability": {
-          "numerator": "57063881",
-          "denominator": "51908441376",
-          "approximate": 0.0010993179430423745
+          "numerator": "65836789",
+          "denominator": "150799389398",
+          "approximate": 0.0004365852492030924
         },
-        "multiReelExpansionEntries": 1920,
+        "multiReelExpansionEntries": 1360,
         "multiReelExpansionProbability": {
-          "numerator": "28418313460",
-          "denominator": "51908441376"
+          "numerator": "30644552050",
+          "denominator": "150799389398"
         },
         "followupShotProbability": {
-          "numerator": "37788334513",
-          "denominator": "51908441376"
+          "numerator": "64366092710",
+          "denominator": "150799389398"
         },
         "bonusReelLockProbability": {
-          "numerator": "24885272172",
-          "denominator": "51908441376"
+          "numerator": "131904230955",
+          "denominator": "150799389398"
         },
-        "effectiveOutcomeCount": 1953.791139791833,
+        "effectiveOutcomeCount": 2564.8839341957514,
         "hitProbability": {
-          "numerator": "51194540274",
-          "denominator": "51908441376"
+          "numerator": "146717508480",
+          "denominator": "150799389398"
         },
         "capProbability": {
-          "numerator": "627702691",
-          "denominator": "51908441376"
+          "numerator": "6200803250",
+          "denominator": "150799389398"
         },
         "triggerTierProbabilities": {
           "edge": {
-            "numerator": "51908441376",
-            "denominator": "51908441376"
+            "numerator": "150799389398",
+            "denominator": "150799389398"
           }
         }
       },
       {
         "betCents": 200,
         "entries": 4096,
-        "calibrationEntries": 336,
+        "calibrationEntries": 2007,
         "largestEntryProbability": {
-          "numerator": "57063881",
-          "denominator": "51908441376",
-          "approximate": 0.0010993179430423745
+          "numerator": "65836789",
+          "denominator": "150799389398",
+          "approximate": 0.0004365852492030924
         },
-        "multiReelExpansionEntries": 1920,
+        "multiReelExpansionEntries": 1360,
         "multiReelExpansionProbability": {
-          "numerator": "28418313460",
-          "denominator": "51908441376"
+          "numerator": "30644552050",
+          "denominator": "150799389398"
         },
         "followupShotProbability": {
-          "numerator": "37788334513",
-          "denominator": "51908441376"
+          "numerator": "64366092710",
+          "denominator": "150799389398"
         },
         "bonusReelLockProbability": {
-          "numerator": "24885272172",
-          "denominator": "51908441376"
+          "numerator": "131904230955",
+          "denominator": "150799389398"
         },
-        "effectiveOutcomeCount": 1953.791139791833,
+        "effectiveOutcomeCount": 2564.8839341957514,
         "hitProbability": {
-          "numerator": "51194540274",
-          "denominator": "51908441376"
+          "numerator": "146717508480",
+          "denominator": "150799389398"
         },
         "capProbability": {
-          "numerator": "627702691",
-          "denominator": "51908441376"
+          "numerator": "6200803250",
+          "denominator": "150799389398"
         },
         "triggerTierProbabilities": {
           "edge": {
-            "numerator": "51908441376",
-            "denominator": "51908441376"
+            "numerator": "150799389398",
+            "denominator": "150799389398"
           }
         }
       },
       {
         "betCents": 500,
         "entries": 4096,
-        "calibrationEntries": 336,
+        "calibrationEntries": 2007,
         "largestEntryProbability": {
-          "numerator": "57063881",
-          "denominator": "51908441376",
-          "approximate": 0.0010993179430423745
+          "numerator": "65836789",
+          "denominator": "150799389398",
+          "approximate": 0.0004365852492030924
         },
-        "multiReelExpansionEntries": 1920,
+        "multiReelExpansionEntries": 1360,
         "multiReelExpansionProbability": {
-          "numerator": "28418313460",
-          "denominator": "51908441376"
+          "numerator": "30644552050",
+          "denominator": "150799389398"
         },
         "followupShotProbability": {
-          "numerator": "37788334513",
-          "denominator": "51908441376"
+          "numerator": "64366092710",
+          "denominator": "150799389398"
         },
         "bonusReelLockProbability": {
-          "numerator": "24885272172",
-          "denominator": "51908441376"
+          "numerator": "131904230955",
+          "denominator": "150799389398"
         },
-        "effectiveOutcomeCount": 1953.791139791833,
+        "effectiveOutcomeCount": 2564.8839341957514,
         "hitProbability": {
-          "numerator": "51194540274",
-          "denominator": "51908441376"
+          "numerator": "146717508480",
+          "denominator": "150799389398"
         },
         "capProbability": {
-          "numerator": "627702691",
-          "denominator": "51908441376"
+          "numerator": "6200803250",
+          "denominator": "150799389398"
         },
         "triggerTierProbabilities": {
           "edge": {
-            "numerator": "51908441376",
-            "denominator": "51908441376"
+            "numerator": "150799389398",
+            "denominator": "150799389398"
           }
         }
       },
       {
         "betCents": 1000,
         "entries": 4096,
-        "calibrationEntries": 336,
+        "calibrationEntries": 2007,
         "largestEntryProbability": {
-          "numerator": "57063881",
-          "denominator": "51908441376",
-          "approximate": 0.0010993179430423745
+          "numerator": "65836789",
+          "denominator": "150799389398",
+          "approximate": 0.0004365852492030924
         },
-        "multiReelExpansionEntries": 1920,
+        "multiReelExpansionEntries": 1360,
         "multiReelExpansionProbability": {
-          "numerator": "28418313460",
-          "denominator": "51908441376"
+          "numerator": "30644552050",
+          "denominator": "150799389398"
         },
         "followupShotProbability": {
-          "numerator": "37788334513",
-          "denominator": "51908441376"
+          "numerator": "64366092710",
+          "denominator": "150799389398"
         },
         "bonusReelLockProbability": {
-          "numerator": "24885272172",
-          "denominator": "51908441376"
+          "numerator": "131904230955",
+          "denominator": "150799389398"
         },
-        "effectiveOutcomeCount": 1953.791139791833,
+        "effectiveOutcomeCount": 2564.8839341957514,
         "hitProbability": {
-          "numerator": "51194540274",
-          "denominator": "51908441376"
+          "numerator": "146717508480",
+          "denominator": "150799389398"
         },
         "capProbability": {
-          "numerator": "627702691",
-          "denominator": "51908441376"
+          "numerator": "6200803250",
+          "denominator": "150799389398"
         },
         "triggerTierProbabilities": {
           "edge": {
-            "numerator": "51908441376",
-            "denominator": "51908441376"
+            "numerator": "150799389398",
+            "denominator": "150799389398"
           }
         }
       },
       {
         "betCents": 2000,
         "entries": 4096,
-        "calibrationEntries": 336,
+        "calibrationEntries": 2007,
         "largestEntryProbability": {
-          "numerator": "57063881",
-          "denominator": "51908441376",
-          "approximate": 0.0010993179430423745
+          "numerator": "65836789",
+          "denominator": "150799389398",
+          "approximate": 0.0004365852492030924
         },
-        "multiReelExpansionEntries": 1920,
+        "multiReelExpansionEntries": 1360,
         "multiReelExpansionProbability": {
-          "numerator": "28418313460",
-          "denominator": "51908441376"
+          "numerator": "30644552050",
+          "denominator": "150799389398"
         },
         "followupShotProbability": {
-          "numerator": "37788334513",
-          "denominator": "51908441376"
+          "numerator": "64366092710",
+          "denominator": "150799389398"
         },
         "bonusReelLockProbability": {
-          "numerator": "24885272172",
-          "denominator": "51908441376"
+          "numerator": "131904230955",
+          "denominator": "150799389398"
         },
-        "effectiveOutcomeCount": 1953.791139791833,
+        "effectiveOutcomeCount": 2564.8839341957514,
         "hitProbability": {
-          "numerator": "51194540274",
-          "denominator": "51908441376"
+          "numerator": "146717508480",
+          "denominator": "150799389398"
         },
         "capProbability": {
-          "numerator": "627702691",
-          "denominator": "51908441376"
+          "numerator": "6200803250",
+          "denominator": "150799389398"
         },
         "triggerTierProbabilities": {
           "edge": {
-            "numerator": "51908441376",
-            "denominator": "51908441376"
+            "numerator": "150799389398",
+            "denominator": "150799389398"
           }
         }
       }
@@ -2816,304 +2816,304 @@
       {
         "betCents": 10,
         "entries": 4096,
-        "calibrationEntries": 146,
+        "calibrationEntries": 2671,
         "largestEntryProbability": {
-          "numerator": "84829643",
-          "denominator": "38526445128",
-          "approximate": 0.0022018549263541592
+          "numerator": "102621061",
+          "denominator": "342897612406",
+          "approximate": 0.0002992761025075144
         },
-        "multiReelExpansionEntries": 600,
+        "multiReelExpansionEntries": 375,
         "multiReelExpansionProbability": {
-          "numerator": "9914913688",
-          "denominator": "38526445128"
+          "numerator": "24897239375",
+          "denominator": "342897612406"
         },
         "followupShotProbability": {
-          "numerator": "24128639015",
-          "denominator": "38526445128"
+          "numerator": "166806693371",
+          "denominator": "342897612406"
         },
         "bonusReelLockProbability": {
-          "numerator": "12093419491",
-          "denominator": "38526445128"
+          "numerator": "338279664661",
+          "denominator": "342897612406"
         },
-        "effectiveOutcomeCount": 1213.0187913310192,
+        "effectiveOutcomeCount": 3738.6032648383934,
         "hitProbability": {
-          "numerator": "38447028468",
-          "denominator": "38526445128"
+          "numerator": "342179264979",
+          "denominator": "342897612406"
         },
         "capProbability": {
-          "numerator": "1357274288",
-          "denominator": "38526445128"
+          "numerator": "14531806527",
+          "denominator": "342897612406"
         },
         "triggerTierProbabilities": {
           "old": {
-            "numerator": "38526445128",
-            "denominator": "38526445128"
+            "numerator": "342897612406",
+            "denominator": "342897612406"
           }
         }
       },
       {
         "betCents": 20,
         "entries": 4096,
-        "calibrationEntries": 146,
+        "calibrationEntries": 2671,
         "largestEntryProbability": {
-          "numerator": "84829643",
-          "denominator": "38526445128",
-          "approximate": 0.0022018549263541592
+          "numerator": "102621061",
+          "denominator": "342897612406",
+          "approximate": 0.0002992761025075144
         },
-        "multiReelExpansionEntries": 600,
+        "multiReelExpansionEntries": 375,
         "multiReelExpansionProbability": {
-          "numerator": "9914913688",
-          "denominator": "38526445128"
+          "numerator": "24897239375",
+          "denominator": "342897612406"
         },
         "followupShotProbability": {
-          "numerator": "24128639015",
-          "denominator": "38526445128"
+          "numerator": "166806693371",
+          "denominator": "342897612406"
         },
         "bonusReelLockProbability": {
-          "numerator": "12093419491",
-          "denominator": "38526445128"
+          "numerator": "338279664661",
+          "denominator": "342897612406"
         },
-        "effectiveOutcomeCount": 1213.0187913310192,
+        "effectiveOutcomeCount": 3738.6032648383934,
         "hitProbability": {
-          "numerator": "38447028468",
-          "denominator": "38526445128"
+          "numerator": "342179264979",
+          "denominator": "342897612406"
         },
         "capProbability": {
-          "numerator": "1357274288",
-          "denominator": "38526445128"
+          "numerator": "14531806527",
+          "denominator": "342897612406"
         },
         "triggerTierProbabilities": {
           "old": {
-            "numerator": "38526445128",
-            "denominator": "38526445128"
+            "numerator": "342897612406",
+            "denominator": "342897612406"
           }
         }
       },
       {
         "betCents": 50,
         "entries": 4096,
-        "calibrationEntries": 146,
+        "calibrationEntries": 2671,
         "largestEntryProbability": {
-          "numerator": "84829643",
-          "denominator": "38526445128",
-          "approximate": 0.0022018549263541592
+          "numerator": "102621061",
+          "denominator": "342897612406",
+          "approximate": 0.0002992761025075144
         },
-        "multiReelExpansionEntries": 600,
+        "multiReelExpansionEntries": 375,
         "multiReelExpansionProbability": {
-          "numerator": "9914913688",
-          "denominator": "38526445128"
+          "numerator": "24897239375",
+          "denominator": "342897612406"
         },
         "followupShotProbability": {
-          "numerator": "24128639015",
-          "denominator": "38526445128"
+          "numerator": "166806693371",
+          "denominator": "342897612406"
         },
         "bonusReelLockProbability": {
-          "numerator": "12093419491",
-          "denominator": "38526445128"
+          "numerator": "338279664661",
+          "denominator": "342897612406"
         },
-        "effectiveOutcomeCount": 1213.0187913310192,
+        "effectiveOutcomeCount": 3738.6032648383934,
         "hitProbability": {
-          "numerator": "38447028468",
-          "denominator": "38526445128"
+          "numerator": "342179264979",
+          "denominator": "342897612406"
         },
         "capProbability": {
-          "numerator": "1357274288",
-          "denominator": "38526445128"
+          "numerator": "14531806527",
+          "denominator": "342897612406"
         },
         "triggerTierProbabilities": {
           "old": {
-            "numerator": "38526445128",
-            "denominator": "38526445128"
+            "numerator": "342897612406",
+            "denominator": "342897612406"
           }
         }
       },
       {
         "betCents": 100,
         "entries": 4096,
-        "calibrationEntries": 146,
+        "calibrationEntries": 2671,
         "largestEntryProbability": {
-          "numerator": "84829643",
-          "denominator": "38526445128",
-          "approximate": 0.0022018549263541592
+          "numerator": "102621061",
+          "denominator": "342897612406",
+          "approximate": 0.0002992761025075144
         },
-        "multiReelExpansionEntries": 600,
+        "multiReelExpansionEntries": 375,
         "multiReelExpansionProbability": {
-          "numerator": "9914913688",
-          "denominator": "38526445128"
+          "numerator": "24897239375",
+          "denominator": "342897612406"
         },
         "followupShotProbability": {
-          "numerator": "24128639015",
-          "denominator": "38526445128"
+          "numerator": "166806693371",
+          "denominator": "342897612406"
         },
         "bonusReelLockProbability": {
-          "numerator": "12093419491",
-          "denominator": "38526445128"
+          "numerator": "338279664661",
+          "denominator": "342897612406"
         },
-        "effectiveOutcomeCount": 1213.0187913310192,
+        "effectiveOutcomeCount": 3738.6032648383934,
         "hitProbability": {
-          "numerator": "38447028468",
-          "denominator": "38526445128"
+          "numerator": "342179264979",
+          "denominator": "342897612406"
         },
         "capProbability": {
-          "numerator": "1357274288",
-          "denominator": "38526445128"
+          "numerator": "14531806527",
+          "denominator": "342897612406"
         },
         "triggerTierProbabilities": {
           "old": {
-            "numerator": "38526445128",
-            "denominator": "38526445128"
+            "numerator": "342897612406",
+            "denominator": "342897612406"
           }
         }
       },
       {
         "betCents": 200,
         "entries": 4096,
-        "calibrationEntries": 146,
+        "calibrationEntries": 2671,
         "largestEntryProbability": {
-          "numerator": "84829643",
-          "denominator": "38526445128",
-          "approximate": 0.0022018549263541592
+          "numerator": "102621061",
+          "denominator": "342897612406",
+          "approximate": 0.0002992761025075144
         },
-        "multiReelExpansionEntries": 600,
+        "multiReelExpansionEntries": 375,
         "multiReelExpansionProbability": {
-          "numerator": "9914913688",
-          "denominator": "38526445128"
+          "numerator": "24897239375",
+          "denominator": "342897612406"
         },
         "followupShotProbability": {
-          "numerator": "24128639015",
-          "denominator": "38526445128"
+          "numerator": "166806693371",
+          "denominator": "342897612406"
         },
         "bonusReelLockProbability": {
-          "numerator": "12093419491",
-          "denominator": "38526445128"
+          "numerator": "338279664661",
+          "denominator": "342897612406"
         },
-        "effectiveOutcomeCount": 1213.0187913310192,
+        "effectiveOutcomeCount": 3738.6032648383934,
         "hitProbability": {
-          "numerator": "38447028468",
-          "denominator": "38526445128"
+          "numerator": "342179264979",
+          "denominator": "342897612406"
         },
         "capProbability": {
-          "numerator": "1357274288",
-          "denominator": "38526445128"
+          "numerator": "14531806527",
+          "denominator": "342897612406"
         },
         "triggerTierProbabilities": {
           "old": {
-            "numerator": "38526445128",
-            "denominator": "38526445128"
+            "numerator": "342897612406",
+            "denominator": "342897612406"
           }
         }
       },
       {
         "betCents": 500,
         "entries": 4096,
-        "calibrationEntries": 146,
+        "calibrationEntries": 2671,
         "largestEntryProbability": {
-          "numerator": "84829643",
-          "denominator": "38526445128",
-          "approximate": 0.0022018549263541592
+          "numerator": "102621061",
+          "denominator": "342897612406",
+          "approximate": 0.0002992761025075144
         },
-        "multiReelExpansionEntries": 600,
+        "multiReelExpansionEntries": 375,
         "multiReelExpansionProbability": {
-          "numerator": "9914913688",
-          "denominator": "38526445128"
+          "numerator": "24897239375",
+          "denominator": "342897612406"
         },
         "followupShotProbability": {
-          "numerator": "24128639015",
-          "denominator": "38526445128"
+          "numerator": "166806693371",
+          "denominator": "342897612406"
         },
         "bonusReelLockProbability": {
-          "numerator": "12093419491",
-          "denominator": "38526445128"
+          "numerator": "338279664661",
+          "denominator": "342897612406"
         },
-        "effectiveOutcomeCount": 1213.0187913310192,
+        "effectiveOutcomeCount": 3738.6032648383934,
         "hitProbability": {
-          "numerator": "38447028468",
-          "denominator": "38526445128"
+          "numerator": "342179264979",
+          "denominator": "342897612406"
         },
         "capProbability": {
-          "numerator": "1357274288",
-          "denominator": "38526445128"
+          "numerator": "14531806527",
+          "denominator": "342897612406"
         },
         "triggerTierProbabilities": {
           "old": {
-            "numerator": "38526445128",
-            "denominator": "38526445128"
+            "numerator": "342897612406",
+            "denominator": "342897612406"
           }
         }
       },
       {
         "betCents": 1000,
         "entries": 4096,
-        "calibrationEntries": 146,
+        "calibrationEntries": 2671,
         "largestEntryProbability": {
-          "numerator": "84829643",
-          "denominator": "38526445128",
-          "approximate": 0.0022018549263541592
+          "numerator": "102621061",
+          "denominator": "342897612406",
+          "approximate": 0.0002992761025075144
         },
-        "multiReelExpansionEntries": 600,
+        "multiReelExpansionEntries": 375,
         "multiReelExpansionProbability": {
-          "numerator": "9914913688",
-          "denominator": "38526445128"
+          "numerator": "24897239375",
+          "denominator": "342897612406"
         },
         "followupShotProbability": {
-          "numerator": "24128639015",
-          "denominator": "38526445128"
+          "numerator": "166806693371",
+          "denominator": "342897612406"
         },
         "bonusReelLockProbability": {
-          "numerator": "12093419491",
-          "denominator": "38526445128"
+          "numerator": "338279664661",
+          "denominator": "342897612406"
         },
-        "effectiveOutcomeCount": 1213.0187913310192,
+        "effectiveOutcomeCount": 3738.6032648383934,
         "hitProbability": {
-          "numerator": "38447028468",
-          "denominator": "38526445128"
+          "numerator": "342179264979",
+          "denominator": "342897612406"
         },
         "capProbability": {
-          "numerator": "1357274288",
-          "denominator": "38526445128"
+          "numerator": "14531806527",
+          "denominator": "342897612406"
         },
         "triggerTierProbabilities": {
           "old": {
-            "numerator": "38526445128",
-            "denominator": "38526445128"
+            "numerator": "342897612406",
+            "denominator": "342897612406"
           }
         }
       },
       {
         "betCents": 2000,
         "entries": 4096,
-        "calibrationEntries": 146,
+        "calibrationEntries": 2671,
         "largestEntryProbability": {
-          "numerator": "84829643",
-          "denominator": "38526445128",
-          "approximate": 0.0022018549263541592
+          "numerator": "102621061",
+          "denominator": "342897612406",
+          "approximate": 0.0002992761025075144
         },
-        "multiReelExpansionEntries": 600,
+        "multiReelExpansionEntries": 375,
         "multiReelExpansionProbability": {
-          "numerator": "9914913688",
-          "denominator": "38526445128"
+          "numerator": "24897239375",
+          "denominator": "342897612406"
         },
         "followupShotProbability": {
-          "numerator": "24128639015",
-          "denominator": "38526445128"
+          "numerator": "166806693371",
+          "denominator": "342897612406"
         },
         "bonusReelLockProbability": {
-          "numerator": "12093419491",
-          "denominator": "38526445128"
+          "numerator": "338279664661",
+          "denominator": "342897612406"
         },
-        "effectiveOutcomeCount": 1213.0187913310192,
+        "effectiveOutcomeCount": 3738.6032648383934,
         "hitProbability": {
-          "numerator": "38447028468",
-          "denominator": "38526445128"
+          "numerator": "342179264979",
+          "denominator": "342897612406"
         },
         "capProbability": {
-          "numerator": "1357274288",
-          "denominator": "38526445128"
+          "numerator": "14531806527",
+          "denominator": "342897612406"
         },
         "triggerTierProbabilities": {
           "old": {
-            "numerator": "38526445128",
-            "denominator": "38526445128"
+            "numerator": "342897612406",
+            "denominator": "342897612406"
           }
         }
       }
@@ -3475,8 +3475,8 @@
       "betCents": 10,
       "costCents": 1500,
       "outcomeCount": 4096,
-      "tickets": "3161832622",
-      "weightedPayoutCents": "4576752720345",
+      "tickets": "3386165362",
+      "weightedPayoutCents": "4901474361495",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3486,8 +3486,8 @@
       "betCents": 10,
       "costCents": 18000,
       "outcomeCount": 4096,
-      "tickets": "51908441376",
-      "weightedPayoutCents": "901649626701120",
+      "tickets": "150799389398",
+      "weightedPayoutCents": "2619385393843260",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3497,8 +3497,8 @@
       "betCents": 10,
       "costCents": 25000,
       "outcomeCount": 4096,
-      "tickets": "38526445128",
-      "weightedPayoutCents": "929450488713000",
+      "tickets": "342897612406",
+      "weightedPayoutCents": "8272404899294750",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3563,8 +3563,8 @@
       "betCents": 20,
       "costCents": 3000,
       "outcomeCount": 4096,
-      "tickets": "3161832622",
-      "weightedPayoutCents": "9153505440690",
+      "tickets": "3386165362",
+      "weightedPayoutCents": "9802948722990",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3574,8 +3574,8 @@
       "betCents": 20,
       "costCents": 36000,
       "outcomeCount": 4096,
-      "tickets": "51908441376",
-      "weightedPayoutCents": "1803299253402240",
+      "tickets": "150799389398",
+      "weightedPayoutCents": "5238770787686520",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3585,8 +3585,8 @@
       "betCents": 20,
       "costCents": 50000,
       "outcomeCount": 4096,
-      "tickets": "38526445128",
-      "weightedPayoutCents": "1858900977426000",
+      "tickets": "342897612406",
+      "weightedPayoutCents": "16544809798589500",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3651,8 +3651,8 @@
       "betCents": 50,
       "costCents": 7500,
       "outcomeCount": 4096,
-      "tickets": "3161832622",
-      "weightedPayoutCents": "22883763601725",
+      "tickets": "3386165362",
+      "weightedPayoutCents": "24507371807475",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3662,8 +3662,8 @@
       "betCents": 50,
       "costCents": 90000,
       "outcomeCount": 4096,
-      "tickets": "51908441376",
-      "weightedPayoutCents": "4508248133505600",
+      "tickets": "150799389398",
+      "weightedPayoutCents": "13096926969216300",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3673,8 +3673,8 @@
       "betCents": 50,
       "costCents": 125000,
       "outcomeCount": 4096,
-      "tickets": "38526445128",
-      "weightedPayoutCents": "4647252443565000",
+      "tickets": "342897612406",
+      "weightedPayoutCents": "41362024496473750",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3739,8 +3739,8 @@
       "betCents": 100,
       "costCents": 15000,
       "outcomeCount": 4096,
-      "tickets": "3161832622",
-      "weightedPayoutCents": "45767527203450",
+      "tickets": "3386165362",
+      "weightedPayoutCents": "49014743614950",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3750,8 +3750,8 @@
       "betCents": 100,
       "costCents": 180000,
       "outcomeCount": 4096,
-      "tickets": "51908441376",
-      "weightedPayoutCents": "9016496267011200",
+      "tickets": "150799389398",
+      "weightedPayoutCents": "26193853938432600",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3761,8 +3761,8 @@
       "betCents": 100,
       "costCents": 250000,
       "outcomeCount": 4096,
-      "tickets": "38526445128",
-      "weightedPayoutCents": "9294504887130000",
+      "tickets": "342897612406",
+      "weightedPayoutCents": "82724048992947500",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3827,8 +3827,8 @@
       "betCents": 200,
       "costCents": 30000,
       "outcomeCount": 4096,
-      "tickets": "3161832622",
-      "weightedPayoutCents": "91535054406900",
+      "tickets": "3386165362",
+      "weightedPayoutCents": "98029487229900",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3838,8 +3838,8 @@
       "betCents": 200,
       "costCents": 360000,
       "outcomeCount": 4096,
-      "tickets": "51908441376",
-      "weightedPayoutCents": "18032992534022400",
+      "tickets": "150799389398",
+      "weightedPayoutCents": "52387707876865200",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3849,8 +3849,8 @@
       "betCents": 200,
       "costCents": 500000,
       "outcomeCount": 4096,
-      "tickets": "38526445128",
-      "weightedPayoutCents": "18589009774260000",
+      "tickets": "342897612406",
+      "weightedPayoutCents": "165448097985895000",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3915,8 +3915,8 @@
       "betCents": 500,
       "costCents": 75000,
       "outcomeCount": 4096,
-      "tickets": "3161832622",
-      "weightedPayoutCents": "228837636017250",
+      "tickets": "3386165362",
+      "weightedPayoutCents": "245073718074750",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3926,8 +3926,8 @@
       "betCents": 500,
       "costCents": 900000,
       "outcomeCount": 4096,
-      "tickets": "51908441376",
-      "weightedPayoutCents": "45082481335056000",
+      "tickets": "150799389398",
+      "weightedPayoutCents": "130969269692163000",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -3937,8 +3937,8 @@
       "betCents": 500,
       "costCents": 1250000,
       "outcomeCount": 4096,
-      "tickets": "38526445128",
-      "weightedPayoutCents": "46472524435650000",
+      "tickets": "342897612406",
+      "weightedPayoutCents": "413620244964737500",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -4003,8 +4003,8 @@
       "betCents": 1000,
       "costCents": 150000,
       "outcomeCount": 4096,
-      "tickets": "3161832622",
-      "weightedPayoutCents": "457675272034500",
+      "tickets": "3386165362",
+      "weightedPayoutCents": "490147436149500",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -4014,8 +4014,8 @@
       "betCents": 1000,
       "costCents": 1800000,
       "outcomeCount": 4096,
-      "tickets": "51908441376",
-      "weightedPayoutCents": "90164962670112000",
+      "tickets": "150799389398",
+      "weightedPayoutCents": "261938539384326000",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -4025,8 +4025,8 @@
       "betCents": 1000,
       "costCents": 2500000,
       "outcomeCount": 4096,
-      "tickets": "38526445128",
-      "weightedPayoutCents": "92945048871300000",
+      "tickets": "342897612406",
+      "weightedPayoutCents": "827240489929475000",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -4091,8 +4091,8 @@
       "betCents": 2000,
       "costCents": 300000,
       "outcomeCount": 4096,
-      "tickets": "3161832622",
-      "weightedPayoutCents": "915350544069000",
+      "tickets": "3386165362",
+      "weightedPayoutCents": "980294872299000",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -4102,8 +4102,8 @@
       "betCents": 2000,
       "costCents": 3600000,
       "outcomeCount": 4096,
-      "tickets": "51908441376",
-      "weightedPayoutCents": "180329925340224000",
+      "tickets": "150799389398",
+      "weightedPayoutCents": "523877078768652000",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true
@@ -4113,8 +4113,8 @@
       "betCents": 2000,
       "costCents": 5000000,
       "outcomeCount": 4096,
-      "tickets": "38526445128",
-      "weightedPayoutCents": "185890097742600000",
+      "tickets": "342897612406",
+      "weightedPayoutCents": "1654480979858950000",
       "expectedReturnNumerator": 193,
       "expectedReturnDenominator": 200,
       "expectationEquality": true

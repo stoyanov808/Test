@@ -11,7 +11,7 @@ export interface MathPool {
   weights: { baseline: string; extra: string; indices: number[]; total: string; weightedPayout: string; targetNumerator: string; targetDenominator: string }[];
 }
 export interface MathModel {
-  version: 4; targetRtp: { numerator: 193; denominator: 200 };
+  version: 5; targetRtp: { numerator: 193; denominator: 200 };
   betsCents: number[]; sourceHashes: Record<string, string>; pools: Record<string, MathPool>;
 }
 export const MATH_MODEL = data as unknown as MathModel;

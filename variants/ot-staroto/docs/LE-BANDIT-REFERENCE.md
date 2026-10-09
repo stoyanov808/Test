@@ -55,10 +55,10 @@ Version 3 replaced the previous open-ended outcome distribution with a fixed wei
 
 This is the prototype's original mathematical model. It does not establish any inaccessible Le Bandit or Nolimit City probability, rule or certification. The publisher-access limits described above still apply.
 
-## Current version 4 adaptation
+## Current version 5 adaptation
 
-Version 4 uses the [19 paths in the supplied Le Zeus chart](LE-ZEUS-REFERENCE.md) instead of count-anywhere wins. Only cells participating in actual paid lines become coin marks. Every marked vacancy reveals a value, modifier or collector in every wave; the full reveal finishes before modifiers and collection. A new collector absorbs monetary values and the previous collector, then stays while the cleared marked cells reveal again. Terminal values pay once.
+Version 5 retains the [19 paths in the supplied Le Zeus chart](LE-ZEUS-REFERENCE.md) instead of count-anywhere wins. Only cells participating in actual paid lines become coin marks. Every marked vacancy reveals a value, modifier or collector in every wave; the full reveal finishes before modifiers and collection. A new collector absorbs monetary values and the previous collector, then stays while the cleared marked cells reveal again. Terminal values pay once.
 
-The middle character expands his own reel and may then shoot eligible symbols. Ordinary hits create single-use Wilds, repeat Wild hits double their multiplier, and hitting an expanded reel during a bonus doubles and locks all five Wilds until that bonus ends. These are the user's requested mechanics, independent of the inaccessible commercial references. The original ink club scene replaces the courtyard.
+The middle character expands his own reel and may then shoot eligible symbols. Every bonus expansion immediately retains all five Wilds until the bonus ends. His highlighted character and bottom-row total remain on that reel between free spins. Ordinary hits create single-use Wilds, repeat Wild hits double their multiplier, and hitting an expanded reel doubles all five Wilds. These are the user's requested mechanics, independent of the inaccessible commercial references. The original ink club scene replaces the courtyard.
 
-The rebuilt [mathematical model](MATH-MODEL.md) proves 96.5% expected return against the full cost of each mode at eight stakes. [Current validation](VALIDATION.md) records complete replay of 425,984 stake outcomes, 57 engine tests and 111 browser checks. Finite samples and individual sessions can return less. The archived version 3 proof does not validate these changed rules.
+The rebuilt [mathematical model](MATH-MODEL.md) and [current validation](VALIDATION.md) record exact expected return against the full cost of each mode at eight stakes, complete outcome replay and engine/browser checks. Finite samples and individual sessions can return less. Archived earlier proofs do not validate these changed Shooter rules.

@@ -8,7 +8,7 @@ import type { Choice } from '../src/types';
 import type { MathModel, MathPool } from '../src/math-model';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const sha = (path: string) => createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex');
-if (!PAYLINE_REFERENCE_READY || !PAYLINES.length) throw new Error('Exact user-provided payline chart is required before building the v4 catalogue');
+if (!PAYLINE_REFERENCE_READY || !PAYLINES.length) throw new Error('Exact user-provided payline chart is required before building the v5 catalogue');
 const sources = ['src/paylines.ts', 'src/engine.ts', 'src/types.ts', 'src/math-model.ts', 'scripts/build-math-model.ts'];
 const sourceHashes = Object.fromEntries(sources.map(path => [path, sha(path)]));
 const seedRng = new Rng(0x798ea173);
@@ -58,7 +58,7 @@ function build(name: string, choice: Choice, count: number, bonus: boolean | nul
       return outcome.payoutCents;
     });
     shotCounts.push(reference.spins.reduce((n, s) => n + s.cascades.flatMap(c => c.features).reduce((n, f) => n + (f.shotEvents?.length ?? 0), 0), 0));
-    lockedReelCounts.push(new Set(reference.spins.flatMap(s => s.cascades.flatMap(c => c.features.flatMap(f => (f.shotEvents ?? []).filter(e => e.sticky).map(e => e.expandedReel!))))).size);
+    lockedReelCounts.push(new Set(reference.spins.filter(s => s.tier !== null).flatMap(s => s.cascades.flatMap(c => c.features.filter(f => f.character === 'middle' && f.phase === 'expand').map(f => f.expandedReel!)))).size);
     expansionCounts.push(Math.max(0, ...reference.spins.map(spin => new Set(spin.cascades.flatMap(c => c.features).filter(f => f.character === 'middle' && f.phase === 'expand').map(f => f.expandedReel)).size)));
     unique.add(candidate); seeds.push(candidate); payouts.push(stakePayouts); triggerTiers.push(reference.triggerTier);
     if (seeds.length % 128 === 0) console.log(`${name}: ${seeds.length}/${count}`);
@@ -89,7 +89,7 @@ build('buy-edge', { kind: 'buy', tier: 'edge' }, 4096, true);
 build('buy-old', { kind: 'buy', tier: 'old' }, 4096, true, undefined, [5737753, 301987]);
 build('god', { kind: 'god' }, 4096, false, undefined, [105151]);
 for (const [path, hash] of Object.entries(sourceHashes)) if (sha(path) !== hash) throw new Error(`Source changed during catalogue build: ${path}`);
-const model: MathModel = { version: 4, targetRtp: { numerator: 193, denominator: 200 }, betsCents: [...CONFIG.betsCents], sourceHashes, pools };
+const model: MathModel = { version: 5, targetRtp: { numerator: 193, denominator: 200 }, betsCents: [...CONFIG.betsCents], sourceHashes, pools };
 writeFileSync(resolve(root, 'src/math-model.json'), JSON.stringify(model) + '\n');
 const rows = CONFIG.betsCents.flatMap((bet, stake) => Object.entries(pools).filter(([name]) => !['ordinary', 'natural-bonus'].includes(name)).map(([name, pool]) => ({ mode: name, betCents: bet, costCents: costCents(bet, pool.choice), outcomeCount: pool.seeds.length, tickets: pool.weights[stake].total, weightedPayoutCents: pool.weights[stake].weightedPayout, expectedReturnNumerator: 193, expectedReturnDenominator: 200, expectationEquality: true })));
 for (const bet of CONFIG.betsCents) for (const mode of ['spin', 'boost'] as const) rows.push({ mode, betCents: bet, costCents: costCents(bet, { kind: mode }), outcomeCount: pools.ordinary.seeds.length + pools['natural-bonus'].seeds.length, tickets: `conditional branches 1/${mode === 'spin' ? 200 : 40}`, weightedPayoutCents: 'conditional exact rational expectation', expectedReturnNumerator: 193, expectedReturnDenominator: 200, expectationEquality: true });
@@ -120,7 +120,7 @@ const poolMetrics = Object.fromEntries(Object.entries(pools).map(([name, pool]) 
 })]));
 const proof = {
   paylineCount: PAYLINES.length, paylineRows: PAYLINES,
-  modelVersion: 4, generatedAt: new Date().toISOString(), modelSha256: sha('src/math-model.json'), sourceHashes,
+  modelVersion: 5, generatedAt: new Date().toISOString(), modelSha256: sha('src/math-model.json'), sourceHashes,
   targetRtp: { numerator: 193, denominator: 200, percentage: 96.5 },
   triggerProbabilities: { base: { numerator: 1, denominator: 200 }, boost: { numerator: 1, denominator: 40 }, ratio: 5, boostCostMultiplier: 3 },
   conditionalExpectation: { ordinaryBetMultiple: { numerator: 193, denominator: 400 }, naturalBonusBetMultiple: { numerator: 38793, denominator: 400 } },

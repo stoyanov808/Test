@@ -44,6 +44,6 @@ export interface Round {
 }
 export interface GodShot { target: Cell; character: Character; hit: boolean }
 export interface Session {
-  version: 4; balanceCents: number; betCents: number; rngState: number; sequence: number;
+  version: 5; balanceCents: number; betCents: number; rngState: number; sequence: number;
   pending: Round | null; history: Round[];
 }

@@ -8,7 +8,7 @@ export const TIER_ORDER: Tier[] = ['ruse', 'lux', 'edge', 'old'];
 export const BONUS_NAMES: Record<Tier, string> = { ruse: 'Русенско Варено', lux: 'ЛУКС', edge: 'Ръба са обажда', old: 'ОТ СТАРОТО' };
 export const TIER_CHARACTERS: Record<Tier, Character[]> = { ruse: ['left'], lux: ['right'], edge: ['middle'], old: ['left', 'middle', 'right'] };
 export const CONFIG = {
-  version: 4, targetRtp: .965, bonusTriggerDenominator: 200, boostedBonusTriggerDenominator: 40, boostCost: 3, reels: 6, rows: 5, maxWin: 19999, wildLinePay: 200, minimumNaturalSymbols: 1,
+  version: 5, targetRtp: .965, bonusTriggerDenominator: 200, boostedBonusTriggerDenominator: 40, boostCost: 3, reels: 6, rows: 5, maxWin: 19999, wildLinePay: 200, minimumNaturalSymbols: 1,
   betsCents: [10, 20, 50, 100, 200, 500, 1000, 2000], defaultBetCents: 20, initialBalanceCents: 1000000,
   buyCosts: { ruse: 95, lux: 150, edge: 1800, old: 2500 }, xbetCosts: { left: 8.5, right: 2.7, middle: 25 }, godCost: 3000,
   godShots: 5, godMinimumShots: 4, godExtraShotChance: .32,
@@ -96,7 +96,7 @@ export function costCents(betCents: number, choice: Choice): number {
 
 export function createSession(seed = secureSeed(), balanceCents: number = CONFIG.initialBalanceCents): Session {
   if (!money(balanceCents)) throw new Error('Invalid balance');
-  return { version: 4, balanceCents, betCents: CONFIG.defaultBetCents, rngState: new Rng(seed).state, sequence: 0, pending: null, history: [] };
+  return { version: 5, balanceCents, betCents: CONFIG.defaultBetCents, rngState: new Rng(seed).state, sequence: 0, pending: null, history: [] };
 }
 
 function randomRegular(rng: Rng): Regular { return REGULARS[rng.int(REGULARS.length)]; }
@@ -207,7 +207,8 @@ export function resolveFeature(which: Character, source: Cell, context: FeatureC
   } else if (which === 'middle') {
     // The drop receipt forbids a scatter or another unresolved badge on this
     // reel. Expansion therefore visibly converts all rows without erasing an
-    // invitation or another character. Existing sticky identities remain fixed.
+    // invitation or another character. Every bonus expansion is planted until
+    // that entire bonus ends; base-game expansions remain single-spin Wilds.
     if (grid[source.reel].some((s, row) => row !== source.row && !regular(s) && s !== 'wild')) throw new Error('Shooter reel contains an unresolved special');
     let ticket = rng.int(CONFIG.expandingMultiplierWeights.reduce((a, b) => a + b, 0));
     let factor: number = CONFIG.expandingMultipliers.at(-1)!;
@@ -218,7 +219,7 @@ export function resolveFeature(which: Character, source: Cell, context: FeatureC
       const repeated = grid[c.reel][row] === 'wild';
       const multiplier = Math.min(MONEY_LIMIT, (repeated ? multipliers[c.reel][row] || 1 : 1) * factor);
       grid[c.reel][row] = 'wild'; multipliers[c.reel][row] = multiplier;
-      if (sticky[c.reel][row]) sticky[c.reel][row] = multiplier;
+      if (context.tier !== null || sticky[c.reel][row]) sticky[c.reel][row] = multiplier;
       targets.push(c); hits.push({ cell: c, multiplier, repeated });
     }
   } else if (which === 'right') {
@@ -537,7 +538,7 @@ function selectOutcome(word: () => number, betCents: number, choice: Choice): { 
 /** Paid outcomes are frozen, independently weighted full-round receipts. No wallet input affects selection. */
 function settleWeighted(session: Session, choice: Choice, source: () => number, label: 'crypto' | 'fixture'): Session {
   if (session.pending) throw new Error('Finish the current round first');
-  if (session.version !== 4 || !money(session.balanceCents) || !integer(session.rngState, 1, 0xffffffff) || !integer(session.sequence, 0, Number.MAX_SAFE_INTEGER - 1)) throw new Error('Invalid session');
+  if (session.version !== 5 || !money(session.balanceCents) || !integer(session.rngState, 1, 0xffffffff) || !integer(session.sequence, 0, Number.MAX_SAFE_INTEGER - 1)) throw new Error('Invalid session');
   if (!validChoice(choice) || !(CONFIG.betsCents as readonly number[]).includes(session.betCents)) throw new Error('Invalid choice or bet');
   const cost = costCents(session.betCents, choice);
   if (session.balanceCents < cost) throw new Error('Insufficient credits');
@@ -602,7 +603,7 @@ function validRound(r: unknown): r is Round {
 export function deserializeSession(raw: string): Session | null {
   try {
     const s = JSON.parse(raw) as Session;
-    if (s.version !== 4 || !money(s.balanceCents) || !(CONFIG.betsCents as readonly number[]).includes(s.betCents) || !integer(s.rngState, 1, 0xffffffff) || !integer(s.sequence, 0, Number.MAX_SAFE_INTEGER) || !Array.isArray(s.history) || s.history.length > 12) return null;
+    if (s.version !== 5 || !money(s.balanceCents) || !(CONFIG.betsCents as readonly number[]).includes(s.betCents) || !integer(s.rngState, 1, 0xffffffff) || !integer(s.sequence, 0, Number.MAX_SAFE_INTEGER) || !Array.isArray(s.history) || s.history.length > 12) return null;
     if (s.pending !== null && !validRound(s.pending)) return null;
     if (!s.history.every(validRound)) return null;
     for (let i = 1; i < s.history.length; i++) if (s.history[i].id !== s.history[i - 1].id + 1 || s.history[i].initialRng !== s.history[i - 1].finalRng) return null;
@@ -627,7 +628,7 @@ export function deserializeSession(raw: string): Session | null {
 export function settledLegacyWallet(raw: string): { balanceCents: number; betCents: number } | null {
   try {
     const s = JSON.parse(raw);
-    if (![1, 2, 3].includes(s.version) || s.pending !== null || !money(s.balanceCents) || !(CONFIG.betsCents as readonly number[]).includes(s.betCents) || !integer(s.rngState, 1, 0xffffffff) || !integer(s.sequence, 0, Number.MAX_SAFE_INTEGER) || !Array.isArray(s.history) || s.history.length > 12) return null;
+    if (![1, 2, 3, 4].includes(s.version) || s.pending !== null || !money(s.balanceCents) || !(CONFIG.betsCents as readonly number[]).includes(s.betCents) || !integer(s.rngState, 1, 0xffffffff) || !integer(s.sequence, 0, Number.MAX_SAFE_INTEGER) || !Array.isArray(s.history) || s.history.length > 12) return null;
     let previous: any;
     for (const r of s.history) {
       if (!r || !integer(r.id, 1, Number.MAX_SAFE_INTEGER) || !validChoice(r.choice) || !(CONFIG.betsCents as readonly number[]).includes(r.betCents) || !money(r.costCents) || r.costCents !== costCents(r.betCents, r.choice) || !money(r.payoutCents) || r.capCents !== r.betCents * CONFIG.maxWin || r.payoutCents > r.capCents || r.maxWin !== (r.payoutCents === r.capCents) || !integer(r.initialRng, 1, 0xffffffff) || !integer(r.finalRng, 1, 0xffffffff) || !Array.isArray(r.spins) || r.spins.length > 2000 || !Array.isArray(r.godHits) || r.godHits.length > CONFIG.godShots || r.godHits.some((v: unknown) => typeof v !== 'boolean')) return null;

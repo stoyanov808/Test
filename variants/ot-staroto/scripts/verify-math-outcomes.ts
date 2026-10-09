@@ -16,7 +16,7 @@ const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b
 const output: string[] = [];
 const log = (message: string) => { output.push(message); console.log(message); };
 verifyMathModel();
-let outcomes = 0, lines = 0, expansions = 0, guaranteedCoinWaves = 0, multiExpandingSpins = 0, followupShots = 0, lockedReelHits = 0;
+let outcomes = 0, lines = 0, expansions = 0, guaranteedCoinWaves = 0, multiExpandingSpins = 0, followupShots = 0, lockedReelHits = 0, immediateBonusLocks = 0, retainedBonusReels = 0;
 for (const [name, pool] of Object.entries(MATH_MODEL.pools)) {
   for (let i = 0; i < pool.seeds.length; i++) for (const [stake, bet] of CONFIG.betsCents.entries()) {
     const round = simulateRound(pool.seeds[i], bet, pool.choice, pool.entryScatters?.[i]);
@@ -26,6 +26,7 @@ for (const [name, pool] of Object.entries(MATH_MODEL.pools)) {
     let previousSpin: typeof round.spins[number] | undefined;
     for (const spin of round.spins) {
       for (const reel of spin.initialExpandedReels) {
+        retainedBonusReels++;
         if (!spin.initialGrid[reel].every(s => s === 'wild') || !spin.initialWildMultipliers[reel].every(n => n > 0) || spin.cascades[0].inactiveWilds.length) throw new Error('Locked expanded reel did not stay planted and rearm');
       }
       if (previousSpin) {
@@ -82,6 +83,10 @@ for (const [name, pool] of Object.entries(MATH_MODEL.pools)) {
             const reel = feature.expandedReel;
             if (reel !== feature.source.reel || !CONFIG.expandingMultipliers.includes(feature.expansionMultiplier as any) || !equal(feature.targets, Array.from({ length: 5 }, (_, row) => ({ reel, row }))) || feature.gridAfter[reel!].some(s => s !== 'wild')) throw new Error('Shooter did not expand its entire own reel');
             if (feature.hits.length !== 5 || feature.hits.some((hit, row) => hit.cell.reel !== reel || hit.cell.row !== row || hit.multiplier !== feature.wildMultipliersAfter[reel!][row])) throw new Error('Unrecorded expanding Wild multiplier');
+            if (spin.tier !== null) {
+              immediateBonusLocks++; lockedReels.add(reel!);
+              if (!cascade.stickyWilds[reel!].every((n, row) => n > 0 && n === cascade.resolvedWildMultipliers[reel!][row])) throw new Error('Bonus expansion did not immediately plant all five final Wild multipliers');
+            } else if (cascade.stickyWilds[reel!].some(n => n > 0)) throw new Error('Base expansion became bonus-sticky');
           }
           if (feature.phase === 'shots') {
             seenShooting = true;
@@ -102,7 +107,7 @@ for (const [name, pool] of Object.entries(MATH_MODEL.pools)) {
                 priorGrid[r][row] = 'wild'; priorMultipliers[r][row] = expected;
               }
               if (event.sticky) {
-                lockedReelHits++; lockedReels.add(reel!);
+                lockedReelHits++;
                 if (!cascade.stickyWilds[reel!].every((n, row) => n > 0 && n === cascade.resolvedWildMultipliers[reel!][row])) throw new Error('Expanded-reel hit failed to lock all five final Wild multipliers');
               }
             }
@@ -137,7 +142,7 @@ log(`Full math verification passed: ${outcomes} replayed complete outcomes, zero
 writeFileSync(resolve(root, 'docs/mathematics-outcome-validation.json'), JSON.stringify({
   modelVersion: CONFIG.version, generatedAt: new Date().toISOString(), command: 'npm run math:check:full', exitCode: 0,
   outcomeEntries: Object.values(MATH_MODEL.pools).reduce((n, pool) => n + pool.seeds.length, 0), supportedStakes: CONFIG.betsCents,
-  completeOutcomesReplayed: outcomes, checkedPaylineAwards: lines, checkedExpansions: expansions, checkedGuaranteedCoinWaves: guaranteedCoinWaves, checkedMultiExpandingSpins: multiExpandingSpins, checkedFollowupShots: followupShots, checkedBonusReelLockHits: lockedReelHits,
+  completeOutcomesReplayed: outcomes, checkedPaylineAwards: lines, checkedExpansions: expansions, checkedGuaranteedCoinWaves: guaranteedCoinWaves, checkedMultiExpandingSpins: multiExpandingSpins, checkedFollowupShots: followupShots, checkedBonusReelLockHits: lockedReelHits, checkedImmediateBonusReelLocks: immediateBonusLocks, checkedRetainedBonusReels: retainedBonusReels,
   payoutFailures: 0, capFailures: 0, triggerBranchFailures: 0, accountingFailures: 0, paylineFailures: 0, expansionFailures: 0, followupShotFailures: 0, bonusReelLockFailures: 0, guaranteedCoinFailures: 0,
-  sourceHashes, checks: ['Every complete outcome independently replayed at every supported stake', 'Exact longest payline prefix, natural/all-Wild rule, bracket, summed active multiplier and remaining-cent budget', 'Overlapping winning cells removed once', 'Shooter initial-drop separation, all-five expansion and positive multiple-reel outcome metric', 'All initial expansions complete before optional ordered shots; regular targets become 1x Wilds and repeat hits double their exact multipliers', 'Expanded-reel shots double all five Wilds; bonus columns remain sticky with exact multipliers and rearm next spin; base columns do not carry into a bonus', 'Every marked coin vacancy guaranteed a reveal; collector chain reconciles', 'Whole-round cap, trigger branch and complete ledgers', 'Pinned sources and all 80 exact expected-return equations before and after replay'], output,
+  sourceHashes, checks: ['Every complete outcome independently replayed at every supported stake', 'Exact longest payline prefix, natural/all-Wild rule, bracket, summed active multiplier and remaining-cent budget', 'Overlapping winning cells removed once', 'Shooter initial-drop separation, all-five expansion and positive multiple-reel outcome metric', 'Every bonus expansion immediately plants all five Wilds, including expansions without any follow-up shots; base expansions remain transient', 'All initial expansions complete before optional ordered shots; regular targets become 1x Wilds and repeat hits double their exact multipliers', 'Expanded-reel shots double all five Wilds; all bonus-expanded columns retain exact multipliers and rearm next spin across retriggers and tier upgrades; base columns do not carry into a bonus', 'Every marked coin vacancy guaranteed a reveal; collector chain reconciles', 'Whole-round cap, trigger branch and complete ledgers', 'Pinned sources and all 80 exact expected-return equations before and after replay'], output,
 }, null, 2) + '\n');

@@ -1,4 +1,4 @@
-OT STAROTO - version 4 payline game
+OT STAROTO - version 5 payline game
 
 Recommended: download or clone the complete GitHub repository.
 With Node 20.19+ in Node 20, or 22.12+ installed, open its root folder:
@@ -22,7 +22,7 @@ repository, replace WAVs under variants/ot-staroto/public/audio, or edit
 src/audio-config.ts. Then rebuild. This ZIP keeps WAVs in its audio folder.
 All credits are virtual euros. Browser or server-address changes may
 create a separate local save. Previous settled virtual wallets can carry
-into version 4; older receipt bytes are preserved separately.
+into version 5; older receipt bytes are preserved separately.
 
 The illustrated club background matches the cream/black ink characters
 and symbols. Eight character poses, independent falling symbols and
@@ -35,11 +35,14 @@ overlapping winning cells clear once. Six Wilds pay one 200x line award,
 before the summed active Wild multipliers. Rules display every line.
 
 Left throws Wilds, sticky in his bonus. Middle expands his whole reel;
-multiple Shooters may expand distinct reels in one spin. All expand first,
+every bonus expansion immediately remains sticky until that bonus ends.
+His character stays on the highlighted column. The last-row plate shows
+the sum of its five retained Wild multipliers, even while Wilds rest.
+Multiple Shooters may expand distinct reels in one spin. All expand first,
 then optional follow-up shots create single-use Wilds or double Wilds.
-A shot hitting an expanded reel doubles all five Wilds and locks the
-whole reel for the rest of the bonus. Base hits do not carry into a new
-bonus. Used sticky positions rest and recharge on the next free spin.
+A shot hitting an expanded reel doubles all five Wilds and its total.
+Base expansions are transient and do not carry into a new bonus.
+Used sticky positions rest and recharge on the next free spin.
 
 Right reveals every marked winning cell as a value, modifier or collector,
 including repeated waves. Coin values range from 0.2x to 500x. Every wave
@@ -59,7 +62,7 @@ stakes, using rational weights over 53,248 complete entries and
 425,984 fully evaluated stake outcomes. Web Crypto tickets select
 paid outcomes; recorded entropy permits exact reload with no new debit
 or random draw. Odds never adapt to balance, history or previous losses.
-57 engine tests, the complete outcome replay and 200,000 fresh-Crypto
+59 engine tests, the complete outcome replay and 200,000 fresh-Crypto
 sampled rounds passed. Browser checks, source hashes and screenshot
 receipts are listed in RELEASE-INFO.json and the GitHub documentation.
 

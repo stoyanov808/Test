@@ -1,0 +1,60 @@
+{
+  "version": 5,
+  "checkedAtUTC": "2026-10-09T13:10:21.991272+00:00",
+  "method": "Unmodified release/START.cjs over HTTP with a test-only preload choosing an ephemeral port; no direct file launch claim.",
+  "htmlPaths": [
+    "/",
+    "/PLAY.html"
+  ],
+  "htmlSha256": "5e8501ab498c23ea56ccc86114f3ddf9d85b24049e7fbbb3a48cfae74d459683",
+  "audio": [
+    {
+      "name": "bonus.wav",
+      "sha256": "ea76c3c066cde82acd79baf76b4fe230a3a37a79a229573f124c9f40df92b7a6"
+    },
+    {
+      "name": "cascade.wav",
+      "sha256": "cde1e4014b5681970f48c690d54a1121f703e01156532679456e57240f6ec283"
+    },
+    {
+      "name": "coin.wav",
+      "sha256": "b8d2afd2429dcaf33372c5780d46df80faf0878655eeb381d51ac0cc7d78a800"
+    },
+    {
+      "name": "drop.wav",
+      "sha256": "45acb58ebd695357769132a6d1fd9a508f7eab3a60029c028ef2e69be89ea2a3"
+    },
+    {
+      "name": "feature.wav",
+      "sha256": "57057fe5bbe2b8aba3d6ddea7c405163852af2d5f6080a4437abc7f32c6d25ab"
+    },
+    {
+      "name": "max.wav",
+      "sha256": "2e2a384edf9c537ce5cb9d0bb67c3f2e42a23a97293e1b72a2146c2f4e1b5e64"
+    },
+    {
+      "name": "reveal.wav",
+      "sha256": "3488f127601040e3d83686d8a8d04a5ca09a73646a61058ca1fff2651907ead7"
+    },
+    {
+      "name": "scatter.wav",
+      "sha256": "b1e8c50cdbc2b4f17bbb12478d47518deb5715ce9e36106ca2c76ace4c606f7f"
+    },
+    {
+      "name": "shot.wav",
+      "sha256": "37613a382c1a5b984ed3d109c2b5735d28627469f4778682883a41883e5f085a"
+    },
+    {
+      "name": "win.wav",
+      "sha256": "c78e77dd7b84d81cc2442fe385c1c8ee3fca87cf45fcb15ed605228c85f9e022"
+    },
+    {
+      "name": "yard-loop.wav",
+      "sha256": "6a521f27048270c5e5b15b022c5bffb67978f6318bdf32527021c34a20834706"
+    }
+  ],
+  "favicon204": true,
+  "missingAndTraversal404": true,
+  "helperSha256": "64d92b005c292843baf4c9ca134f4bdfbea4026e4ab26675006fe5be2a70801b",
+  "jsAssetSource": "Current production build inlined by standalone.mjs"
+}

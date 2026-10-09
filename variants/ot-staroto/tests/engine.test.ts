@@ -65,8 +65,51 @@ test('expanding shooter becomes all five Wilds on its own reel and never picks r
   assert.equal(result.feature.expandedReel, 2); assert.equal(result.feature.expansionMultiplier, 1);
   assert.deepEqual(result.feature.targets, [0, 1, 2, 3, 4].map(row => ({ reel: 2, row })));
   assert.deepEqual(result.grid[2], Array(5).fill('wild')); assert.deepEqual(result.multipliers[2], Array(5).fill(1));
-  assert.equal(result.feature.globalMultiplier, 5); assert.equal(result.sticky.flat().reduce((a, b) => a + b), 0);
+  assert.equal(result.feature.globalMultiplier, 5); assert.deepEqual(result.sticky[2], Array(5).fill(1));
   for (const reel of [0, 1, 3, 4, 5]) assert.deepEqual(result.grid[reel], context.grid[reel]);
+});
+test('every bonus tier immediately plants an expanded Shooter reel without needing a follow-up shot', () => {
+  for (const tier of [null, ...TIER_ORDER]) {
+    const context = fixture(tier); context.grid[3][2] = 'middle';
+    const expansion = resolveFeature('middle', { reel: 3, row: 2 }, context, new Scripted([.97]));
+    assert.equal(expansion.feature.expansionMultiplier, 10);
+    assert.deepEqual(expansion.multipliers[3], Array(5).fill(10));
+    assert.deepEqual(expansion.sticky[3], Array(5).fill(tier === null ? 0 : 10));
+    assert.equal(resolveShooterShots({ reel: 3, row: 2 }, { ...context, ...expansion }, new Scripted([.99])), null);
+    assert.deepEqual(expansion.sticky[3], Array(5).fill(tier === null ? 0 : 10));
+  }
+});
+test('bonus Shooter columns persist through later free spins with their exact saved multipliers without being shot', () => {
+  let unshotExpansions = 0, retainedColumns = 0, restingCells = 0, rearmedCells = 0;
+  for (let seed = 1; seed <= 120; seed++) {
+    const receipt = simulateRound(seed * 0x4ea715, 20, { kind: 'buy', tier: 'edge' });
+    for (const [index, spin] of receipt.spins.entries()) {
+      for (const cascade of spin.cascades) for (const feature of cascade.features) if (feature.phase === 'expand') {
+        const reel = feature.expandedReel!;
+        assert.deepEqual(cascade.stickyWilds[reel], cascade.resolvedWildMultipliers[reel]);
+        assert.ok(cascade.stickyWilds[reel].every(n => n > 0));
+        const shot = spin.cascades.some(c => c.features.some(f => f.shotEvents?.some(e => e.expandedReel === reel)));
+        if (!shot) unshotExpansions++;
+        for (const cell of cascade.inactiveWildsAfter) if (cell.reel === reel) restingCells++;
+      }
+      if (!index) continue;
+      const previous = receipt.spins[index - 1];
+      const expected = previous.finalExpandedReels;
+      assert.deepEqual(spin.initialExpandedReels, expected);
+      for (const reel of expected) {
+        retainedColumns++;
+        assert.deepEqual(spin.initialGrid[reel], Array(5).fill('wild'));
+        assert.deepEqual(spin.initialWildMultipliers[reel], previous.finalWildMultipliers[reel]);
+        assert.deepEqual(spin.cascades[0].inactiveWilds, []);
+        rearmedCells += previous.inactiveWilds.filter(c => c.reel === reel).length;
+        for (const cascade of spin.cascades) {
+          assert.ok(cascade.removed.every(c => c.reel !== reel));
+          assert.deepEqual(cascade.resolvedGrid[reel], Array(5).fill('wild'));
+        }
+      }
+    }
+  }
+  assert.ok(unshotExpansions > 0 && retainedColumns > 0 && restingCells > 0 && rearmedCells > 0);
 });
 test('two expanding shooters independently expand distinct reels and sum their visible Wild multipliers', () => {
   const context = fixture(); context.grid[1][2] = 'middle'; context.grid[4][0] = 'middle';
@@ -91,11 +134,11 @@ test('base left Wilds are transient and all-feature left Wilds are sticky', () =
     assert.equal(result.sticky.flat().reduce((a, b) => a + b), tier === null ? 0 : 1);
   }
 });
-test('expanding shooter upgrades planted left Wilds in place and new shooter Wilds stay transient', () => {
+test('bonus expansion upgrades planted left Wilds and immediately plants every new Shooter Wild', () => {
   const context = fixture('old'); context.grid[0][0] = 'middle'; context.grid[0][1] = 'wild'; context.multipliers[0][1] = context.sticky[0][1] = 3;
   const result = resolveFeature('middle', { reel: 0, row: 0 }, context, new Scripted([.8]));
   assert.equal(result.feature.expansionMultiplier, 2); assert.equal(result.sticky[0][1], 6); assert.equal(result.multipliers[0][1], 6);
-  assert.equal(result.sticky[0][2], 0); assert.equal(result.feature.hits[1].repeated, true);
+  assert.deepEqual(result.sticky[0], [2, 6, 2, 2, 2]); assert.equal(result.feature.hits[1].repeated, true);
 });
 test('right consumes only marked boxes; other characters preserve those marks', () => {
   const context = fixture('lux'); context.grid[0][0] = 'right'; context.marks[2][3] = true;
@@ -230,8 +273,8 @@ test('sticky Wilds pay every matching win in one batch, rest for that spin and r
   }
   assert.ok(exhaustedChecks > 20 && rearmedChecks > 10);
 });
-test('unlocked shooter Wilds reset while shot-locked entire reels remain planted and rearm next free spin', () => {
-  let transient = 0, locked = 0;
+test('selected paid bonus receipts retain every Shooter reel and rearm all five Wilds next free spin', () => {
+  let carried = 0, locked = 0;
   for (let seed = 1; seed <= 30; seed++) {
     const receipt = round(seed, { kind: 'buy', tier: 'edge' });
     for (let i = 1; i < receipt.spins.length; i++) {
@@ -241,12 +284,13 @@ test('unlocked shooter Wilds reset while shot-locked entire reels remain planted
         assert.ok(spin.initialWildMultipliers[reel].every(n => n > 0));
         assert.deepEqual(spin.cascades[0].inactiveWilds, []); locked++;
       }
-      for (const f of previous.cascades.flatMap(c => c.features).filter(f => f.phase === 'expand')) if (!spin.initialExpandedReels.includes(f.expandedReel!)) {
-        assert.equal(spin.initialWildMultipliers[f.expandedReel!].every(n => n === 0), true); transient++;
+      for (const f of previous.cascades.flatMap(c => c.features).filter(f => f.phase === 'expand')) {
+        assert.ok(spin.initialExpandedReels.includes(f.expandedReel!));
+        assert.deepEqual(spin.initialWildMultipliers[f.expandedReel!], previous.finalWildMultipliers[f.expandedReel!]); carried++;
       }
     }
   }
-  assert.ok(transient > 0 && locked > 0);
+  assert.ok(carried > 0 && locked > 0);
 });
 test('right bonus marks accumulate wins and survive until right reveal consumes them', () => {
   let coinReveals = 0, carried = 0;
@@ -459,10 +503,12 @@ test('every selected fixture receipt identifies and matches its verified cent ou
   }
 });
 
-test('old pending receipts cannot be silently replayed under v4 mathematics', () => {
-  const legacy = { ...rich(19), version: 2 };
-  assert.equal(deserializeSession(JSON.stringify(legacy)), null);
-  assert.equal(createSession(19).version, 4);
+test('old pending receipts cannot be silently replayed under v5 sticky mathematics', () => {
+  for (const version of [1, 2, 3, 4]) {
+    const legacy = { ...rich(19), version };
+    assert.equal(deserializeSession(JSON.stringify(legacy)), null);
+  }
+  assert.equal(createSession(19).version, 5);
 });
 
 test('a failed entropy source stops within the replay draw budget and leaves credits untouched', () => {
@@ -490,8 +536,8 @@ test('guaranteed coin reveal gives every marked vacancy a real coin or effect, n
   }
 });
 test('legacy settled-wallet carry validates version, pending state, header, bounded history and ledger', () => {
-  const previous = { ...createSession(319, 128543), version: 3 };
-  assert.deepEqual(settledLegacyWallet(JSON.stringify(previous)), { balanceCents: 128543, betCents: 20 });
+  const previous = { ...createSession(319, 128543), version: 4 };
+  for (const version of [1, 2, 3, 4]) assert.deepEqual(settledLegacyWallet(JSON.stringify({ ...previous, version })), { balanceCents: 128543, betCents: 20 });
   for (const changed of [{ ...previous, pending: {} }, { ...previous, balanceCents: -.1 }, { ...previous, betCents: 11 }, { ...previous, sequence: 1 }, { ...previous, history: Array(13).fill({}) }]) assert.equal(settledLegacyWallet(JSON.stringify(changed)), null);
   assert.equal(settledLegacyWallet('{bad'), null);
 });
@@ -563,7 +609,7 @@ test('follow-up shooter phase is optional and regular/repeated ordinary hits pro
   assert.ok(result.feature.shotEvents!.every(s => s.hits.length === 1 && s.expandedReel === undefined && !s.sticky));
   assert.equal(result.sticky[0][0], 0);
 });
-test('a follow-up expanded-reel hit doubles all five exact multipliers and locks the entire reel only in a bonus', () => {
+test('a follow-up expanded-reel hit doubles all five exact multipliers and preserves the bonus reel lock', () => {
   for (const tier of [null, 'edge'] as const) {
     const context = fixture(tier); context.grid[2][3] = 'middle';
     const expansion = resolveFeature('middle', { reel: 2, row: 3 }, context, new Scripted([0]));
@@ -580,7 +626,7 @@ test('all expansions are available before follow-up shots can boost a different 
   const b = resolveFeature('middle', { reel: 4, row: 0 }, { ...context, ...a }, new Scripted([.8]));
   const shots = resolveShooterShots({ reel: 1, row: 2 }, { ...context, ...b }, new Scripted([0, 0, 23.5 / 30]))!;
   assert.equal(shots.feature.shotEvents![0].expandedReel, 4); assert.deepEqual(shots.multipliers[4], Array(5).fill(4)); assert.deepEqual(shots.sticky[4], Array(5).fill(4));
-  assert.deepEqual(shots.sticky[1], Array(5).fill(0));
+  assert.deepEqual(shots.sticky[1], Array(5).fill(1));
 });
 test('follow-up shots exclude unresolved badges, scatter invitations and MAX cells', () => {
   const context = fixture('old');

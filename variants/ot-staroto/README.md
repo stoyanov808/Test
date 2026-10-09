@@ -1,4 +1,4 @@
-# ОТ СТАРОТО — version 4
+# ОТ СТАРОТО — version 5
 
 A student-club slot with matching ink cartoon symbol and character artwork, eight-frame character actions, a full-window integrated scene UI, 19 fixed paylines, Bulgarian/English controls and virtual euro credits. Run it through the repository's normal Vite server.
 
@@ -26,7 +26,7 @@ The production server uses `variants/ot-staroto/dist`. Development commands can 
 | --- | --- | --- | ---: |
 | Left, sunglasses | Throws Wilds. His bonus retains their coordinates and multipliers. | Русенско Варено | 95× |
 | Right, coin dealer | Marks genuinely removed winning positions and reveals coins, collectors and modifiers. | ЛУКС | 150× |
-| Middle, shooter | Expands his whole reel into Wilds; optional follow-up shots create or double Wilds and can lock an expanded reel for the rest of the bonus. | Ръба са обажда | 1,800× |
+| Middle, shooter | Expands his whole reel into Wilds, immediately sticky until the bonus ends; optional follow-up shots create or double Wilds. | Ръба са обажда | 1,800× |
 | All three | Sticky Wilds, shooting and marked-cell coin rounds together. | ОТ СТАРОТО | 2,500× |
 
 Each individual bonus starts with ten spins; the super starts with fifteen. Bought invitations land visibly before the bonus begins, with receipt-derived varied positions. Natural 3/4/5/6 invitations award the corresponding tier. In a bonus, two invitations add two spins; three add five; four add five and upgrade to at least ЛУКС; five add five and upgrade to at least Ръба са обажда; six add ten and unlock ОТ СТАРОТО. A tier upgrade changes the eligible character while retained sticky positions and marks remain. Only the super admits all three arriving characters.
@@ -41,7 +41,7 @@ Three or more consecutive matching symbols on a path pay from the first reel, le
 
 Nine regular types pay **0.1×–3×** for three matches and **3×–100×** for six, before Wild multipliers. The sum of active Wild multipliers, with a minimum of one, multiplies line wins. Newly created nonsticky Wilds leave when they win. Sticky Wilds keep their positions and multipliers, contribute to all eligible lines in one tumble, then dim for the rest of that spin and recharge on the next free spin.
 
-Each rare Shooter expands all five rows on his own reel. More than one reel can expand in a spin. All expansions happen before optional recorded follow-up shots. A regular target becomes a single-use Wild; an ordinary Wild target doubles. A shot hitting an expanded reel doubles every Wild on it and, during a bonus, locks the entire reel as sticky until that bonus ends. Multiple reels can be locked. In base play the boost lasts for the current spin; base Wilds do not carry into a newly triggered bonus. Existing left-sticky positions retain their identity and upgraded multiplier. Unlocked expanded Wilds remain transient.
+Each rare Shooter expands all five rows on his own reel. Every expansion during a bonus immediately makes the whole reel sticky until that bonus ends, including retriggered spins and tier upgrades. More than one reel can expand and remain sticky. The highlighted column keeps his illustrated character and a last-row plate showing the sum of its five retained Wild multipliers. This total remains visible while used Wilds rest; the active global multiplier still excludes resting cells. All expansions happen before optional recorded follow-up shots. A regular target becomes a single-use Wild; an ordinary Wild target doubles. A shot hitting an expanded reel doubles every Wild on it and updates its displayed total. Base-game expansions remain transient and do not carry into a newly triggered bonus. Existing left-sticky positions retain their identity and upgraded multiplier.
 
 Feature badges and invitations enter on initial drops; refills contain regular symbols. There is at most one invitation per reel. Winning chains end through the actual rules, with no concealed tumble truncation.
 
@@ -65,7 +65,7 @@ The ink club scene and compact edge controls fill the entire game window. The bo
 
 Small ordinary wins count in the HUD. Larger wins and bonus awards use the scene count-up, adding characters at 100× and 500×, shooting at 1,000× and the escape car at the actual cap. Space starts one round per physical press and release. Auto-repeat and native held-button activation are blocked. Board clicks cannot skip an entire round. Win count-ups use their explicit Continue action; a second fresh action is required to close them.
 
-The complete outcome is settled and saved before replay. Reload resumes the same receipt with no repeated debit or award. Version 4 uses its own save key and leaves previous version 1/2/3 bytes untouched. A structurally checked, fully settled previous virtual wallet can carry into a fresh version 4 session. Old receipts are preserved separately; they are not replayed or reinterpreted under the new paylines. Pending old results remain in the old save. Language, turbo, X Bet and normal audio preferences remain available.
+The complete outcome is settled and saved before replay. Reload resumes the same receipt with no repeated debit or award. Version 5 uses its own save key and leaves previous version 1/2/3/4 bytes untouched. A structurally checked, fully settled previous virtual wallet can carry into a fresh version 5 session. Old receipts are preserved separately; they are not replayed or reinterpreted under changed Shooter rules. Pending old results remain in the old save. Language, turbo, X Bet and normal audio preferences remain available.
 
 Player audio uploads and the browser audio database are removed. Replace the WAV files under `public/audio`, or change filenames and cue settings in `src/audio-config.ts`, then rebuild for deployment. Normal player controls are volume, mute and music on/off. [File and cue instructions](public/audio/README.md) list all eleven bundled sounds.
 
