@@ -1,13 +1,13 @@
 {
   "version": 5,
-  "presentationVersion": "5.1.0",
-  "checkedAtUTC": "2026-10-10T02:53:55.028239+00:00",
+  "presentationVersion": "5.2.0",
+  "checkedAtUTC": "2026-10-10T13:38:17.091230+00:00",
   "method": "Unmodified release/START.cjs over HTTP with a test-only preload choosing an ephemeral port; no direct file launch claim.",
   "htmlPaths": [
     "/",
     "/PLAY.html"
   ],
-  "htmlSha256": "aaf66b4ee164de488a7bcd03603c677d078709e4d2a65ca9c025e216b252b40e",
+  "htmlSha256": "0ef5a776b90ec48df344180f03b7a881726592e6bd41796a608fe04df5380e52",
   "audio": [
     {
       "name": "bonus.wav",

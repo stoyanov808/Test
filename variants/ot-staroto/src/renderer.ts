@@ -71,6 +71,14 @@ interface CharacterStagingView {
   seatContact: { x: number; y: number } | null; drawnSeatContact: { x: number; y: number } | null;
   canvas: 'character-stage' | 'game'; clip: 'none'; separate: true; speakerSeat: SpeakerSeatView | null;
 }
+interface CastLayoutSnapshot {
+  portrait: boolean; scale: number;
+  board: { left: number; top: number; width: number; height: number };
+  stage: { left: number; top: number; width: number; height: number } | null;
+  scene: { left: number; top: number; width: number; height: number } | null;
+  viewport: RendererInspection['characterViewport'];
+}
+interface PoseEnvelope { minX: number; maxX: number; above: number; below: number }
 export interface RendererUpdate {
   spin: Spin | null; round: Round | null; global: number; remaining: number; tier: Tier | null; totalCents: number;
 }
@@ -169,6 +177,14 @@ export class GameRenderer {
   private readonly images = new Map<string, HTMLImageElement>();
   private readonly imageReady = new Map<string, Promise<void>>();
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  private readonly portraitMedia = window.matchMedia('(max-width: 760px) and (orientation: portrait)');
+  private layout: CastLayoutSnapshot | null = null;
+  private layoutSignature = '';
+  private projectedSpeakerSeat: SpeakerSeatView | null = null;
+  private readonly poseEnvelopes = new Map<Character, PoseEnvelope>();
+  private readonly fittedCharacterScales = new Map<string, number>();
+  private frameSurface: HTMLCanvasElement | null = null;
+  private frameSurfaceRatio = 0;
   private grid: Grid = Array.from({ length: COLS }, (_, reel) => Array.from({ length: ROWS }, (_, row) => REGULARS[(reel * 2 + row) % REGULARS.length]));
   private wildMultipliers = emptyMatrix();
   private marks = emptyMarks();
@@ -239,6 +255,7 @@ export class GameRenderer {
     canvas.style.aspectRatio = `${W} / ${H}`;
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas);
+    if (stage) this.resizeObserver.observe(stage);
     this.sceneReady = this.preload();
     this.resize();
     void this.sceneReady.then(() => { if (!this.playing) this.draw(); }).catch(() => { this.stage = 'asset-error'; this.draw(); });
@@ -283,8 +300,12 @@ export class GameRenderer {
 
   resize(): void {
     this.deviceRatio = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
-    this.canvas.width = Math.round(W * this.deviceRatio);
-    this.canvas.height = Math.round(H * this.deviceRatio);
+    const width = Math.round(W * this.deviceRatio), height = Math.round(H * this.deviceRatio);
+    // A CSS resize changes staging, not its logical artwork resolution. Do not
+    // reset Canvas state or its backing store unless the display ratio changes.
+    if (this.canvas.width !== width) this.canvas.width = width;
+    if (this.canvas.height !== height) this.canvas.height = height;
+    this.refreshLayout();
     this.draw();
   }
 
@@ -293,8 +314,11 @@ export class GameRenderer {
     if (!Number.isFinite(top) || !Number.isFinite(height)) return;
     const nextTop = Math.max(0, Math.min(BOARD.y - 32, top));
     const nextHeight = Math.max(30, Math.min(BOARD.y - nextTop, height));
-    if (this.viewportHeader?.top === nextTop && this.viewportHeader?.height === nextHeight) return;
+    const sameHeader = this.viewportHeader?.top === nextTop && this.viewportHeader?.height === nextHeight;
+    const layoutChanged = this.refreshLayout();
+    if (sameHeader && !layoutChanged) return;
     this.viewportHeader = { top: nextTop, height: nextHeight };
+    this.fittedCharacterScales.clear();
     this.draw();
   }
 
@@ -858,12 +882,11 @@ export class GameRenderer {
     return new Promise(resolve => {
       let start: number | null = null;
       let done = false;
-      const finish = () => {
+      const finish = (alreadyPaintedFinal = false) => {
         if (done) return;
         done = true;
         cancelAnimationFrame(this.animationFrame);
-        update(1, duration);
-        this.draw();
+        if (!alreadyPaintedFinal) { update(1, duration); this.draw(); }
         this.finishAnimation = null;
         resolve();
       };
@@ -874,7 +897,8 @@ export class GameRenderer {
         const elapsed = Math.min(duration, now - start);
         update(clamp(elapsed / duration), elapsed);
         this.draw();
-        if (elapsed >= duration || this.skipped || this.destroyed) finish();
+        if (elapsed >= duration) finish(true);
+        else if (this.skipped || this.destroyed) finish();
         else this.animationFrame = requestAnimationFrame(frame);
       };
       this.animationFrame = requestAnimationFrame(frame);
@@ -973,30 +997,57 @@ export class GameRenderer {
     this.prepareCastCanvas();
     if (this.castContext) this.ctx = this.castContext;
     // One complete foreground pass, without a reel or header mask.
-    if (!this.godCutscene) this.drawCharacters();
+    if (!this.godCutscene) this.drawCharacters(shooterReels);
     this.drawEffect(true);
     if (this.godCutscene) this.drawGod();
     this.ctx = this.boardContext;
   }
 
+  /** Layout is sampled only when the shell or display changes. Animation RAFs
+   * consume the snapshot instead of repeatedly forcing browser layout. */
+  private refreshLayout(): boolean {
+    const boardRect = this.canvas.getBoundingClientRect();
+    const stageRect = this.castCanvas?.getBoundingClientRect() ?? null;
+    const sceneRect = this.options.background === 'transparent' ? this.canvas.closest<HTMLElement>('.game-shell')?.getBoundingClientRect() ?? null : null;
+    const portrait = this.portraitMedia.matches;
+    const signature = [portrait, this.deviceRatio, boardRect.left, boardRect.top, boardRect.width, boardRect.height,
+      stageRect?.left, stageRect?.top, stageRect?.width, stageRect?.height, sceneRect?.left, sceneRect?.top, sceneRect?.width, sceneRect?.height].join(':');
+    if (this.layout && signature === this.layoutSignature) return false;
+    const rect = (value: DOMRect) => ({ left: value.left, top: value.top, width: value.width, height: value.height });
+    const board = rect(boardRect), stage = stageRect ? rect(stageRect) : null, scene = sceneRect ? rect(sceneRect) : null;
+    const scale = board.width > 0 ? board.width / W : 1;
+    const viewport: RendererInspection['characterViewport'] = stage ? { left: (stage.left - board.left) / scale, top: (stage.top - board.top) / scale,
+      right: (stage.left + stage.width - board.left) / scale, bottom: (stage.top + stage.height - board.top) / scale, canvas: 'character-stage' }
+      : { left: 0, top: 0, right: W, bottom: H, canvas: 'game' };
+    this.layout = { portrait, scale, board, stage, scene, viewport };
+    this.layoutSignature = signature;
+    this.projectedSpeakerSeat = this.projectSpeakerSeat(this.layout);
+    this.fittedCharacterScales.clear();
+    if (this.castCanvas && stage) {
+      const width = Math.max(1, Math.round(stage.width * this.deviceRatio)), height = Math.max(1, Math.round(stage.height * this.deviceRatio));
+      if (this.castCanvas.width !== width) this.castCanvas.width = width;
+      if (this.castCanvas.height !== height) this.castCanvas.height = height;
+    }
+    return true;
+  }
+
+  private layoutSnapshot(): CastLayoutSnapshot {
+    if (!this.layout) this.refreshLayout();
+    return this.layout!;
+  }
+
   private prepareCastCanvas(): void {
     if (!this.castCanvas || !this.castContext) return;
-    const stage = this.castCanvas.getBoundingClientRect(), board = this.canvas.getBoundingClientRect();
-    const width = Math.max(1, Math.round(stage.width * this.deviceRatio)), height = Math.max(1, Math.round(stage.height * this.deviceRatio));
-    if (this.castCanvas.width !== width) this.castCanvas.width = width;
-    if (this.castCanvas.height !== height) this.castCanvas.height = height;
-    const ctx = this.castContext, scale = board.width / W;
+    const { stage, board, scale } = this.layoutSnapshot();
+    if (!stage) return;
+    const ctx = this.castContext;
     ctx.setTransform(this.deviceRatio, 0, 0, this.deviceRatio, 0, 0); ctx.clearRect(0, 0, stage.width, stage.height);
     ctx.setTransform(this.deviceRatio * scale, 0, 0, this.deviceRatio * scale,
       this.deviceRatio * (board.left - stage.left), this.deviceRatio * (board.top - stage.top));
   }
 
-  private characterViewport(): { left: number; top: number; right: number; bottom: number; canvas: 'character-stage' | 'game' } {
-    const stage = this.canvas.closest<HTMLElement>('.stage')?.getBoundingClientRect(), board = this.canvas.getBoundingClientRect();
-    const scale = board.width > 0 ? board.width / W : 1;
-    if (stage && this.castCanvas) return { left: (stage.left - board.left) / scale, top: (stage.top - board.top) / scale,
-      right: (stage.right - board.left) / scale, bottom: (stage.bottom - board.top) / scale, canvas: 'character-stage' };
-    return { left: 0, top: 0, right: W, bottom: H, canvas: 'game' };
+  private characterViewport(): RendererInspection['characterViewport'] {
+    return { ...this.layoutSnapshot().viewport };
   }
 
   private clearCellProgress(cell: Cell): number {
@@ -1042,6 +1093,24 @@ export class GameRenderer {
   }
 
   private drawFrame(): void {
+    if (!this.frameSurface || this.frameSurfaceRatio !== this.deviceRatio) {
+      const surface = document.createElement('canvas');
+      surface.width = Math.round(W * this.deviceRatio); surface.height = Math.round(H * this.deviceRatio);
+      const context = surface.getContext('2d');
+      if (!context) { this.paintFrame(); return; }
+      const previous = this.ctx;
+      this.ctx = context;
+      context.setTransform(this.deviceRatio, 0, 0, this.deviceRatio, 0, 0);
+      this.paintFrame();
+      this.ctx = previous;
+      this.frameSurface = surface; this.frameSurfaceRatio = this.deviceRatio;
+    }
+    // Replay the exact static frame at a one-to-one backing-pixel scale. The
+    // expensive shadow and seven gradients are painted only once per DPR.
+    this.ctx.drawImage(this.frameSurface, 0, 0, this.frameSurface.width / this.deviceRatio, this.frameSurface.height / this.deviceRatio);
+  }
+
+  private paintFrame(): void {
     const ctx = this.ctx;
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,.7)'; ctx.shadowBlur = 22;
@@ -1244,10 +1313,14 @@ export class GameRenderer {
   }
 
   private speakerSeat(): SpeakerSeatView {
+    this.layoutSnapshot();
+    return this.projectedSpeakerSeat!;
+  }
+
+  private projectSpeakerSeat(layout: CastLayoutSnapshot): SpeakerSeatView {
     const source = { x: SPEAKER.seatX, y: SPEAKER.seatY };
     const sourceWindow = { x: SPEAKER.x, y: SPEAKER.y, width: SPEAKER.width, height: SPEAKER.height };
-    const portrait = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
-    if (portrait) {
+    if (layout.portrait) {
       // The full-height cover crops the right cabinet completely offscreen.
       // Re-stage that same cabinet, using its original pixels, in the header.
       const scale = 58 / SPEAKER.height, contact = { x: 866, y: BOARD.y - 59 };
@@ -1255,18 +1328,14 @@ export class GameRenderer {
       const top = contact.y - (SPEAKER.seatY - SPEAKER.y) * scale;
       return { originalBackground: true, source, contact, relocated: true, sourceWindow, speakerBounds: { left, top, right: left + SPEAKER.width * scale, bottom: top + SPEAKER.height * scale } };
     }
-    if (this.options.background === 'transparent') {
-      const viewport = this.canvas.closest<HTMLElement>('.game-shell')?.getBoundingClientRect();
-      const canvas = this.canvas.getBoundingClientRect();
-      if (viewport && viewport.width > 0 && viewport.height > 0 && canvas.width > 0) {
-        const cover = Math.max(viewport.width / CLUB.width, viewport.height / CLUB.height);
-        const offsetX = viewport.left + (viewport.width - CLUB.width * cover) / 2;
-        const offsetY = viewport.top + (viewport.height - CLUB.height * cover) / 2;
-        const scale = canvas.width / W;
-        const project = (x: number, y: number) => ({ x: (offsetX + x * cover - canvas.left) / scale, y: (offsetY + y * cover - canvas.top) / scale });
-        const contact = project(source.x, source.y), topLeft = project(SPEAKER.x, SPEAKER.y), bottomRight = project(SPEAKER.x + SPEAKER.width, SPEAKER.y + SPEAKER.height);
-        return { originalBackground: true, source, contact, relocated: false, sourceWindow, speakerBounds: { left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y } };
-      }
+    const { scene, board, scale } = layout;
+    if (scene && scene.width > 0 && scene.height > 0 && board.width > 0) {
+      const cover = Math.max(scene.width / CLUB.width, scene.height / CLUB.height);
+      const offsetX = scene.left + (scene.width - CLUB.width * cover) / 2;
+      const offsetY = scene.top + (scene.height - CLUB.height * cover) / 2;
+      const project = (x: number, y: number) => ({ x: (offsetX + x * cover - board.left) / scale, y: (offsetY + y * cover - board.top) / scale });
+      const contact = project(source.x, source.y), topLeft = project(SPEAKER.x, SPEAKER.y), bottomRight = project(SPEAKER.x + SPEAKER.width, SPEAKER.y + SPEAKER.height);
+      return { originalBackground: true, source, contact, relocated: false, sourceWindow, speakerBounds: { left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y } };
     }
     const cover = Math.max(W / CLUB.width, H / CLUB.height);
     const offsetX = (W - CLUB.width * cover) / 2, offsetY = (H - CLUB.height * cover) / 2;
@@ -1275,7 +1344,7 @@ export class GameRenderer {
   }
 
   private characterPlacement(character: Character): { x: number; y: number; width: number; height: number } {
-    const portrait = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
+    const portrait = this.layoutSnapshot().portrait;
     if (character === 'right') {
       const contact = this.speakerSeat().contact;
       return { x: contact.x, y: contact.y, width: portrait ? 188 : 260, height: portrait ? 172 : 470 };
@@ -1290,7 +1359,7 @@ export class GameRenderer {
   }
 
   private characterFlip(character: Character): number {
-    return character === 'middle' && !(this.activeCharacters.includes('right') && !window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches) ? -1 : 1;
+    return character === 'middle' && !(this.activeCharacters.includes('right') && !this.layoutSnapshot().portrait) ? -1 : 1;
   }
 
   private characterAnchor(character: Character, sprite: ReturnType<typeof characterFrameSprite>): { x: number; y: number } {
@@ -1299,25 +1368,40 @@ export class GameRenderer {
       : { x: sprite.anchorX ?? sprite.width / 2, y: sprite.anchorY ?? sprite.height };
   }
 
-  private characterScale(character: Character, current = characterFrameSprite(character, 0)): number {
-    const box = this.characterPlacement(character), first = characterFrameSprite(character, 0);
-    let scale = Math.min(box.width / (first.referenceWidth ?? first.width), box.height / (first.referenceHeight ?? first.height));
-    const portrait = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
-    const visible = this.characterViewport();
-    const flip = this.characterFlip(character);
-    // Fit the complete pose envelope once, so a longer gesture never shrinks or
-    // shifts the actor. Only the hands intentionally pass in front of the rail.
+  private poseEnvelope(character: Character): PoseEnvelope {
+    let envelope = this.poseEnvelopes.get(character);
+    if (envelope) return envelope;
+    const first = characterFrameSprite(character, 0), reference = first.referenceHeight ?? first.height;
+    envelope = { minX: 0, maxX: 0, above: 0, below: 0 };
     for (const sprite of characterAnimationSprites(character)) {
-      const referenceRatio = (first.referenceHeight ?? first.height) / (sprite.referenceHeight ?? sprite.height);
-      const anchor = this.characterAnchor(character, sprite);
-      const minX = (flip > 0 ? -anchor.x : anchor.x - sprite.width) * referenceRatio;
-      const maxX = (flip > 0 ? sprite.width - anchor.x : anchor.x) * referenceRatio;
+      const ratio = reference / (sprite.referenceHeight ?? sprite.height), anchor = this.characterAnchor(character, sprite);
+      envelope.minX = Math.min(envelope.minX, -anchor.x * ratio);
+      envelope.maxX = Math.max(envelope.maxX, (sprite.width - anchor.x) * ratio);
+      envelope.above = Math.max(envelope.above, anchor.y * ratio);
+      envelope.below = Math.max(envelope.below, (sprite.height - anchor.y) * ratio);
+    }
+    this.poseEnvelopes.set(character, envelope);
+    return envelope;
+  }
+
+  private characterScale(character: Character, current = characterFrameSprite(character, 0)): number {
+    const layout = this.layoutSnapshot(), flip = this.characterFlip(character);
+    const stagingKey = `${character}:${this.activeCharacters.includes('right')}:${flip}`;
+    const first = characterFrameSprite(character, 0);
+    let scale = this.fittedCharacterScales.get(stagingKey);
+    if (scale === undefined) {
+      const box = this.characterPlacement(character), visible = layout.viewport, envelope = this.poseEnvelope(character);
+      scale = Math.min(box.width / (first.referenceWidth ?? first.width), box.height / (first.referenceHeight ?? first.height));
+      const minX = flip > 0 ? envelope.minX : -envelope.maxX;
+      const maxX = flip > 0 ? envelope.maxX : -envelope.minX;
       if (minX < 0) scale = Math.min(scale, (box.x - visible.left - 8) / -minX);
       if (maxX > 0) scale = Math.min(scale, (visible.right - box.x - 8) / maxX);
-      if (anchor.y > 0) scale = Math.min(scale, (box.y - visible.top - 6) / (anchor.y * referenceRatio));
-      if (sprite.height > anchor.y) scale = Math.min(scale, ((portrait ? BOARD.y - 4 : visible.bottom - 8) - box.y) / ((sprite.height - anchor.y) * referenceRatio));
+      if (envelope.above > 0) scale = Math.min(scale, (box.y - visible.top - 6) / envelope.above);
+      if (envelope.below > 0) scale = Math.min(scale, ((layout.portrait ? BOARD.y - 4 : visible.bottom - 8) - box.y) / envelope.below);
+      scale = Math.max(.01, scale);
+      this.fittedCharacterScales.set(stagingKey, scale);
     }
-    return Math.max(.01, scale) * (first.referenceHeight ?? first.height) / (current.referenceHeight ?? current.height);
+    return scale * (first.referenceHeight ?? first.height) / (current.referenceHeight ?? current.height);
   }
 
   private characterMuzzle(character: Character): { x: number; y: number } {
@@ -1357,11 +1441,11 @@ export class GameRenderer {
     return { character, index: Math.min(count - 1, index), count, progress };
   }
 
-  private characterStaging(): CharacterStagingView[] {
+  private characterStaging(shooterReels = this.shooterReelViews()): CharacterStagingView[] {
     if (this.godCutscene || this.effect?.kind === 'tier') return [];
     return this.activeCharacters.flatMap(character => {
       const active = this.effect?.character === character;
-      if (character === 'middle' && this.shooterReelViews().some(view => !active || this.effect?.source?.reel === view.reel)) return [];
+      if (character === 'middle' && shooterReels.some(view => !active || this.effect?.source?.reel === view.reel)) return [];
       const state = this.characterAnimationState(character), sprite = characterFrameSprite(character, state.index), box = this.characterPlacement(character);
       const scale = this.characterScale(character, sprite), flip = this.characterFlip(character), origin = this.characterAnchor(character, sprite);
       const p = state.progress;
@@ -1372,8 +1456,9 @@ export class GameRenderer {
         const dx = (x - origin.x) * scale * flip, dy = (y - origin.y) * scale;
         return { x: anchor.x + dx * Math.cos(rotation) - dy * Math.sin(rotation), y: anchor.y + dx * Math.sin(rotation) + dy * Math.cos(rotation) };
       });
-      const speakerSeat = character === 'right' ? this.speakerSeat() : null;
-      const portrait = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
+      const projectedSeat = character === 'right' ? this.speakerSeat() : null;
+      const speakerSeat = projectedSeat ? { ...projectedSeat, source: { ...projectedSeat.source }, contact: { ...projectedSeat.contact }, sourceWindow: { ...projectedSeat.sourceWindow }, speakerBounds: { ...projectedSeat.speakerBounds } } : null;
+      const portrait = this.layoutSnapshot().portrait;
       const previousScale = portrait ? Math.min(130 / (sprite.referenceWidth ?? sprite.width), 125 / (sprite.referenceHeight ?? sprite.height))
         : Math.min(190 / (sprite.referenceWidth ?? sprite.width), 426 / (sprite.referenceHeight ?? sprite.height));
       return [{ character, frame: state.index, index: state.index, count: state.count, scale, previousScale, anchor,
@@ -1390,8 +1475,8 @@ export class GameRenderer {
     return { progress: clamp((p - launch) / flight), arrival: launch + flight };
   }
 
-  private drawCharacters(): void {
-    const ctx = this.ctx, staged = this.characterStaging();
+  private drawCharacters(shooterReels: ShooterReelView[]): void {
+    const ctx = this.ctx, staged = this.characterStaging(shooterReels);
     const seated = staged.find(actor => actor.character === 'right');
     if (seated?.speakerSeat?.relocated) this.drawOriginalSpeaker(seated.speakerSeat);
     for (const actor of staged) {
@@ -1430,7 +1515,7 @@ export class GameRenderer {
   private drawLabels(): void {
     if (this.godCutscene) return;
     const ctx = this.ctx;
-    const mobile = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
+    const mobile = this.layoutSnapshot().portrait;
     const header = this.viewportHeader;
     if (mobile && this.activeCharacters.length) {
       this.inkText('ОТ СТАРОТО', W / 2, (header?.top ?? 0) + 26, 25, '#ddd3bd');

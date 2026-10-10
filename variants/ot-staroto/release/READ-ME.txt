@@ -1,4 +1,4 @@
-OT STAROTO - version 5.1 animation update (version 5 mathematics)
+OT STAROTO - version 5.2 animation update (version 5 mathematics)
 
 Recommended: download or clone the complete GitHub repository.
 With Node 20.19+ in Node 20, or 22.12+ installed, open its root folder:
@@ -27,7 +27,8 @@ into version 5; older receipt bytes are preserved separately.
 The illustrated club background matches the cream/black ink characters
 and symbols. Sixteen character poses, independent falling symbols and
 compact controls fill the game window. LUX is a separate seated actor on
-the existing right speaker; foreground gestures are not clipped by the board. Holding Space starts only one
+the existing right speaker; foreground gestures are not clipped by the board.
+Animation targets 60 fps with cached graphics and continuous timing. Holding Space starts only one
 spin per release/press. Clicking the board cannot skip paid rounds.
 
 The 6x5 board uses all 19 line paths from the supplied Le Zeus chart.

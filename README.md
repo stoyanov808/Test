@@ -32,7 +32,7 @@ Every marked coin box reveals a value, modifier or collector when the feature tr
 
 God Spin places one **MAX** symbol in an actual grid. The car's shots target recorded random grid cells; hitting MAX awards the shared **19,999×** round cap. Feature buys, X Bet prices, ordinary payouts and all animations follow the settled receipt. Reload cannot charge or pay it twice.
 
-The scene and compact controls fill the game window. Larger characters use 16 illustrated poses and a separate foreground layer, with complete gestures visible across the board edge. LUX sits on the existing right background speaker as a separate animated character. Holding Space cannot repeat spins, and clicking the board cannot fast-forward a paid round. Settings retain BG/EN, mute, volume and music. Sounds come from files in `variants/ot-staroto/public/audio`, configured in `src/audio-config.ts`; there are no player sound uploads.
+The scene and compact controls fill the game window. Larger characters use 16 illustrated poses and a separate foreground layer, with complete gestures visible across the board edge. LUX sits on the existing right background speaker as a separate animated character. Animation targets 60 fps with display-synchronized motion, cached board graphics and continuous character timing. Holding Space cannot repeat spins, and clicking the board cannot fast-forward a paid round. Settings retain BG/EN, mute, volume and music. Sounds come from files in `variants/ot-staroto/public/audio`, configured in `src/audio-config.ts`; there are no player sound uploads.
 
 X BET · 5× CHANCE costs **3× the base bet** and increases the full bonus-trigger probability from **1/200 to 1/40**. Every offered mode has an exact **96.5% expected RTP** across all eight supported stakes, using a fixed weighted outcome catalogue and fresh Web Crypto ticket draws. This is a long-run expectation; individual sessions can return less. All credits are virtual. [The return calculation](variants/ot-staroto/docs/MATH-MODEL.md) describes the model and its limits.
 
@@ -46,9 +46,10 @@ npm run math:check
 npm run build
 npx playwright install chromium
 npm run test:browser
+npm run test:fps
 ```
 
-The browser runner starts and closes its own server. Linux can use an installed `/usr/bin/chromium`; Windows and macOS use Playwright's installed Chromium. `npm run simulate` samples the production selector with source hashes, payout and accounting checks. `npm run math:check` verifies the exact return calculation. If you change the mathematical engine, run `npm run math:build` to evaluate and regenerate its catalogue; startup and build refuse stale mathematics.
+The browser runners start and close their own servers. `npm run test:fps` measures native animation frame intervals and rendering work; it keeps timing measurements separate from paused screenshot captures. Linux can use an installed `/usr/bin/chromium`; Windows and macOS use Playwright's installed Chromium. `npm run simulate` samples the production selector with source hashes, payout and accounting checks. `npm run math:check` verifies the exact return calculation. If you change the mathematical engine, run `npm run math:build` to evaluate and regenerate its catalogue; startup and build refuse stale mathematics.
 
 ## Previous Studentski Grad game
 

@@ -1,7 +1,7 @@
 import './style.css';
 import oswaldURL from '../public/Oswald.ttf?url&inline';
 import { AudioDirector } from './audio';
-import { characterURL, characterAnimationSprites, characterFrameSprite, characterFrameCount, characterReleaseFrame, characterSprite, sceneURL, carURL } from './art';
+import { characterURL, characterAnimationSprites, characterFrameSprite, characterReleaseFrame, sceneURL, carURL } from './art';
 import { CONFIG, TIER_ORDER, BONUS_NAMES, TIER_CHARACTERS, costCents, createSession, playRound, playFixtureRound, acknowledgeRound, deserializeSession, PAYLINES, PAYLINE_REFERENCE_READY, settledLegacyWallet } from './engine';
 import { GameRenderer } from './renderer';
 import type { Character, Choice, Round, Session, Tier } from './types';
@@ -277,14 +277,20 @@ async function replay(round: Round) {
 
 async function showWin(round: Round) {
   if (round.payoutCents <= 0) return;
+  // Keep locale work out of the animation loop, including ordinary HUD wins.
+  const locale = language === 'bg' ? 'bg-BG' : 'en-IE';
+  const moneyFormat = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 });
+  const ratioFormat = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
+  const money = (cents: number) => moneyFormat.format(cents / 100);
   if (round.payoutCents < round.betCents * 20 && round.choice.kind !== 'buy' && !round.triggerTier) {
     // Small wins stay on the integrated HUD so a short tumble never opens a modal.
     return new Promise<void>(resolve => {
       let frame = 0; let settled = false; const started = performance.now();
+      const win = $('win');
       const duration = turbo ? 220 : 520;
-      const finish = () => { if (settled) return; settled = true; cancelAnimationFrame(frame); $('win').textContent = euros(round.payoutCents); $('win').classList.remove('counting'); activeCounter = null; resolve(); };
-      $('win').classList.add('counting'); activeCounter = finish;
-      const tick = (now: number) => { const progress = Math.min(1, (now - started) / duration); $('win').textContent = euros(Math.floor(round.payoutCents * (1 - (1 - progress) ** 3))); if (progress === 1) finish(); else frame = requestAnimationFrame(tick); };
+      const finish = () => { if (settled) return; settled = true; cancelAnimationFrame(frame); win.textContent = money(round.payoutCents); win.classList.remove('counting'); activeCounter = null; resolve(); };
+      win.classList.add('counting'); activeCounter = finish;
+      const tick = (now: number) => { const progress = Math.min(1, (now - started) / duration); win.textContent = money(Math.floor(round.payoutCents * (1 - (1 - progress) ** 3))); if (progress === 1) finish(); else frame = requestAnimationFrame(tick); };
       frame = requestAnimationFrame(tick);
     });
   }
@@ -293,110 +299,170 @@ async function showWin(round: Round) {
     const ratio = round.payoutCents / round.betCents;
     let frame = 0; let completed = false; let closed = false; let tier = 0; const started = performance.now();
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const actorEntries = new Map<Character, number>();
-    const actorFrames = new Map<Character, { index: number; changed: number }>();
     // Slow enough to read, short enough that ordinary wins do not stall play.
     const duration = turbo ? Math.min(2700, 650 + Math.log2(1 + ratio) * 110) : Math.min(6500, 1300 + Math.log2(1 + ratio) * 260);
-    openDialog(`<div class="win-scene" id="win-scene"><button id="win-mute" class="dialog-close" aria-label="${t('Звук', 'Sound')}">${icon(audio.muted ? 'muted' : 'sound')}</button><span class="win-kicker">ОТ СТАРОТО · THE OLD CREW</span><h2 id="modal-title">${t('ПЕЧАЛБА', 'WIN')}</h2><div class="win-cast"><canvas class="win-speaker" id="win-speaker" data-original-background="true" aria-hidden="true"></canvas>${CHARACTERS.map(character => `<canvas class="win-person ${character}" data-character="${character}" data-frame="-1" role="img" aria-label="${characterName(character)}"></canvas>`).join('')}<div class="muzzle-flashes" aria-hidden="true"><i data-character="left"></i><i data-character="middle"></i><i data-character="right"></i></div></div><div class="win-impact" aria-hidden="true"></div><div class="win-streaks" aria-hidden="true">${Array.from({ length: 12 }, (_, index) => `<i style="--i:${index}"></i>`).join('')}</div><strong id="win-counter">${euros(0)}</strong><span class="win-ratio" id="win-ratio">0×</span><div class="escape-car" aria-hidden="true"><img src="${carURL}" alt=""><i class="tyre-smoke"></i></div><button id="win-continue" class="primary" data-focus>${t('ПРЕСКОЧИ', 'SKIP')}</button></div>`, 'win-dialog');
+    openDialog(`<div class="win-scene" id="win-scene"><button id="win-mute" class="dialog-close" aria-label="${t('Звук', 'Sound')}">${icon(audio.muted ? 'muted' : 'sound')}</button><span class="win-kicker">ОТ СТАРОТО · THE OLD CREW</span><h2 id="modal-title">${t('ПЕЧАЛБА', 'WIN')}</h2><div class="win-cast"><canvas class="win-speaker" id="win-speaker" data-original-background="true" aria-hidden="true"></canvas>${CHARACTERS.map(character => `<canvas class="win-person ${character}" data-character="${character}" data-frame="-1" role="img" aria-label="${characterName(character)}"></canvas>`).join('')}<div class="muzzle-flashes" aria-hidden="true"><i data-character="left"></i><i data-character="middle"></i><i data-character="right"></i></div></div><div class="win-impact" aria-hidden="true"></div><div class="win-streaks" aria-hidden="true">${Array.from({ length: 12 }, (_, index) => `<i style="--i:${index}"></i>`).join('')}</div><div class="win-counter-row"><strong id="win-counter">${money(0)}</strong></div><span class="win-ratio" id="win-ratio">0×</span><div class="escape-car" aria-hidden="true"><img src="${carURL}" alt=""><i class="tyre-smoke"></i></div><button id="win-continue" class="primary" data-focus>${t('ПРЕСКОЧИ', 'SKIP')}</button></div>`, 'win-dialog');
+    const scene = $('win-scene'), cast = modal.querySelector<HTMLElement>('.win-cast')!;
+    const title = $('modal-title'), counter = $('win-counter'), ratioLabel = $('win-ratio');
+    const continueButton = $('win-continue'), muteButton = $('win-mute');
+    const impact = modal.querySelector<HTMLElement>('.win-impact')!;
+    const cabinet = $<HTMLCanvasElement>('win-speaker'), backdrop = winAtlas(sceneURL());
+    let layoutDirty = true, castHeight = 0, castWidth = 0, leftShiftStarted = Infinity;
+    const tierAnimations: Animation[] = [];
+    const actors = CHARACTERS.map((character, index) => {
+      const image = modal.querySelector<HTMLCanvasElement>(`.win-person.${character}`)!;
+      const flash = modal.querySelector<HTMLElement>(`.muzzle-flashes [data-character="${character}"]`)!;
+      const sprites = characterAnimationSprites(character);
+      const facing = character === 'left' ? 1 : -1;
+      let leftReach = 0, rightReach = 0, lowerReach = 0;
+      for (const sprite of sprites) {
+        const origin = character === 'right' ? sprite.seatAnchorX ?? sprite.anchorX ?? sprite.width / 2 : sprite.anchorX ?? sprite.width / 2;
+        const reference = sprite.referenceHeight ?? sprite.height;
+        leftReach = Math.max(leftReach, (facing > 0 ? origin : sprite.width - origin) / reference);
+        rightReach = Math.max(rightReach, (facing > 0 ? sprite.width - origin : origin) / reference);
+        lowerReach = Math.max(lowerReach, (sprite.height - (sprite.seatAnchorY ?? sprite.anchorY ?? sprite.height)) / reference);
+      }
+      return {
+        character, index, image, flash, ink: image.getContext('2d')!, sprites, facing,
+        releaseFrame: characterReleaseFrame(character), leftReach, rightReach, lowerReach,
+        entered: Infinity, timeline: { origin: Infinity, phase: 0, interval: 1850 },
+        frameIndex: -1, drawnFrame: -1, layoutVersion: -1, physicalHeight: 0, anchorPosition: 0,
+        flashWidth: 0, flashHeight: 0, flashActive: false,
+      };
+    });
+    let layoutVersion = 0;
+    const resizeObserver = new ResizeObserver(() => { layoutDirty = true; });
+    // These can move the cast in the centred flex scene, even without a window resize.
+    for (const node of [scene, cast, title]) resizeObserver.observe(node);
+    if (backdrop.complete && backdrop.naturalWidth) {
+      cabinet.width = 266; cabinet.height = 425;
+      const ink = cabinet.getContext('2d')!; ink.beginPath();
+      for (const [pointIndex, [x, y]] of [[1318, 409], [1502, 390], [1584, 398], [1584, 641], [1474, 680], [1474, 808], [1318, 757]].entries()) {
+        if (pointIndex === 0) ink.moveTo(x - 1318, y - 390); else ink.lineTo(x - 1318, y - 390);
+      }
+      ink.closePath(); ink.clip(); ink.drawImage(backdrop, 1318, 390, 266, 425, 0, 0, 266, 425); cabinet.dataset.drawn = 'true';
+    }
     void audio.cue('win');
     function paint(value: number) {
       const reached = value / round.betCents;
       const nextTier = reached >= 1000 ? 4 : reached >= 500 ? 3 : reached >= 100 ? 2 : 1;
       if (nextTier !== tier) {
-        tier = nextTier; $('win-scene').dataset.tier = String(tier);
-        $('modal-title').textContent = tier >= 4 ? t('БАНДАТА Е ТУК', 'THE CREW IS HERE') : tier === 3 ? t('НА РЪБА', 'ON THE EDGE') : tier === 2 ? t('ГОЛЯМА ПЕЧАЛБА', 'BIG WIN') : t('ПЕЧАЛБА', 'WIN');
-        if (tier > 1) { void audio.cue(tier >= 4 ? 'shot' : 'feature'); $('win-scene').classList.remove('tier-impact'); void $('win-scene').offsetWidth; $('win-scene').classList.add('tier-impact'); }
+        tier = nextTier; scene.dataset.tier = String(tier); layoutDirty = true;
+        title.textContent = tier >= 4 ? t('БАНДАТА Е ТУК', 'THE CREW IS HERE') : tier === 3 ? t('НА РЪБА', 'ON THE EDGE') : tier === 2 ? t('ГОЛЯМА ПЕЧАЛБА', 'BIG WIN') : t('ПЕЧАЛБА', 'WIN');
+        if (tier >= 2 && leftShiftStarted === Infinity) leftShiftStarted = performance.now();
+        if (tier > 1) {
+          void audio.cue(tier >= 4 ? 'shot' : 'feature');
+          // Restart compositor effects without the remove/read/add layout barrier.
+          for (const animation of tierAnimations) animation.cancel();
+          tierAnimations.length = 0;
+          tierAnimations.push(impact.animate([{ opacity: .9 }, { opacity: 0 }], { duration: reducedMotion ? 0 : 500, easing: 'ease-out' }));
+          tierAnimations.push(cast.animate([
+            { transform: 'translate(0,0)', offset: 0 }, { transform: 'translate(3px,2px)', offset: .17 },
+            { transform: 'translate(-2px,-1px)', offset: .34 }, { transform: 'translate(1px,1px)', offset: .55 },
+            { transform: 'translate(0,0)', offset: 1 },
+          ], { duration: reducedMotion ? 0 : 380, easing: 'ease-out' }));
+        }
       }
-      $('win-counter').textContent = euros(value); $('win-ratio').textContent = `${(value / round.betCents).toLocaleString(language === 'bg' ? 'bg-BG' : 'en-IE', { maximumFractionDigits: 2 })}×`;
+      counter.textContent = money(value); ratioLabel.textContent = `${ratioFormat.format(value / round.betCents)}×`;
     }
     function finish() {
-      if (completed) { closed = true; activeCounter = null; cancelAnimationFrame(frame); closeDialog(); resolve(); return; }
+      if (completed) {
+        closed = true; activeCounter = null; cancelAnimationFrame(frame); resizeObserver.disconnect();
+        for (const animation of tierAnimations) animation.cancel();
+        closeDialog(); resolve(); return;
+      }
       completed = true; paint(round.payoutCents);
-      if (round.maxWin) { $('win-scene').classList.add('max-win'); $('modal-title').textContent = 'MAX WIN · 19 999×'; void audio.cue('max'); }
-      $('win-continue').textContent = t('ПРОДЪЛЖИ', 'CONTINUE');
+      if (round.maxWin) { scene.classList.add('max-win'); title.textContent = 'MAX WIN · 19 999×'; void audio.cue('max'); }
+      continueButton.textContent = t('ПРОДЪЛЖИ', 'CONTINUE'); layoutDirty = true;
+    }
+    function measureActorLayout() {
+      castHeight = cast.clientHeight; castWidth = cast.clientWidth;
+      const sceneWidth = scene.clientWidth;
+      const castRect = cast.getBoundingClientRect(), sceneRect = scene.getBoundingClientRect();
+      // Gather every DOM measurement together, before this frame writes geometry.
+      const measurements = actors.map(actor => ({ anchor: actor.image.offsetLeft, flashWidth: actor.flash.offsetWidth, flashHeight: actor.flash.offsetHeight }));
+      for (const [index, actor] of actors.entries()) {
+        const measurement = measurements[index];
+        actor.anchorPosition = measurement.anchor; actor.flashWidth = measurement.flashWidth; actor.flashHeight = measurement.flashHeight;
+        let physicalHeight = castHeight;
+        if (actor.character === 'right' && actor.lowerReach > 0) physicalHeight = Math.min(physicalHeight, (castHeight * .32 - 5) / actor.lowerReach);
+        const anchor = castRect.left + measurement.anchor;
+        // Include both ends of the transform-only 50% → 47% tier movement.
+        const minimumAnchor = anchor - (actor.character === 'left' && tier >= 2 ? castWidth * .03 : 0);
+        if (actor.leftReach > 0) physicalHeight = Math.min(physicalHeight, (minimumAnchor - sceneRect.left - 6) / actor.leftReach);
+        if (actor.rightReach > 0) physicalHeight = Math.min(physicalHeight, (sceneRect.right - anchor - 6) / actor.rightReach);
+        actor.physicalHeight = Math.max(0, physicalHeight);
+      }
+      scene.style.setProperty('--win-scene-width', `${sceneWidth}px`);
+      layoutDirty = false; layoutVersion += 1;
     }
     function animateActors(now: number) {
       const elapsed = now - started;
-      for (const [index, character] of CHARACTERS.entries()) {
+      if (layoutDirty) measureActorLayout();
+      const cabinetScale = castHeight * .31 / 425;
+      for (const actor of actors) {
+        const { character, index, image, flash, facing, sprites } = actor;
         const visible = character === 'left' || character === 'middle' && tier >= 2 || character === 'right' && tier >= 3;
         if (!visible) continue;
-        if (!actorEntries.has(character)) actorEntries.set(character, now);
-        const image = modal.querySelector<HTMLCanvasElement>(`.win-person.${character}`)!;
+        if (actor.entered === Infinity) { actor.entered = now; actor.timeline.origin = now + index * 47; }
         const interval = tier >= 4 ? 1150 : tier >= 3 ? 1450 : 1850;
-        if (!actorFrames.has(character)) actorFrames.set(character, { index: 0, changed: now + index * 47 });
-        const sequence = actorFrames.get(character)!;
-        const frameCount = characterFrameCount(character);
-        const movingHold = interval * .62 / (frameCount - 1);
-        const hold = sequence.index === frameCount - 1 ? interval * .38 : movingHold;
-        if (!reducedMotion && now - sequence.changed >= hold) { sequence.index = (sequence.index + 1) % frameCount; sequence.changed = now; }
-        const frameIndex = reducedMotion ? 0 : sequence.index;
-        const geometry = characterFrameSprite(character, frameIndex);
+        const timeline = actor.timeline;
+        if (interval !== timeline.interval) {
+          // Preserve fractional progress when a higher win tier changes tempo.
+          timeline.phase = (timeline.phase + Math.max(0, now - timeline.origin) / timeline.interval) % 1;
+          timeline.origin = Math.max(now, timeline.origin); timeline.interval = interval;
+        }
+        const phase = reducedMotion ? 0 : (timeline.phase + Math.max(0, now - timeline.origin) / interval) % 1;
+        // Absolute elapsed time keeps the authored cycle identical at 60/120/144 Hz.
+        const frameIndex = reducedMotion ? 0 : Math.min(sprites.length - 1, Math.floor(phase / .62 * (sprites.length - 1)));
+        const geometry = sprites[frameIndex];
         const atlas = winAtlas(geometry.url);
-        if (atlas.complete && atlas.naturalWidth && image.dataset.frame !== String(frameIndex)) {
-          image.width = geometry.width; image.height = geometry.height;
-          image.getContext('2d')!.drawImage(atlas, geometry.sx, geometry.sy, geometry.width, geometry.height, 0, 0, geometry.width, geometry.height);
-          image.dataset.frame = String(frameIndex);
+        const poseChanged = actor.frameIndex !== frameIndex;
+        if (atlas.complete && atlas.naturalWidth && actor.drawnFrame !== frameIndex) {
+          if (image.width !== geometry.width) image.width = geometry.width;
+          if (image.height !== geometry.height) image.height = geometry.height;
+          actor.ink.clearRect(0, 0, image.width, image.height);
+          actor.ink.drawImage(atlas, geometry.sx, geometry.sy, geometry.width, geometry.height, 0, 0, geometry.width, geometry.height);
+          image.dataset.frame = String(frameIndex); actor.drawnFrame = frameIndex;
         }
-        const seat = geometry as typeof geometry & { seatAnchorX?: number; seatAnchorY?: number };
-        const anchorX = character === 'right' ? seat.seatAnchorX ?? geometry.anchorX ?? geometry.width / 2 : geometry.anchorX ?? geometry.width / 2;
+        const anchorX = character === 'right' ? geometry.seatAnchorX ?? geometry.anchorX ?? geometry.width / 2 : geometry.anchorX ?? geometry.width / 2;
         const anchor = anchorX / geometry.width * 100;
-        const castHeight = modal.querySelector<HTMLElement>('.win-cast')!.clientHeight;
-        const facing = character === 'left' ? 1 : -1;
-        let physicalHeight = castHeight;
-        if (character === 'right') {
-          const lowerEnvelope = Math.max(...characterAnimationSprites(character).map(sprite => { const pose = sprite as typeof sprite & { seatAnchorY?: number }; return (sprite.height - (pose.seatAnchorY ?? sprite.anchorY ?? sprite.height)) / (sprite.referenceHeight ?? sprite.height); }));
-          if (lowerEnvelope > 0) physicalHeight = Math.min(physicalHeight, (castHeight * .32 - 5) / lowerEnvelope);
+        const actorScale = actor.physicalHeight / (geometry.referenceHeight ?? sprites[0].height);
+        const foot = character === 'right' ? geometry.seatAnchorY ?? geometry.anchorY ?? geometry.height : geometry.anchorY ?? geometry.height;
+        const layoutChanged = actor.layoutVersion !== layoutVersion;
+        if (poseChanged || layoutChanged) {
+          image.style.height = `${actorScale * geometry.height}px`;
+          image.style.bottom = `${(character === 'right' ? castHeight * .32 : 0) - (geometry.height - foot) * actorScale}px`;
+          image.style.transformOrigin = `${anchor}% ${foot / geometry.height * 100}%`;
+          actor.frameIndex = frameIndex; actor.layoutVersion = layoutVersion;
+          if (character === 'right') {
+            cabinet.style.width = `${266 * cabinetScale}px`; cabinet.style.height = `${425 * cabinetScale}px`;
+            cabinet.style.left = `${actor.anchorPosition}px`; cabinet.style.top = `${castHeight * .68}px`;
+            cabinet.dataset.actorFrame = String(frameIndex);
+          }
         }
-        const cast = modal.querySelector<HTMLElement>('.win-cast')!, scene = $('win-scene');
-        const castRect = cast.getBoundingClientRect(), sceneRect = scene.getBoundingClientRect();
-        const anchorPosition = castRect.left + image.offsetLeft;
-        // Fit every complete gesture against the scene, with one stable body
-        // size for the whole cycle. An outstretched hand must not hit its mask.
-        for (const sprite of characterAnimationSprites(character)) {
-          const pose = sprite as typeof sprite & { seatAnchorX?: number };
-          const origin = character === 'right' ? pose.seatAnchorX ?? sprite.anchorX ?? sprite.width / 2 : sprite.anchorX ?? sprite.width / 2;
-          const reference = sprite.referenceHeight ?? sprite.height;
-          const leftReach = (facing > 0 ? origin : sprite.width - origin) / reference;
-          const rightReach = (facing > 0 ? sprite.width - origin : origin) / reference;
-          if (leftReach > 0) physicalHeight = Math.min(physicalHeight, (anchorPosition - sceneRect.left - 6) / leftReach);
-          if (rightReach > 0) physicalHeight = Math.min(physicalHeight, (sceneRect.right - anchorPosition - 6) / rightReach);
-        }
-        const actorScale = physicalHeight / (geometry.referenceHeight ?? characterSprite(character, 'idle').height);
-        const foot = character === 'right' ? seat.seatAnchorY ?? geometry.anchorY ?? geometry.height : geometry.anchorY ?? geometry.height;
-        image.style.height = `${actorScale * geometry.height}px`;
-        image.style.bottom = `${(character === 'right' ? castHeight * .32 : 0) - (geometry.height - foot) * actorScale}px`;
-        image.style.transformOrigin = `${anchor}% ${foot / geometry.height * 100}%`;
-        const enter = reducedMotion ? 1 : Math.min(1, (now - actorEntries.get(character)!) / 460);
+        const enter = reducedMotion ? 1 : Math.min(1, (now - actor.entered) / 460);
         const settle = 1 - (1 - enter) ** 3;
         const breathing = reducedMotion ? 0 : Math.sin(elapsed / 380 + index * 1.9) * 1.4;
-        const releaseFrame = characterReleaseFrame(character);
-        const recoil = frameIndex > releaseFrame && frameIndex <= releaseFrame + 2 ? 3 : 0;
-        const enterX = (1 - settle) * (index === 1 ? 95 : -75), enterY = (1 - settle) * 60 + breathing + recoil;
+        const releaseAt = actor.releaseFrame / (sprites.length - 1) * .62;
+        const recoilProgress = (phase - releaseAt) / (.62 * 3 / (sprites.length - 1));
+        const recoil = reducedMotion || recoilProgress < 0 || recoilProgress > 1 ? 0 : Math.sin(recoilProgress * Math.PI) * 3;
+        const shiftProgress = reducedMotion ? 1 : Math.min(1, Math.max(0, (now - leftShiftStarted) / 320));
+        const tierShift = character === 'left' && tier >= 2 ? -castWidth * .03 * (1 - (1 - shiftProgress) ** 3) : 0;
+        const enterX = (1 - settle) * (index === 1 ? 95 : -75) + tierShift, enterY = (1 - settle) * 60 + breathing + recoil;
         const actorZoom = .96 + settle * .04;
         image.style.transform = `translate(calc(${-anchor}% + ${enterX}px),${enterY}px) scale(${facing * actorZoom},${actorZoom})`;
         if (character === 'right') {
-          const cabinet = $<HTMLCanvasElement>('win-speaker'), scene = winAtlas(sceneURL());
-          if (cabinet.dataset.drawn !== 'true' && scene.complete && scene.naturalWidth) {
-            cabinet.width = 266; cabinet.height = 425;
-            const ink = cabinet.getContext('2d')!; ink.beginPath();
-            for (const [pointIndex, [x, y]] of [[1318, 409], [1502, 390], [1584, 398], [1584, 641], [1474, 680], [1474, 808], [1318, 757]].entries()) {
-              if (pointIndex === 0) ink.moveTo(x - 1318, y - 390); else ink.lineTo(x - 1318, y - 390);
-            }
-            ink.closePath(); ink.clip(); ink.drawImage(scene, 1318, 390, 266, 425, 0, 0, 266, 425); cabinet.dataset.drawn = 'true';
-          }
-          const cabinetScale = castHeight * .31 / 425;
-          cabinet.style.width = `${266 * cabinetScale}px`; cabinet.style.height = `${425 * cabinetScale}px`;
-          cabinet.style.left = `${image.offsetLeft + enterX}px`; cabinet.style.top = `${castHeight * .68 + enterY}px`;
-          cabinet.style.transform = `translate(${-76 * cabinetScale}px,${-16 * cabinetScale}px)`;
+          cabinet.style.transform = `translate(${enterX - 76 * cabinetScale}px,${enterY - 16 * cabinetScale}px)`;
           cabinet.style.opacity = String(enter);
-          cabinet.dataset.actorFrame = String(frameIndex);
-          image.dataset.seat = `${image.offsetLeft + enterX},${castHeight * .68 + enterY}`;
+          image.dataset.seat = `${actor.anchorPosition + enterX},${castHeight * .68 + enterY}`;
         }
-        const flash = modal.querySelector<HTMLElement>(`.muzzle-flashes [data-character="${character}"]`)!;
         const attachmentX = geometry.attachmentX ?? anchorX, attachmentY = geometry.attachmentY ?? foot;
-        flash.style.left = `${image.offsetLeft + enterX + (attachmentX - anchorX) * actorScale * facing * actorZoom - flash.offsetWidth / 2}px`;
-        flash.style.top = `${(character === 'right' ? castHeight * .68 : castHeight) + enterY + (attachmentY - foot) * actorScale * actorZoom - flash.offsetHeight / 2}px`;
-        flash.dataset.active = String(!reducedMotion && tier >= 4 && frameIndex === releaseFrame);
+        const flashActive = !reducedMotion && tier >= 4 && frameIndex === actor.releaseFrame;
+        const flashX = actor.anchorPosition + enterX + (attachmentX - anchorX) * actorScale * facing * actorZoom - actor.flashWidth / 2;
+        const flashY = (character === 'right' ? castHeight * .68 : castHeight) + enterY + (attachmentY - foot) * actorScale * actorZoom - actor.flashHeight / 2;
+        if (flashActive) flash.style.transform = `translate(${flashX}px,${flashY}px) scale(.7)`;
+        if (flashActive !== actor.flashActive) { flash.dataset.active = String(flashActive); actor.flashActive = flashActive; }
       }
     }
     function tick(now: number) {
@@ -415,8 +481,8 @@ async function showWin(round: Round) {
       frame = requestAnimationFrame(tick);
     }
     activeCounter = finish;
-    $('win-mute').addEventListener('click', () => { audio.setMuted(!audio.muted); persistSettings(); updateHUD(); $('win-mute').innerHTML = icon(audio.muted ? 'muted' : 'sound'); });
-    $('win-continue').addEventListener('click', finish);
+    muteButton.addEventListener('click', () => { audio.setMuted(!audio.muted); persistSettings(); updateHUD(); muteButton.innerHTML = icon(audio.muted ? 'muted' : 'sound'); });
+    continueButton.addEventListener('click', finish);
     frame = requestAnimationFrame(tick);
   });
 }

@@ -1,6 +1,6 @@
 {
   "name": "ruse-slot-workspace",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,7 +21,8 @@
     "preview:studentski": "vite preview --host 0.0.0.0",
     "test:studentski": "tsx --test tests/*.test.ts",
     "test:browser:studentski": "tsx scripts/browser-test.ts",
-    "capture:gallery:studentski": "tsx scripts/capture-gallery.ts"
+    "capture:gallery:studentski": "tsx scripts/capture-gallery.ts",
+    "test:fps": "npm --prefix variants/ot-staroto run test:fps"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

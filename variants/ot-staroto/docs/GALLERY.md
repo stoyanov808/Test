@@ -1,4 +1,4 @@
-# ОТ СТАРОТО — version 5.1 gallery
+# ОТ СТАРОТО — version 5.2 gallery
 
 These are real captures from the current browser run. Feature and win examples use seeded, settled QA receipts drawn from the same paid outcome catalogue; they demonstrate possibilities rather than win frequency. Full-round cost and award are recorded below, not inferred from a photographed frame. Presentation-only captures cover layouts, controls and production HTTP loading. Source and image hashes are in the [release manifest](release-manifest.json).
 

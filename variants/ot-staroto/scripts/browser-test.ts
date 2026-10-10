@@ -17,7 +17,7 @@ const tailOnly = process.argv.includes('--tail-only');
 const animationOnly = process.argv.includes('--animation-only');
 const output = join(root, 'test-results');
 const publishedShots = join(root, 'docs/screenshots');
-const shots = join(output, 'v5-1-browser-screenshots');
+const shots = join(output, 'v5-2-browser-screenshots');
 const authoredFrameCount = 16;
 const authoredPoseClockStepMs = 1000 / 240;
 const normalSpeedAnimations: { character: Character; seed: number; actionKind: string; observedFrames: number[]; actionSpanMs: number; paintedSamples: number }[] = [];
@@ -619,6 +619,10 @@ async function development(page: Page, url: string) {
   await reset(page, 42); await page.keyboard.up('Space'); await page.locator('#buy').click();
   await page.locator('.buy-card[data-tier="ruse"]').focus(); await page.keyboard.down('Space');
   await page.locator('#confirm-play').waitFor();
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('game-shell')!).filter.includes('blur(5px)'));
+  const confirmationFilters = await page.evaluate(() => ({ shell: getComputedStyle(document.getElementById('game-shell')!).filter, backdrop: getComputedStyle(document.querySelector('dialog[open]')!, '::backdrop').backdropFilter }));
+  assert.match(confirmationFilters.shell, /blur\(5px\)/); assert.match(confirmationFilters.backdrop, /blur\(3px\)/);
+  pass('Purchase confirmation retains the intended board and backdrop blur', confirmationFilters);
   for (let repeat = 0; repeat < 100; repeat++) await page.keyboard.down('Space');
   assert.equal((await snapshot(page)).sequence, 0); assert.equal((await snapshot(page)).pending, null);
   pass('Holding Space on a bonus card cannot carry through its newly opened confirmation or purchase the bonus');
@@ -1096,6 +1100,11 @@ async function development(page: Page, url: string) {
     }));
     assert.ok(visible[0].painted > 0 && visible[0].frame >= 0 && visible[0].frame < authoredFrameCount, 'The left cast actor is painted from an authored sixteen-frame atlas');
     assert.ok(visible.every(actor => actor.width > 0 && actor.height > 0));
+    if (tier === 2) {
+      const winFilters = await page.evaluate(() => ({ shell: getComputedStyle(document.getElementById('game-shell')!).filter, backdrop: getComputedStyle(document.querySelector('.win-dialog[open]')!, '::backdrop').backdropFilter }));
+      assert.equal(winFilters.shell, 'none'); assert.equal(winFilters.backdrop, 'none');
+      pass('Live win animation uses its dark scrim without blurring two full-window layers', winFilters);
+    }
     await capture(page, `win-${tier === 2 ? 100 : tier === 3 ? 500 : 1000}`, threshold.seed, threshold.session.pending!, `Actual count-up crossing ${tier === 2 ? 100 : tier === 3 ? 500 : 1000}×; CSS cutscene escalation is driven by the counted amount.`);
     pass(`Count-up genuinely crosses ${tier === 2 ? 100 : tier === 3 ? 500 : 1000}× and advances its cutscene stage`, { ratio, visible });
     await release(page);
@@ -1122,6 +1131,10 @@ async function development(page: Page, url: string) {
   await held(page); await page.locator('#win-continue').click();
   assert.match((await page.locator('#modal-title').textContent())!, /MAX WIN/); assert.equal(await page.locator('#win-scene').evaluate(el => el.classList.contains('max-win')), true);
   assert.match((await page.locator('#win-counter').textContent())!, /3\s?999[,\.]80/);
+  const escapeFrames = await page.locator('.escape-car').evaluate(car => ({ left: getComputedStyle(car).left, frames: car.getAnimations().flatMap(animation => animation.effect instanceof KeyframeEffect ? animation.effect.getKeyframes().map(frame => ({ transform: frame.transform, left: frame.left, top: frame.top })) : []) }));
+  assert.equal(escapeFrames.left, '0px'); assert.ok(escapeFrames.frames.length >= 4);
+  assert.ok(escapeFrames.frames.every(frame => typeof frame.transform === 'string' && frame.transform !== 'none' && frame.left === undefined && frame.top === undefined));
+  pass('MAX getaway animation moves through transform keyframes while its layout position stays fixed', escapeFrames);
   await capture(page, 'max-win', god.seed, god.session.pending!, 'Settled genuine 19,999× max receipt: €3,999.80 on a €0.20 base bet.');
   pass('Max-win cutscene shows the exact capped EUR amount and remains until Continue');
   await finish(page, god.session, 'God maximum win');
@@ -1403,7 +1416,7 @@ try {
   pass(animationOnly ? 'No JavaScript errors, asset failures or external network requests in the development animation diagnostic' : 'No JavaScript errors, asset failures or external network requests in development and production servers');
   const source = await sourceHashes();
   if (!tailOnly && !animationOnly) assert.deepEqual(source, initialSourceHashes, 'Source must stay frozen throughout verified browser checks');
-  const report = { version: 5, presentationVersion: '5.1.0', paylineChart: PAYLINES, paylineReference, capturedAt: new Date().toISOString(), variant: 'ot-staroto', mode: animationOnly ? 'animation-diagnostic' : productionOnly ? 'production-only' : tailOnly ? 'tail-diagnostic' : 'full', checksPassed: checks.length, checks, animationProbe: { description: 'QA-only requestAnimationFrame gates pause screenshots. Gates for an exact authored pose additionally advance the presentation clock in explicit 4.1667 ms steps to inspect every real source drawing; this controlled-clock coverage is separate from the recorded native-clock actions and production play. Engine receipts and entropy remain unchanged.', authoredActionFrames: authoredFrameCount, authoredPoseClockStepMs, normalSpeedAnimations }, sourceHashes: source, captures, presentationCaptures, jsErrors, assetFailures: failures, externalRequests, ...(!animationOnly ? { production: { path: 'dist/index.html', sha256: sha(await readFile(join(root, 'dist/index.html'))), bundleHashes: productionBundleHashes, requests: productionRequests, receipts: productionReceipts, ...(productionMultiShooterReplay ? { multiShooterReplay: productionMultiShooterReplay } : {}) } } : {}) };
+  const report = { version: 5, presentationVersion: '5.2.0', paylineChart: PAYLINES, paylineReference, capturedAt: new Date().toISOString(), variant: 'ot-staroto', mode: animationOnly ? 'animation-diagnostic' : productionOnly ? 'production-only' : tailOnly ? 'tail-diagnostic' : 'full', checksPassed: checks.length, checks, animationProbe: { description: 'QA-only requestAnimationFrame gates pause screenshots. Gates for an exact authored pose additionally advance the presentation clock in explicit 4.1667 ms steps to inspect every real source drawing; this controlled-clock coverage is separate from the recorded native-clock actions and production play. Engine receipts and entropy remain unchanged.', authoredActionFrames: authoredFrameCount, authoredPoseClockStepMs, normalSpeedAnimations }, sourceHashes: source, captures, presentationCaptures, jsErrors, assetFailures: failures, externalRequests, ...(!animationOnly ? { production: { path: 'dist/index.html', sha256: sha(await readFile(join(root, 'dist/index.html'))), bundleHashes: productionBundleHashes, requests: productionRequests, receipts: productionReceipts, ...(productionMultiShooterReplay ? { multiShooterReplay: productionMultiShooterReplay } : {}) } } : {}) };
   await writeFile(join(output, animationOnly ? 'browser-animation.json' : productionOnly ? 'production-browser.json' : tailOnly ? 'browser-tail.json' : 'browser.json'), JSON.stringify(report, null, 2) + '\n');
   if (!productionOnly && !tailOnly && !animationOnly) {
     await mkdir(publishedShots, { recursive: true });

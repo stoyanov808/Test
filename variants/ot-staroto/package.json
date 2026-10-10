@@ -1,6 +1,6 @@
 {
   "name": "ot-staroto",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,7 +13,8 @@
     "math:build": "tsx scripts/build-math-model.ts",
     "math:check": "tsx scripts/verify-math-model.ts",
     "math:check:full": "tsx scripts/verify-math-outcomes.ts",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "test:fps": "tsx scripts/fps-test.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
