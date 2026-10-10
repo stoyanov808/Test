@@ -14,9 +14,14 @@ import type { Cell, Character, Choice, Feature, Grid, Round, Session, Tier } fro
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const tailOnly = process.argv.includes('--tail-only');
+const animationOnly = process.argv.includes('--animation-only');
 const output = join(root, 'test-results');
 const publishedShots = join(root, 'docs/screenshots');
-const shots = join(output, 'v5-browser-screenshots');
+const shots = join(output, 'v5-1-browser-screenshots');
+const authoredFrameCount = 16;
+const authoredPoseClockStepMs = 1000 / 240;
+const normalSpeedAnimations: { character: Character; seed: number; actionKind: string; observedFrames: number[]; actionSpanMs: number; paintedSamples: number }[] = [];
+let authoredFrames: { character: Character; index: number; sx: number; sy: number; width: number; height: number; atlasPath: string; atlasSha256: string; seatAnchorX?: number; seatAnchorY?: number }[] = [];
 const require = createRequire(import.meta.url);
 const rich = 100_000_000;
 const checks: { name: string; details?: unknown }[] = [];
@@ -51,19 +56,28 @@ async function files(directory: string): Promise<string[]> {
   return found;
 }
 async function sourceHashes() {
-  const paths = [...await files(join(root, 'src')), ...await files(join(root, 'public')), join(root, 'package.json'), join(root, 'vite.config.ts'), join(root, 'scripts/standalone.mjs'), join(root, 'docs/research/le-zeus-payline-chart.json'), fileURLToPath(import.meta.url)].filter(path => !path.endsWith('/README.md'));
+  const paths = [...await files(join(root, 'src')), ...await files(join(root, 'public')), join(root, 'package.json'), join(root, 'vite.config.ts'), join(root, 'scripts/standalone.mjs'), join(root, 'docs/research/le-zeus-payline-chart.json'), join(root, 'docs/art/art-validation.json'), fileURLToPath(import.meta.url)].filter(path => !path.endsWith('/README.md'));
   return Object.fromEntries(await Promise.all(paths.sort().map(async path => [relative(root, path), sha(await readFile(path))])));
 }
-type Gate = { stage?: string; kind?: string; character?: Character; min?: number; max?: number; tier?: number; afterSpin?: number; repeated?: boolean; labelPrefix?: string; coinWave?: number; collectionConsumesCollector?: boolean; godShot?: number; inactiveMin?: number; inactiveReel?: number; midDrop?: boolean; characterFrame?: number; expandedMin?: number; expansionReel?: number; activeLine?: number; columnShot?: boolean; sticky?: boolean; shotIndex?: number; shotSource?: Cell; lockedReel?: number; shooterReel?: number; shooterMin?: number; shooterSticky?: boolean; productionRemaining?: number; productionReels?: number[]; productionTotals?: number[]; productionDrop?: boolean; productionAnimatingShooter?: boolean };
+type Gate = { stage?: string; kind?: string; character?: Character; min?: number; max?: number; tier?: number; afterSpin?: number; repeated?: boolean; labelPrefix?: string; coinWave?: number; collectionConsumesCollector?: boolean; godShot?: number; inactiveMin?: number; inactiveReel?: number; midDrop?: boolean; characterFrame?: number; activeCastMin?: number; expandedMin?: number; expansionReel?: number; activeLine?: number; columnShot?: boolean; sticky?: boolean; shotIndex?: number; shotSource?: Cell; lockedReel?: number; shooterReel?: number; shooterMin?: number; shooterSticky?: boolean; productionRemaining?: number; productionReels?: number[]; productionTotals?: number[]; productionDrop?: boolean; productionAnimatingShooter?: boolean };
 async function probe(context: BrowserContext, productionRuntime = false) {
   const installProbe = () => {
     const w = window as any;
     const wallNow = performance.now.bind(performance); let pausedTime = 0; let p: any;
-    Object.defineProperty(performance, 'now', { value: () => (p?.held && p.pausedAt !== null ? p.pausedAt : wallNow()) - pausedTime });
-    p = w.__probe = { gate: null, held: false, pausedAt: null, queue: [] as any[], frames: [] as any[], images: [] as any[], draws: [] as any[], paint: { texts: [] as any[], sprites: [] as any[] }, audioDecodes: [] as any[], audioStarts: [] as any[], entropyCalls: [] as any[] };
+    Object.defineProperty(performance, 'now', { value: () => p?.poseClock ? p.poseClock.time : (p?.held && p.pausedAt !== null ? p.pausedAt : wallNow()) - pausedTime });
+    p = w.__probe = { gate: null, held: false, pausedAt: null, queue: [] as any[], authoredFrameCount: w.__probePoseConfig.authoredFrameCount, middleFrames: w.__probePoseConfig.middleFrames, frames: [] as any[], images: [] as any[], draws: [] as any[], paint: { texts: [] as any[], sprites: [] as any[] }, audioDecodes: [] as any[], audioStarts: [] as any[], entropyCalls: [] as any[] };
+    const imageSources = new WeakMap<HTMLImageElement, any>();
     const descriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')!;
     Object.defineProperty(HTMLImageElement.prototype, 'src', { ...descriptor, set(value: string) {
-      const record = { prefix: String(value).slice(0, 65), length: String(value).length, width: 0, height: 0, loaded: false, failed: false };
+      const record: any = { prefix: String(value).slice(0, 65), length: String(value).length, width: 0, height: 0, loaded: false, failed: false, hashing: false };
+      imageSources.set(this, record);
+      if (String(value).startsWith('data:image/png;base64,')) {
+        record.hashing = true;
+        const bytes = Uint8Array.from(atob(String(value).slice('data:image/png;base64,'.length)), character => character.charCodeAt(0));
+        void crypto.subtle.digest('SHA-256', bytes).then(digest => {
+          record.sourceSha256 = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join(''); record.hashing = false;
+        }, error => { record.hashError = String(error); record.hashing = false; });
+      }
       p.images.push(record);
       this.addEventListener('load', () => { record.loaded = true; record.width = this.naturalWidth; record.height = this.naturalHeight; });
       this.addEventListener('error', () => { record.failed = true; });
@@ -71,21 +85,67 @@ async function probe(context: BrowserContext, productionRuntime = false) {
     }});
     const originalClear = CanvasRenderingContext2D.prototype.clearRect;
     CanvasRenderingContext2D.prototype.clearRect = function (this: CanvasRenderingContext2D, ...args: Parameters<typeof originalClear>) {
-      if (this.canvas.id === 'game') p.paint = { texts: [], sprites: [] };
+      if (this.canvas.id === 'game' || this.canvas.id === 'character-stage') p.paint = { texts: p.paint.texts.filter((text: any) => text.canvas !== this.canvas.id), sprites: p.paint.sprites.filter((sprite: any) => sprite.canvas !== this.canvas.id) };
       return originalClear.apply(this, args);
     };
     const originalText = CanvasRenderingContext2D.prototype.fillText;
     CanvasRenderingContext2D.prototype.fillText = function (this: CanvasRenderingContext2D, ...args: Parameters<typeof originalText>) {
-      if (this.canvas.id === 'game') p.paint.texts.push({ text: args[0], x: args[1], y: args[2] });
+      if (this.canvas.id === 'game') p.paint.texts.push({ canvas: this.canvas.id, text: args[0], x: args[1], y: args[2] });
       return originalText.apply(this, args);
     };
+    const canvasClips = new WeakMap<CanvasRenderingContext2D, { active: any[]; stack: any[][]; path: any[] }>();
+    const clipState = (context: CanvasRenderingContext2D) => {
+      let state = canvasClips.get(context);
+      if (!state) { state = { active: [], stack: [], path: [] }; canvasClips.set(context, state); }
+      return state;
+    };
+    const originalSave = CanvasRenderingContext2D.prototype.save;
+    CanvasRenderingContext2D.prototype.save = function () {
+      if (this.canvas.id === 'game' || this.canvas.id === 'character-stage') { const state = clipState(this); state.stack.push(structuredClone(state.active)); }
+      return originalSave.call(this);
+    };
+    const originalRestore = CanvasRenderingContext2D.prototype.restore;
+    CanvasRenderingContext2D.prototype.restore = function () {
+      if (this.canvas.id === 'game' || this.canvas.id === 'character-stage') { const state = clipState(this); state.active = state.stack.pop() ?? []; }
+      return originalRestore.call(this);
+    };
+    const originalBeginPath = CanvasRenderingContext2D.prototype.beginPath;
+    CanvasRenderingContext2D.prototype.beginPath = function () {
+      if (this.canvas.id === 'game' || this.canvas.id === 'character-stage') clipState(this).path = [];
+      return originalBeginPath.call(this);
+    };
+    const originalRect = CanvasRenderingContext2D.prototype.rect;
+    CanvasRenderingContext2D.prototype.rect = function (...args: Parameters<typeof originalRect>) {
+      if (this.canvas.id === 'game' || this.canvas.id === 'character-stage') {
+        const matrix = this.getTransform();
+        clipState(this).path.push({ rect: args, matrix: { a: matrix.a, b: matrix.b, c: matrix.c, d: matrix.d, e: matrix.e, f: matrix.f } });
+      }
+      return originalRect.apply(this, args);
+    };
+    const originalClip = CanvasRenderingContext2D.prototype.clip;
+    CanvasRenderingContext2D.prototype.clip = function (this: CanvasRenderingContext2D, ...args: any[]) {
+      if (this.canvas.id === 'game' || this.canvas.id === 'character-stage') {
+        const state = clipState(this);
+        // Record every clip invocation, including a polygon or Path2D whose
+        // rectangle list is empty. An empty clip stack must mean no clipping.
+        state.active.push({ paths: structuredClone(state.path), opaquePath: args[0] instanceof Path2D });
+      }
+      return (originalClip as any).apply(this, args);
+    } as typeof originalClip;
     const originalDraw = CanvasRenderingContext2D.prototype.drawImage;
     CanvasRenderingContext2D.prototype.drawImage = function (this: CanvasRenderingContext2D, ...args: any[]) {
       const img = args[0];
       if (img instanceof HTMLImageElement && p.draws.length < 30000) p.draws.push({ prefix: img.src.slice(0, 100), width: img.naturalWidth, height: img.naturalHeight, loaded: img.complete && img.naturalWidth > 0, crop: args.length === 9 ? args.slice(1, 5) : null, at: performance.now() });
-      if (this.canvas.id === 'game' && img instanceof HTMLImageElement && args.length === 9) {
-        const matrix = this.getTransform();
-        p.paint.sprites.push({ crop: args.slice(1, 5), imageWidth: img.naturalWidth, imageHeight: img.naturalHeight, matrix: { a: matrix.a, b: matrix.b, c: matrix.c, d: matrix.d, e: matrix.e, f: matrix.f }, loaded: img.complete && img.naturalWidth > 0 });
+      if ((this.canvas.id === 'game' || this.canvas.id === 'character-stage') && img instanceof HTMLImageElement && args.length === 9) {
+        const physicalMatrix = this.getTransform();
+        const rectangle = this.canvas.getBoundingClientRect(), gameRectangle = document.getElementById('game')!.getBoundingClientRect();
+        const physicalScale = this.canvas.width / rectangle.width, logicalScale = gameRectangle.width / 1240;
+        const matrix = { a: physicalMatrix.a / physicalScale / logicalScale, b: physicalMatrix.b / physicalScale / logicalScale, c: physicalMatrix.c / physicalScale / logicalScale, d: physicalMatrix.d / physicalScale / logicalScale,
+          e: (rectangle.left + physicalMatrix.e / physicalScale - gameRectangle.left) / logicalScale, f: (rectangle.top + physicalMatrix.f / physicalScale - gameRectangle.top) / logicalScale };
+        const destination = args.slice(5, 9);
+        const [dx, dy, width, height] = destination;
+        const corners = [[dx, dy], [dx + width, dy], [dx, dy + height], [dx + width, dy + height]].map(([x, y]) => ({ x: matrix.a * x + matrix.c * y + matrix.e, y: matrix.b * x + matrix.d * y + matrix.f }));
+        p.paint.sprites.push({ canvas: this.canvas.id, sourceSha256: imageSources.get(img)?.sourceSha256, crop: args.slice(1, 5), destination, bounds: { left: Math.min(...corners.map(point => point.x)), right: Math.max(...corners.map(point => point.x)), top: Math.min(...corners.map(point => point.y)), bottom: Math.max(...corners.map(point => point.y)) }, clips: structuredClone(clipState(this).active), imageWidth: img.naturalWidth, imageHeight: img.naturalHeight, matrix, physicalMatrix: { a: physicalMatrix.a, b: physicalMatrix.b, c: physicalMatrix.c, d: physicalMatrix.d, e: physicalMatrix.e, f: physicalMatrix.f }, loaded: img.complete && img.naturalWidth > 0 });
       }
       return (originalDraw as any).apply(this, args);
     } as typeof originalDraw;
@@ -110,7 +170,10 @@ async function probe(context: BrowserContext, productionRuntime = false) {
       let handle = 0; handle = raf(now => {
       if (cancelled.has(handle)) return;
       if (p.held) { p.queue.push({ callback, now, handle }); return; }
-      callback(now - pausedTime);
+      if (p.poseClock && p.poseClock.nativeFrame !== now) {
+        p.poseClock.nativeFrame = now; p.poseClock.time += w.__probePoseConfig.authoredPoseClockStepMs;
+      }
+      callback(p.poseClock ? p.poseClock.time : now - pausedTime);
       const b = w.__ruse?.board?.();
       if (b && p.frames.length < 6000) p.frames.push({ ...b, at: performance.now(), uiRemaining: document.getElementById('remaining')?.textContent });
       const g = p.gate;
@@ -126,16 +189,28 @@ async function probe(context: BrowserContext, productionRuntime = false) {
         const x = 200 + (reel + .5) * 140;
         return p.paint.texts.some((text: any) => text.text === 'REEL TOTAL' && Math.abs(text.x - x) < .01 && text.y > 674)
           && p.paint.texts.some((text: any) => text.text === `×${g.productionTotals[index].toLocaleString('en-IE')}` && Math.abs(text.x - x) < .01 && text.y > 674)
-          && p.paint.sprites.some((sprite: any) => sprite.loaded && (g.productionAnimatingShooter ? ['280,24,301,463', '935,51,336,436', '271,524,375,455', '935,529,371,450', '237,33,464,470', '931,10,396,494', '241,535,484,459', '984,513,327,482'].includes(sprite.crop.join(',')) : sprite.crop.join(',') === '280,24,301,463') && sprite.matrix.a < 0 && Math.abs(sprite.matrix.e - x) < .01 && Math.abs(sprite.matrix.f - (170 + 126 * 4.06)) < .01);
+          && p.paint.sprites.some((sprite: any) => sprite.canvas === 'game' && sprite.loaded && (g.productionAnimatingShooter ? p.middleFrames : p.middleFrames.slice(0, 1)).some((frame: any) => frame.crop === sprite.crop.join(',') && frame.sha256 === sprite.sourceSha256) && sprite.matrix.a < 0 && Math.abs(sprite.matrix.e - x) < .01 && Math.abs(sprite.matrix.f - (170 + 126 * 4.06)) < .01);
       }) && (!g.productionDrop || p.paint.sprites.some((sprite: any) => sprite.loaded && sprite.imageWidth === 1254 && sprite.imageHeight === 1254 && sprite.matrix.f > 170 && sprite.matrix.f < 220 && Array.from({ length: 6 }, (_, reel) => reel).filter(reel => !g.productionReels.includes(reel)).some(reel => Math.abs(sprite.matrix.e - (200 + (reel + .5) * 140)) < 8)));
-      const match = (!g.stage || b?.stage === g.stage) && (!g.kind || effect?.kind === g.kind) && (!g.character || effect?.character === g.character) && (g.min === undefined || effect?.progress >= g.min) && (g.max === undefined || effect?.progress <= g.max) && (!g.tier || tier === g.tier) && (g.repeated === undefined || effect?.repeated === g.repeated) && (!g.labelPrefix || effect?.label?.startsWith(g.labelPrefix)) && (g.afterSpin === undefined || firstMoving?.sourceRow < 0 && b.remaining <= g.afterSpin) && (g.coinWave === undefined || b?.coinWave === g.coinWave) && (g.collectionConsumesCollector === undefined || !!b?.collection?.sources?.some((coin: any) => coin.kind === 'collector') === g.collectionConsumesCollector) && (g.godShot === undefined || effect?.shot === g.godShot) && (g.inactiveMin === undefined || b?.inactiveWilds?.length >= g.inactiveMin) && (g.inactiveReel === undefined || b?.inactiveWilds?.some((cell: any) => cell.reel === g.inactiveReel)) && (!g.midDrop || b?.movingCells?.some((cell: any) => cell.progress >= .4 && cell.progress <= .8)) && (g.characterFrame === undefined || b?.characterFrames?.some((frame: any) => frame.character === g.character && frame.index === g.characterFrame && frame.count === 8)) && (g.expandedMin === undefined || b?.expandedReels?.length >= g.expandedMin) && (g.expansionReel === undefined || effect?.source?.reel === g.expansionReel) && (g.activeLine === undefined || b?.activeLine === g.activeLine) && (g.columnShot === undefined || (effect?.boostedReel !== undefined) === g.columnShot) && (g.sticky === undefined || effect?.sticky === g.sticky) && (g.shotIndex === undefined || effect?.shot === g.shotIndex) && (!g.shotSource || effect?.source?.reel === g.shotSource.reel && effect?.source?.row === g.shotSource.row) && (g.lockedReel === undefined || b?.lockedReels?.includes(g.lockedReel)) && (g.shooterMin === undefined || b?.shooterReels?.length >= g.shooterMin) && (g.shooterReel === undefined || b?.shooterReels?.some((reel: any) => reel.reel === g.shooterReel && (g.shooterSticky === undefined || reel.sticky === g.shooterSticky))) && productionPaintMatches;
+      const match = (!g.stage || b?.stage === g.stage) && (!g.kind || effect?.kind === g.kind) && (!g.character || effect?.character === g.character) && (g.min === undefined || effect?.progress >= g.min) && (g.max === undefined || effect?.progress <= g.max) && (!g.tier || tier === g.tier) && (g.repeated === undefined || effect?.repeated === g.repeated) && (!g.labelPrefix || effect?.label?.startsWith(g.labelPrefix)) && (g.afterSpin === undefined || firstMoving?.sourceRow < 0 && b.remaining <= g.afterSpin) && (g.coinWave === undefined || b?.coinWave === g.coinWave) && (g.collectionConsumesCollector === undefined || !!b?.collection?.sources?.some((coin: any) => coin.kind === 'collector') === g.collectionConsumesCollector) && (g.godShot === undefined || effect?.shot === g.godShot) && (g.inactiveMin === undefined || b?.inactiveWilds?.length >= g.inactiveMin) && (g.inactiveReel === undefined || b?.inactiveWilds?.some((cell: any) => cell.reel === g.inactiveReel)) && (!g.midDrop || b?.movingCells?.some((cell: any) => cell.progress >= .4 && cell.progress <= .8)) && (g.activeCastMin === undefined || b?.activeCharacters?.length >= g.activeCastMin) && (g.characterFrame === undefined || b?.characterFrames?.some((frame: any) => frame.character === g.character && frame.index === g.characterFrame && frame.count === p.authoredFrameCount)) && (g.expandedMin === undefined || b?.expandedReels?.length >= g.expandedMin) && (g.expansionReel === undefined || effect?.source?.reel === g.expansionReel) && (g.activeLine === undefined || b?.activeLine === g.activeLine) && (g.columnShot === undefined || (effect?.boostedReel !== undefined) === g.columnShot) && (g.sticky === undefined || effect?.sticky === g.sticky) && (g.shotIndex === undefined || effect?.shot === g.shotIndex) && (!g.shotSource || effect?.source?.reel === g.shotSource.reel && effect?.source?.row === g.shotSource.row) && (g.lockedReel === undefined || b?.lockedReels?.includes(g.lockedReel)) && (g.shooterMin === undefined || b?.shooterReels?.length >= g.shooterMin) && (g.shooterReel === undefined || b?.shooterReels?.some((reel: any) => reel.reel === g.shooterReel && (g.shooterSticky === undefined || reel.sticky === g.shooterSticky))) && productionPaintMatches;
       if (match) { p.held = true; p.pausedAt = wallNow(); }
       }); return handle;
     };
-    p.release = function () { p.gate = null; if (p.held && p.pausedAt !== null) pausedTime += wallNow() - p.pausedAt; p.pausedAt = null; p.held = false; const queue = p.queue.splice(0); for (const item of queue) if (!cancelled.has(item.handle)) window.requestAnimationFrame(item.callback); };
+    p.release = function (keepPoseClock = false) {
+      p.gate = null;
+      if (p.poseClock && !keepPoseClock) { pausedTime = wallNow() - p.poseClock.time; p.poseClock = null; }
+      else if (!p.poseClock && p.held && p.pausedAt !== null) pausedTime += wallNow() - p.pausedAt;
+      p.pausedAt = null; p.held = false;
+      const queue = p.queue.splice(0); for (const item of queue) if (!cancelled.has(item.handle)) window.requestAnimationFrame(item.callback);
+    };
+    p.setGate = function (condition: any) {
+      p.release(true);
+      if (condition.characterFrame !== undefined && !p.poseClock) p.poseClock = { time: wallNow() - pausedTime, nativeFrame: null };
+      else if (condition.characterFrame === undefined && p.poseClock) { pausedTime = wallNow() - p.poseClock.time; p.poseClock = null; }
+      p.gate = condition;
+    };
   };
   // TSX preserves inferred function names in serialized closures with this helper.
-  await context.addInitScript({ content: `window.__name = function (target) { return target; }; (${installProbe.toString()})();` });
+  await context.addInitScript({ content: `window.__name = function (target) { return target; }; window.__probePoseConfig = ${JSON.stringify({ authoredFrameCount, authoredPoseClockStepMs, middleFrames: authoredFrames.filter(frame => frame.character === 'middle').map(frame => ({ crop: [frame.sx, frame.sy, frame.width, frame.height].join(','), sha256: frame.atlasSha256 })) })}; (${installProbe.toString()})();` });
   context.on('page', page => {
     page.on('pageerror', error => jsErrors.push(`${productionRuntime ? 'production' : 'dev'}: ${error.message}`));
     page.on('requestfailed', request => { if (!request.failure()?.errorText.includes('ERR_ABORTED')) failures.push(`${productionRuntime ? 'production' : 'dev'}: ${request.url().slice(0, 200)} ${request.failure()?.errorText}`); });
@@ -149,7 +224,7 @@ async function probe(context: BrowserContext, productionRuntime = false) {
 }
 async function ready(page: Page) {
   await page.locator('#game').waitFor();
-  await page.waitForFunction(() => { const p = (window as any).__probe; return p.images.length >= 12 && p.images.every((img: any) => img.loaded || img.failed); }, undefined, { timeout: 30000, polling: 50 });
+  await page.waitForFunction(() => { const p = (window as any).__probe; return p.images.length >= 12 && p.images.every((img: any) => (img.loaded || img.failed) && !img.hashing); }, undefined, { timeout: 30000, polling: 50 });
   const assets = await page.evaluate(() => ({ images: (window as any).__probe.images, draws: (window as any).__probe.draws, dom: [...document.images].map(img => ({ complete: img.complete, width: img.naturalWidth })), sceneBackground: getComputedStyle(document.getElementById('game-shell')!).backgroundImage !== 'none' }));
   assert.equal(assets.images.filter((img: any) => img.failed).length, 0, JSON.stringify(assets.images.filter((img: any) => img.failed)));
   assert.ok(assets.images.some((img: any) => img.width === 1672 && img.height === 941 && img.loaded) && assets.sceneBackground, 'The new ink student-club scene is decoded and fills the full-window stage background');
@@ -164,9 +239,18 @@ async function reset(page: Page, seed: number) {
   await page.locator('#xbet').selectOption('off');
 }
 async function gate(page: Page, condition: Gate) {
-  await page.evaluate(condition => { const p = (window as any).__probe; p.release(); p.gate = condition; }, condition);
+  await page.evaluate(condition => (window as any).__probe.setGate(condition), condition);
 }
-async function held(page: Page) { await page.waitForFunction(() => (window as any).__probe.held, undefined, { timeout: 45000, polling: 40 }); }
+async function held(page: Page) {
+  try { await page.waitForFunction(() => (window as any).__probe.held, undefined, { timeout: 45000, polling: 40 }); }
+  catch (error) {
+    await writeFile(join(output, 'gate-failure.json'), JSON.stringify(await page.evaluate(() => {
+      const probe = (window as any).__probe;
+      return { gate: probe.gate, held: probe.held, board: (window as any).__ruse?.board(), paint: probe.paint, frames: probe.frames.map((frame: any) => ({ at: frame.at, stage: frame.stage, effect: frame.effect, characterFrames: frame.characterFrames })) };
+    }), null, 2) + '\n');
+    throw error;
+  }
+}
 async function release(page: Page) { await page.evaluate(() => (window as any).__probe.release()); }
 async function choose(page: Page, choice: Choice) {
   if (choice.kind === 'buy') { await page.locator('#buy').click(); await page.locator(`.buy-card[data-tier="${choice.tier}"]`).click(); await page.locator('#confirm-play').click(); }
@@ -208,6 +292,82 @@ async function capture(page: Page, name: string, seed: number, receipt: Round, n
 async function presentationCapture(page: Page, name: string, note: string) {
   const path = join(shots, `${name}.png`); await page.screenshot({ path, fullPage: true });
   presentationCaptures.push({ file: `docs/screenshots/${name}.png`, sha256: sha(await readFile(path)), viewport: page.viewportSize(), note });
+}
+/** Check actual Canvas draw state against the read-only staging description.
+ * The path probe records active clips and transformed source-crop corners;
+ * inspection alone cannot establish that the painted actor is uncut. */
+async function assertCharacterStaging(page: Page, required?: Character) {
+  const observed = await page.evaluate(() => {
+    const rectangle = (element: Element) => { const box = element.getBoundingClientRect(); return { left: box.left, top: box.top, width: box.width, height: box.height }; };
+    const shell = document.getElementById('game-shell')!;
+    const characterCanvas = document.getElementById('character-stage')!;
+    return { board: (window as any).__ruse.board(), paint: (window as any).__probe.paint, canvas: rectangle(document.getElementById('game')!), shell: rectangle(shell), characterCanvas: rectangle(characterCanvas), characterPointerEvents: getComputedStyle(characterCanvas).pointerEvents, backgroundSize: getComputedStyle(shell).backgroundSize, backgroundPosition: getComputedStyle(shell).backgroundPosition };
+  });
+  const staging = observed.board.characterStaging;
+  assert.ok(Array.isArray(staging), 'Renderer exposes independent outside-cast staging');
+  assert.equal(observed.characterPointerEvents, 'none', 'The separate foreground Canvas cannot intercept game input');
+  const scale = observed.canvas.width / 1240;
+  const visible = { left: (observed.characterCanvas.left - observed.canvas.left) / scale, top: (observed.characterCanvas.top - observed.canvas.top) / scale,
+    right: (observed.characterCanvas.left + observed.characterCanvas.width - observed.canvas.left) / scale, bottom: (observed.characterCanvas.top + observed.characterCanvas.height - observed.canvas.top) / scale };
+  for (const edge of ['left', 'right', 'top', 'bottom']) assert.ok(Math.abs(observed.board.characterViewport[edge] - visible[edge as keyof typeof visible]) < .05, 'The exposed character viewport follows the actual independent foreground Canvas bounds');
+  if (required) assert.ok(staging.some((actor: any) => actor.character === required), `${required} is independently staged outside the intentional expanded-reel avatars`);
+  for (const actor of staging) {
+    const frame = authoredFrames.find(frame => frame.character === actor.character && frame.index === actor.index);
+    assert.ok(frame, `Actual ${actor.character} source frame ${actor.index} belongs to the 16-pose sheet`);
+    const crop = [frame.sx, frame.sy, frame.width, frame.height].join(',');
+    const painted = observed.paint.sprites.find((sprite: any) => sprite.canvas === 'character-stage' && sprite.loaded && sprite.sourceSha256 === frame.atlasSha256 && sprite.crop.join(',') === crop && Math.abs(sprite.matrix.e - actor.anchor.x) < .02 && Math.abs(sprite.matrix.f - actor.anchor.y) < .02);
+    assert.ok(painted, `Canvas actually paints the independently staged ${actor.character} frame ${actor.index}: ${JSON.stringify({ actor, crops: observed.paint.sprites.filter((sprite: any) => sprite.crop.join(',') === crop) })}`);
+    assert.deepEqual(painted.clips, [], `${actor.character} is drawn in the foreground without a board or rail clip`);
+    assert.equal(actor.separate, true);
+    for (const edge of ['left', 'right', 'top', 'bottom']) assert.ok(Math.abs(painted.bounds[edge] - actor.bounds[edge]) < .02, `The painted ${actor.character} ${edge} bound matches the renderer's fitted staging`);
+    assert.equal(actor.canvas, 'character-stage');
+    assert.ok(painted.bounds.left >= visible.left - .05 && painted.bounds.right <= visible.right + .05 && painted.bounds.top >= visible.top - .05 && painted.bounds.bottom <= visible.bottom + .05, `${actor.character}'s complete action drawing remains within the actual full-window foreground Canvas`);
+    if (actor.character === 'right') {
+      assert.equal(typeof frame.seatAnchorX, 'number'); assert.equal(typeof frame.seatAnchorY, 'number');
+      const [dx, dy, width, height] = painted.destination;
+      const x = dx + frame.seatAnchorX! * width / frame.width, y = dy + frame.seatAnchorY! * height / frame.height;
+      const m = painted.matrix;
+      const actualPelvis = { x: m.a * x + m.c * y + m.e, y: m.b * x + m.d * y + m.f };
+      assert.ok(Math.hypot(actualPelvis.x - actor.seatContact.x, actualPelvis.y - actor.seatContact.y) < .05, 'The actual Canvas transform places the source drawing pelvis on the speaker top');
+    }
+  }
+  if (staging.some((actor: any) => actor.character === 'right')) {
+    const right = staging.find((actor: any) => actor.character === 'right');
+    const seat = right.speakerSeat;
+    assert.ok(seat, 'LUX stays attached to the speaker already painted in the original background');
+    assert.deepEqual(seat.source, { x: 1394, y: 406 });
+    assert.equal(seat.originalBackground, true);
+    assert.ok(Math.hypot(right.seatContact.x - seat.contact.x, right.seatContact.y - seat.contact.y) < .05, 'The separately animated LUX pelvis stays on the original speaker top');
+    if (seat.relocated) {
+      const sourceWindow = seat.sourceWindow;
+      assert.deepEqual(sourceWindow, { x: 1318, y: 390, width: 266, height: 425 });
+      assert.ok(observed.paint.sprites.some((sprite: any) => sprite.loaded && sprite.imageWidth === 1672 && sprite.imageHeight === 941 && sprite.crop.join(',') === [sourceWindow.x, sourceWindow.y, sourceWindow.width, sourceWindow.height].join(',')), 'Portrait paints the same original background speaker crop underneath LUX');
+      const scale = (seat.speakerBounds.right - seat.speakerBounds.left) / sourceWindow.width;
+      assert.ok(Math.hypot(seat.contact.x - (seat.speakerBounds.left + (1394 - sourceWindow.x) * scale), seat.contact.y - (seat.speakerBounds.top + (406 - sourceWindow.y) * scale)) < .05, 'The portrait seat follows the original top point in the relocated original speaker crop');
+    } else {
+      assert.ok(observed.backgroundSize.split(',').every((size: string) => size.trim() === 'cover'), 'Every scene background layer uses the same cover sizing');
+      assert.ok(observed.backgroundPosition.split(',').every((position: string) => position.trim() === '50% 50%'), 'Every scene background layer centers the original illustration');
+      const cover = Math.max(observed.shell.width / 1672, observed.shell.height / 941);
+      const screen = { x: observed.shell.left + (observed.shell.width - 1672 * cover) / 2 + 1394 * cover, y: observed.shell.top + (observed.shell.height - 941 * cover) / 2 + 406 * cover };
+      const logical = { x: (screen.x - observed.canvas.left) * 1240 / observed.canvas.width, y: (screen.y - observed.canvas.top) * 900 / observed.canvas.height };
+      assert.ok(Math.hypot(seat.contact.x - logical.x, seat.contact.y - logical.y) < .05, 'The desktop seat follows the actual CSS cover projection of the existing background speaker');
+    }
+  }
+  return { staging, speakerSeat: staging.find((actor: any) => actor.character === 'right')?.speakerSeat ?? null };
+}
+async function assertPaintedCharacterFrame(page: Page, character: Character, index: number) {
+  const source = authoredFrames.find(frame => frame.character === character && frame.index === index)!;
+  const crops = await page.evaluate(() => (window as any).__probe.paint.sprites.filter((sprite: any) => sprite.loaded).map((sprite: any) => ({ crop: sprite.crop.join(','), sha256: sprite.sourceSha256 })));
+  assert.ok(crops.some((painted: any) => painted.crop === [source.sx, source.sy, source.width, source.height].join(',') && painted.sha256 === source.atlasSha256), `The current Canvas paint actually draws ${character} authored frame ${index} from its SHA-verified source atlas, independently of the inspection frame counter`);
+}
+async function recordNormalSpeedAnimation(page: Page, character: Character, seed: number, actionKind: string) {
+  const sampled = await page.evaluate(({ character, actionKind }) => {
+    const probe = (window as any).__probe;
+    return { controlled: !!probe.poseClock, frames: probe.frames.filter((frame: any) => frame.effect?.character === character && frame.effect.kind === actionKind).map((frame: any) => ({ at: frame.at, index: frame.characterFrames.find((pose: any) => pose.character === character)?.index })) };
+  }, { character, actionKind });
+  assert.equal(sampled.controlled, false, 'Natural-speed action evidence uses the native browser clock');
+  assert.ok(sampled.frames.length >= 2, 'The natural-speed actor action has several genuinely painted samples');
+  normalSpeedAnimations.push({ character, seed, actionKind, observedFrames: [...new Set<number>(sampled.frames.map((frame: any) => frame.index))].sort((a, b) => a - b), actionSpanMs: sampled.frames.at(-1).at - sampled.frames[0].at, paintedSamples: sampled.frames.length });
 }
 function expected(seed: number, choice: Choice) { return playFixtureRound(createSession(seed, rich), choice); }
 function find(choice: Choice, predicate: (round: Round) => boolean, limit = 3000) {
@@ -337,12 +497,43 @@ function lineBoundaryChecks() {
   pass('Fixed lines pay one longest left-to-right run, stop at a gap, reject right-only runs and award six Wilds once');
 }
 
+async function animationDevelopment(page: Page, url: string) {
+  await page.goto(url); await ready(page); await page.waitForFunction(() => !!(window as any).__ruse);
+  for (const character of ['left', 'middle', 'right'] as Character[]) {
+    const fixture = find({ kind: 'xbet', character }, round => features(round).some(feature => feature.character === character && (character === 'left' ? feature.hits.length > 0 : character === 'middle' ? feature.phase === 'expand' : feature.coinWaves.some(wave => wave.coins.length > 0))));
+    const kind = character === 'left' ? 'wild' : character === 'middle' ? 'expansion' : 'coin';
+    await reset(page, fixture.seed); await gate(page, { kind, character, min: .9, max: .985 }); await choose(page, { kind: 'xbet', character }); await held(page);
+    await recordNormalSpeedAnimation(page, character, fixture.seed, kind);
+    pass(`Diagnostic ${character}: actual native-clock action history is recorded separately from controlled pose screenshots`, normalSpeedAnimations.at(-1));
+    await finish(page, fixture.session, `Diagnostic native-clock ${character} action`);
+    await reset(page, fixture.seed); await gate(page, { kind, character, characterFrame: 0 }); await choose(page, { kind: 'xbet', character });
+    for (let index = 0; index < authoredFrameCount; index++) {
+      if (index) await gate(page, { kind, character, characterFrame: index });
+      await held(page); await assertPaintedCharacterFrame(page, character, index); await assertCharacterStaging(page, character === 'middle' ? undefined : character);
+      if ([0, 8, 15].includes(index)) await capture(page, `animation-diagnostic-${character}-${index}`, fixture.seed, fixture.session.pending!, 'Diagnostic actual Canvas pose; unpublished until a complete release browser run passes.');
+    }
+    pass(`Diagnostic ${character}: all 16 source poses paint independently with fitted staging`);
+    await finish(page, fixture.session, `Diagnostic ${character} animation`);
+  }
+  const seed = 37, session = expected(seed, { kind: 'buy', tier: 'old' });
+  await reset(page, seed); await gate(page, { stage: 'drop', midDrop: true, activeCastMin: 3 }); await choose(page, { kind: 'buy', tier: 'old' }); await held(page);
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 1920, height: 800 }, { width: 400, height: 840 }, { width: 320, height: 720 }, { width: 640, height: 360 }]) {
+    await page.setViewportSize(viewport); await page.waitForTimeout(120);
+    const cast = await assertCharacterStaging(page, 'right');
+    assert.deepEqual(cast.staging.map((actor: any) => actor.character).sort(), ['left', 'middle', 'right']);
+    assert.ok(cast.staging.every((actor: any) => actor.scale > .05));
+    pass(`Diagnostic ${viewport.width}×${viewport.height}: all three separately painted actors stay visible and LUX is seated`, cast);
+    await capture(page, `animation-diagnostic-seat-${viewport.width}x${viewport.height}`, seed, session.pending!, 'Diagnostic source speaker contact and outside-cast draw bounds; this run does not publish release validation.');
+  }
+  await finish(page, session, 'Diagnostic responsive cast');
+}
+
 async function development(page: Page, url: string) {
   await page.goto(url); const assets = await ready(page);
   await page.waitForFunction(() => !!(window as any).__ruse);
   lineBoundaryChecks();
   await presentationCapture(page, 'base', 'Fresh base game and integrated HUD on the desktop viewport.');
-  pass('Canvas loads the authored symbols, three eight-frame characters and the new ink student-club background', { assets: assets.images.length, successfulImages: assets.images.filter((img: any) => img.loaded).length });
+  pass('Canvas loads the authored symbols, three sixteen-frame characters and the new ink student-club background', { assets: assets.images.length, successfulImages: assets.images.filter((img: any) => img.loaded).length });
   const canvas = page.locator('#game'); const box = (await canvas.boundingBox())!;
   assert.ok(box.width > 750 && box.height > 500, 'Desktop reel stage occupies the display');
   const before = await canvas.screenshot();
@@ -467,6 +658,8 @@ async function development(page: Page, url: string) {
     assert.deepEqual(pending, fixture.session.pending); assert.ok(pending.spins[0].initialGrid.flat().includes(character));
     assert.equal((await snapshot(page)).displayedBalance, rich - costCents(20, { kind: 'xbet', character }));
     pass(`${character} xBet guarantees its badge, charges its own configured price and reveals before acting`);
+    const revealStaging = await assertCharacterStaging(page, character);
+    pass(`${character} paints its enlarged independent reveal drawing without a board clip${character === 'right' ? ' and stays seated on the original background speaker' : ''}`, revealStaging);
     if (character === 'left') {
       const frames = await page.evaluate(() => (window as any).__probe.frames.filter((frame: any) => frame.stage === 'drop' && frame.movingCells.length === 30));
       assert.ok(frames.length >= 10, 'Actual painted descent has observable independent frames');
@@ -495,6 +688,7 @@ async function development(page: Page, url: string) {
     }
     if (character === 'left') assert.ok(receiptFeatures.every(f => f.coins.length === 0), 'Left has Wild throws only');
     if (character === 'right') assert.ok(receiptFeatures.every(f => f.hits.length === 0), 'Right owns coin reveals');
+    await recordNormalSpeedAnimation(page, character, fixture.seed, character === 'left' ? 'wild' : character === 'middle' ? 'expansion' : 'coin');
     await capture(page, `character-${character}-impact`, fixture.seed, pending, 'Actual recorded Wild throw / full-reel expansion / guaranteed coin target after reveal.');
     pass(`${character} impact follows its recorded targets and exclusive feature role`);
     await finish(page, fixture.session, `${character} xBet`);
@@ -502,17 +696,36 @@ async function development(page: Page, url: string) {
 
   const animated = find({ kind: 'xbet', character: 'left' }, round => features(round).some(feature => feature.character === 'left' && feature.hits.length > 0));
   await reset(page, animated.seed); await gate(page, { kind: 'wild', character: 'left', characterFrame: 0 }); await choose(page, { kind: 'xbet', character: 'left' });
-  for (let index = 0; index < 8; index++) {
+  for (let index = 0; index < authoredFrameCount; index++) {
     if (index) await gate(page, { kind: 'wild', character: 'left', characterFrame: index });
     await held(page);
     const frame = await page.evaluate(() => (window as any).__ruse.board().characterFrames.find((frame: any) => frame.character === 'left'));
-    assert.equal(frame.index, index); assert.equal(frame.count, 8);
-    await capture(page, `animation-left-frame-${index + 1}`, animated.seed, animated.session.pending!, `Actually painted Wild-throw animation frame ${index + 1}/8; the payout receipt remains unchanged throughout.`);
+    assert.equal(frame.index, index); assert.equal(frame.count, authoredFrameCount);
+    await assertPaintedCharacterFrame(page, 'left', index);
+    await assertCharacterStaging(page, 'left');
+    await capture(page, `animation-left-frame-${index + 1}`, animated.seed, animated.session.pending!, `Controlled-clock actual Wild-throw drawing ${index + 1}/${authoredFrameCount}; the payout receipt remains unchanged throughout.`);
   }
   const animationFrames = await page.evaluate(() => (window as any).__probe.frames.filter((frame: any) => frame.effect?.kind === 'wild').flatMap((frame: any) => frame.characterFrames.filter((pose: any) => pose.character === 'left')));
-  assert.deepEqual([...new Set(animationFrames.map((frame: any) => frame.index))].sort((a: any, b: any) => a - b), [0, 1, 2, 3, 4, 5, 6, 7]);
-  pass('The actual Wild throw paints all eight independent authored action frames in sequence', { seed: animated.seed, frames: 8 });
-  await finish(page, animated.session, 'Eight-frame character throw');
+  assert.deepEqual([...new Set(animationFrames.map((frame: any) => frame.index))].sort((a: any, b: any) => a - b), Array.from({ length: authoredFrameCount }, (_, index) => index));
+  pass('The actual Wild throw paints all sixteen independent authored action frames in sequence at the explicitly controlled QA clock', { seed: animated.seed, frames: authoredFrameCount });
+  await finish(page, animated.session, 'Sixteen-frame character throw');
+
+  const luxFrames = find({ kind: 'xbet', character: 'right' }, round => features(round).some(feature => feature.character === 'right' && feature.coinWaves.some(wave => wave.coins.length > 0)));
+  await reset(page, luxFrames.seed); await gate(page, { kind: 'coin', character: 'right', characterFrame: 0 }); await choose(page, { kind: 'xbet', character: 'right' });
+  const seats: unknown[] = [];
+  for (let index = 0; index < authoredFrameCount; index++) {
+    if (index) await gate(page, { kind: 'coin', character: 'right', characterFrame: index });
+    await held(page);
+    const frame = await page.evaluate(() => (window as any).__ruse.board().characterFrames.find((frame: any) => frame.character === 'right'));
+    assert.equal(frame.index, index); assert.equal(frame.count, authoredFrameCount);
+    await assertPaintedCharacterFrame(page, 'right', index);
+    seats.push(await assertCharacterStaging(page, 'right'));
+    await capture(page, `animation-lux-frame-${index + 1}`, luxFrames.seed, luxFrames.session.pending!, `Controlled-clock actual LUX coin-reveal drawing ${index + 1}/${authoredFrameCount}; his independent pelvis remains in contact with the original background speaker.`);
+  }
+  const luxPainted = await page.evaluate(() => (window as any).__probe.frames.filter((frame: any) => frame.effect?.kind === 'coin').flatMap((frame: any) => frame.characterFrames.filter((pose: any) => pose.character === 'right')));
+  assert.deepEqual([...new Set(luxPainted.map((frame: any) => frame.index))].sort((a: any, b: any) => a - b), Array.from({ length: authoredFrameCount }, (_, index) => index));
+  pass('LUX paints all sixteen independent seated reveal frames at the explicitly controlled QA clock while his separate character stays attached to the original speaker', { seed: luxFrames.seed, frames: authoredFrameCount, seats });
+  await finish(page, luxFrames.session, 'Sixteen-frame seated LUX reveal');
 
   for (const tier of TIER_ORDER) {
     const seed = 37; const session = expected(seed, { kind: 'buy', tier });
@@ -538,19 +751,21 @@ async function development(page: Page, url: string) {
 
   const expandingFrames = find({ kind: 'xbet', character: 'middle' }, round => expansions(round).length > 0);
   await reset(page, expandingFrames.seed); await gate(page, { kind: 'expansion', character: 'middle', characterFrame: 0 }); await choose(page, { kind: 'xbet', character: 'middle' });
-  for (let index = 0; index < 8; index++) {
+  for (let index = 0; index < authoredFrameCount; index++) {
     if (index) await gate(page, { kind: 'expansion', character: 'middle', characterFrame: index });
     await held(page);
     const frame = await page.evaluate(() => (window as any).__ruse.board().characterFrames.find((frame: any) => frame.character === 'middle'));
-    assert.equal(frame.index, index); assert.equal(frame.count, 8);
-    await capture(page, `animation-expansion-frame-${index + 1}`, expandingFrames.seed, expandingFrames.session.pending!, `Actually painted full-reel expansion frame ${index + 1}/8 before any optional recorded follow-up shots.`);
+    assert.equal(frame.index, index); assert.equal(frame.count, authoredFrameCount);
+    await assertPaintedCharacterFrame(page, 'middle', index);
+    await assertCharacterStaging(page);
+    await capture(page, `animation-expansion-frame-${index + 1}`, expandingFrames.seed, expandingFrames.session.pending!, `Controlled-clock actual full-reel expansion drawing ${index + 1}/${authoredFrameCount} before any optional recorded follow-up shots.`);
   }
   const expansionFrames = await page.evaluate(() => (window as any).__probe.frames.filter((frame: any) => frame.effect?.kind === 'expansion'));
   assert.ok(expansionFrames.some((frame: any) => frame.expansionCells.length > 0 && frame.expansionCells.length < 5));
   assert.ok(expansionFrames.every((frame: any) => frame.effect.recipients.length === 5 && frame.effect.recipients.every((cell: Cell) => cell.reel === frame.effect.source.reel)));
-  assert.deepEqual([...new Set(expansionFrames.flatMap((frame: any) => frame.characterFrames.filter((pose: any) => pose.character === 'middle').map((pose: any) => pose.index)))].sort((a: any, b: any) => a - b), [0, 1, 2, 3, 4, 5, 6, 7]);
-  pass('Shooter expansion paints all eight authored frames and progressively converts exactly five cells on its own reel');
-  await finish(page, expandingFrames.session, 'Eight-frame full-reel expansion');
+  assert.deepEqual([...new Set(expansionFrames.flatMap((frame: any) => frame.characterFrames.filter((pose: any) => pose.character === 'middle').map((pose: any) => pose.index)))].sort((a: any, b: any) => a - b), Array.from({ length: authoredFrameCount }, (_, index) => index));
+  pass('Shooter expansion paints all sixteen authored frames at the explicitly controlled QA clock and progressively converts exactly five cells on its own reel');
+  await finish(page, expandingFrames.session, 'Sixteen-frame full-reel expansion');
 
   const noFollowUp = find({ kind: 'xbet', character: 'middle' }, round => expansions(round).length > 0 && shotFeatures(round).length === 0);
   await reset(page, noFollowUp.seed); await gate(page, { kind: 'expansion', character: 'middle', min: .82, max: .97 }); await choose(page, { kind: 'xbet', character: 'middle' }); await held(page);
@@ -879,7 +1094,7 @@ async function development(page: Page, url: string) {
       let painted = 0; for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) painted++;
       return { opacity: Number(getComputedStyle(actor).opacity), frame: Number((actor as HTMLElement).dataset.frame), width: canvas.width, height: canvas.height, painted };
     }));
-    assert.ok(visible[0].painted > 0 && visible[0].frame >= 0 && visible[0].frame <= 7, 'The left cast actor is painted from an authored eight-frame atlas');
+    assert.ok(visible[0].painted > 0 && visible[0].frame >= 0 && visible[0].frame < authoredFrameCount, 'The left cast actor is painted from an authored sixteen-frame atlas');
     assert.ok(visible.every(actor => actor.width > 0 && actor.height > 0));
     await capture(page, `win-${tier === 2 ? 100 : tier === 3 ? 500 : 1000}`, threshold.seed, threshold.session.pending!, `Actual count-up crossing ${tier === 2 ? 100 : tier === 3 ? 500 : 1000}×; CSS cutscene escalation is driven by the counted amount.`);
     pass(`Count-up genuinely crosses ${tier === 2 ? 100 : tier === 3 ? 500 : 1000}× and advances its cutscene stage`, { ratio, visible });
@@ -963,6 +1178,23 @@ async function development(page: Page, url: string) {
     pass(`${viewport.width}×${viewport.height}: the scene fills the whole window, all 30 cells fit and all controls remain reachable without overflow`, layout);
     await presentationCapture(page, viewport.width === 400 ? 'mobile' : viewport.width === 640 ? 'landscape' : viewport.width === 1920 ? 'desktop-full-window' : 'desktop', 'The scene fills its actual window with every reel cell and control visible.');
   }
+
+  const castSeed = 37, castSession = expected(castSeed, { kind: 'buy', tier: 'old' });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await reset(page, castSeed); await gate(page, { stage: 'drop', midDrop: true, activeCastMin: 3 }); await choose(page, { kind: 'buy', tier: 'old' }); await held(page);
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 1920, height: 800 }, { width: 400, height: 840 }, { width: 320, height: 720 }, { width: 640, height: 360 }]) {
+    await page.setViewportSize(viewport);
+    // The presentation clock is held, but ResizeObserver must still paint the
+    // fitted cast. A direct read-only board inspection does not advance it.
+    await page.waitForTimeout(120);
+    const cast = await assertCharacterStaging(page, 'right');
+    assert.deepEqual(cast.staging.map((actor: any) => actor.character).sort(), ['left', 'middle', 'right']);
+    assert.ok(cast.staging.every((actor: any) => actor.scale > .05), 'Every separately animated actor stays visibly painted rather than shrinking to an offscreen fallback');
+    pass(`${viewport.width}×${viewport.height}: all three independent bonus characters stay uncut and LUX remains seated on the original speaker`, cast);
+    await capture(page, `cast-seating-${viewport.width}x${viewport.height}`, castSeed, castSession.pending!, 'Actual super-bonus cast during an independent symbol drop; full outside-cast drawings are unmasked and LUX is seated on the existing background speaker or a crop of that exact same speaker when it is outside the viewport.');
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await finish(page, castSession, 'Responsive seated three-character bonus staging');
 
   const reducedContext = await page.context().browser()!.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
   await probe(reducedContext); const reducedPage = await reducedContext.newPage();
@@ -1149,6 +1381,11 @@ assert.equal(chart.sourceImplementationSha256, sha(await readFile(join(root, 'sr
 assert.deepEqual(PAYLINES, chart.paths.map((path: { rowsZeroBased: number[] }) => path.rowsZeroBased));
 paylineReference = { path: chartPath, sha256: sha(chartBytes), sourceImplementationSha256: chart.sourceImplementationSha256, paths: chart.paths.map((path: { rowsZeroBased: number[] }) => path.rowsZeroBased) };
 const productionOnly = process.argv.includes('--production-only');
+const artValidation = JSON.parse(await readFile(join(root, 'docs/art/art-validation.json'), 'utf8'));
+authoredFrames = artValidation.characterFrames;
+assert.equal(authoredFrames.length, authoredFrameCount * 3, 'All 48 authored pose crops must be present before animation validation');
+for (const character of ['left', 'middle', 'right'] as Character[]) assert.deepEqual(authoredFrames.filter(frame => frame.character === character).map(frame => frame.index), Array.from({ length: authoredFrameCount }, (_, index) => index));
+for (const frame of authoredFrames) assert.equal(frame.atlasSha256, sha(await readFile(join(root, frame.atlasPath))), `The authored ${frame.character} frame ${frame.index} atlas matches its independently decoded art-validation SHA`);
 const initialSourceHashes = await sourceHashes();
 const browser = await chromium.launch({ ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE } : existsSync('/usr/bin/chromium') ? { executablePath: '/usr/bin/chromium' } : {}), headless: true, args: ['--no-sandbox'] });
 try {
@@ -1159,16 +1396,16 @@ try {
     server = spawn(process.execPath, ['--input-type=module', '-e', boot], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
     server.stdout?.on('data', data => { serverOutput += data.toString(); }); server.stderr?.on('data', data => { serverOutput += data.toString(); });
     for (let attempt = 0; attempt < 100; attempt++) { try { if ((await fetch(url)).ok) break; } catch { /* Server is starting. */ } if (attempt === 99) throw new Error(serverOutput); await new Promise(ok => setTimeout(ok, 100)); }
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } }); await probe(context); const page = await context.newPage(); await development(page, url); await context.close();
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } }); await probe(context); const page = await context.newPage(); await (animationOnly ? animationDevelopment(page, url) : development(page, url)); await context.close();
   }
-  await production(browser);
+  if (!animationOnly) await production(browser);
   assert.deepEqual(jsErrors, [], 'No JavaScript page errors'); assert.deepEqual(failures, [], 'No failed image / font / audio requests'); assert.deepEqual(externalRequests, [], 'No external network dependencies');
-  pass('No JavaScript errors, asset failures or external network requests in development and production servers');
+  pass(animationOnly ? 'No JavaScript errors, asset failures or external network requests in the development animation diagnostic' : 'No JavaScript errors, asset failures or external network requests in development and production servers');
   const source = await sourceHashes();
-  if (!tailOnly) assert.deepEqual(source, initialSourceHashes, 'Source must stay frozen throughout verified browser checks');
-  const report = { version: 5, paylineChart: PAYLINES, paylineReference, capturedAt: new Date().toISOString(), variant: 'ot-staroto', mode: productionOnly ? 'production-only' : tailOnly ? 'tail-diagnostic' : 'full', checksPassed: checks.length, checks, animationProbe: { description: 'Read-only requestAnimationFrame gates pause the presentation clock for screenshots; engine receipts and entropy remain unchanged.', authoredActionFrames: 8 }, sourceHashes: source, captures, presentationCaptures, jsErrors, assetFailures: failures, externalRequests, production: { path: 'dist/index.html', sha256: sha(await readFile(join(root, 'dist/index.html'))), bundleHashes: productionBundleHashes, requests: productionRequests, receipts: productionReceipts, ...(productionMultiShooterReplay ? { multiShooterReplay: productionMultiShooterReplay } : {}) } };
-  await writeFile(join(output, productionOnly ? 'production-browser.json' : tailOnly ? 'browser-tail.json' : 'browser.json'), JSON.stringify(report, null, 2) + '\n');
-  if (!productionOnly && !tailOnly) {
+  if (!tailOnly && !animationOnly) assert.deepEqual(source, initialSourceHashes, 'Source must stay frozen throughout verified browser checks');
+  const report = { version: 5, presentationVersion: '5.1.0', paylineChart: PAYLINES, paylineReference, capturedAt: new Date().toISOString(), variant: 'ot-staroto', mode: animationOnly ? 'animation-diagnostic' : productionOnly ? 'production-only' : tailOnly ? 'tail-diagnostic' : 'full', checksPassed: checks.length, checks, animationProbe: { description: 'QA-only requestAnimationFrame gates pause screenshots. Gates for an exact authored pose additionally advance the presentation clock in explicit 4.1667 ms steps to inspect every real source drawing; this controlled-clock coverage is separate from the recorded native-clock actions and production play. Engine receipts and entropy remain unchanged.', authoredActionFrames: authoredFrameCount, authoredPoseClockStepMs, normalSpeedAnimations }, sourceHashes: source, captures, presentationCaptures, jsErrors, assetFailures: failures, externalRequests, ...(!animationOnly ? { production: { path: 'dist/index.html', sha256: sha(await readFile(join(root, 'dist/index.html'))), bundleHashes: productionBundleHashes, requests: productionRequests, receipts: productionReceipts, ...(productionMultiShooterReplay ? { multiShooterReplay: productionMultiShooterReplay } : {}) } } : {}) };
+  await writeFile(join(output, animationOnly ? 'browser-animation.json' : productionOnly ? 'production-browser.json' : tailOnly ? 'browser-tail.json' : 'browser.json'), JSON.stringify(report, null, 2) + '\n');
+  if (!productionOnly && !tailOnly && !animationOnly) {
     await mkdir(publishedShots, { recursive: true });
     for (const shot of [...captures, ...presentationCaptures]) await copyFile(join(shots, shot.file.split('/').at(-1)!), join(root, shot.file));
     await writeFile(join(root, 'docs/browser-validation.json'), JSON.stringify(report, null, 2) + '\n');

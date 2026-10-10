@@ -1,10 +1,10 @@
-# ОТ СТАРОТО — version 5 gallery
+# ОТ СТАРОТО — version 5.1 gallery
 
 These are real captures from the current browser run. Feature and win examples use seeded, settled QA receipts drawn from the same paid outcome catalogue; they demonstrate possibilities rather than win frequency. Full-round cost and award are recorded below, not inferred from a photographed frame. Presentation-only captures cover layouts, controls and production HTTP loading. Source and image hashes are in the [release manifest](release-manifest.json).
 
 ![Integrated desktop game](screenshots/base.png)
 
-The [club-scene cover preview](art/scene-cover-contact-sheet.png) and [animation contact sheet](art/animation-contact-sheet.png) document the new environment and unchanged 24 character drawings / nine symbol illustrations. [Art validation](art/art-validation.json) records decode, cover, crop and source checks.
+The [club-scene cover preview](art/scene-cover-contact-sheet.png) and [animation contact sheet](art/animation-contact-sheet.png) document all 48 current character drawings and the nine unchanged symbol illustrations. [Art validation](art/art-validation.json) records decode, cover, crop and source checks.
 
 ## Feature and award receipts
 
@@ -25,6 +25,30 @@ The [club-scene cover preview](art/scene-cover-contact-sheet.png) and [animation
 | [animation-left-frame-6.png](screenshots/animation-left-frame-6.png) | 1 | Left xBet | €1.70 | €0.00 |
 | [animation-left-frame-7.png](screenshots/animation-left-frame-7.png) | 1 | Left xBet | €1.70 | €0.00 |
 | [animation-left-frame-8.png](screenshots/animation-left-frame-8.png) | 1 | Left xBet | €1.70 | €0.00 |
+| [animation-left-frame-9.png](screenshots/animation-left-frame-9.png) | 1 | Left xBet | €1.70 | €0.00 |
+| [animation-left-frame-10.png](screenshots/animation-left-frame-10.png) | 1 | Left xBet | €1.70 | €0.00 |
+| [animation-left-frame-11.png](screenshots/animation-left-frame-11.png) | 1 | Left xBet | €1.70 | €0.00 |
+| [animation-left-frame-12.png](screenshots/animation-left-frame-12.png) | 1 | Left xBet | €1.70 | €0.00 |
+| [animation-left-frame-13.png](screenshots/animation-left-frame-13.png) | 1 | Left xBet | €1.70 | €0.00 |
+| [animation-left-frame-14.png](screenshots/animation-left-frame-14.png) | 1 | Left xBet | €1.70 | €0.00 |
+| [animation-left-frame-15.png](screenshots/animation-left-frame-15.png) | 1 | Left xBet | €1.70 | €0.00 |
+| [animation-left-frame-16.png](screenshots/animation-left-frame-16.png) | 1 | Left xBet | €1.70 | €0.00 |
+| [animation-lux-frame-1.png](screenshots/animation-lux-frame-1.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-2.png](screenshots/animation-lux-frame-2.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-3.png](screenshots/animation-lux-frame-3.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-4.png](screenshots/animation-lux-frame-4.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-5.png](screenshots/animation-lux-frame-5.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-6.png](screenshots/animation-lux-frame-6.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-7.png](screenshots/animation-lux-frame-7.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-8.png](screenshots/animation-lux-frame-8.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-9.png](screenshots/animation-lux-frame-9.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-10.png](screenshots/animation-lux-frame-10.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-11.png](screenshots/animation-lux-frame-11.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-12.png](screenshots/animation-lux-frame-12.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-13.png](screenshots/animation-lux-frame-13.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-14.png](screenshots/animation-lux-frame-14.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-15.png](screenshots/animation-lux-frame-15.png) | 1 | Right xBet | €0.54 | €2.46 |
+| [animation-lux-frame-16.png](screenshots/animation-lux-frame-16.png) | 1 | Right xBet | €0.54 | €2.46 |
 | [bonus-ruse-scatters.png](screenshots/bonus-ruse-scatters.png) | 37 | Русенско Варено | €19.00 | €0.52 |
 | [bonus-ruse-counter.png](screenshots/bonus-ruse-counter.png) | 37 | Русенско Варено | €19.00 | €0.52 |
 | [bonus-lux-scatters.png](screenshots/bonus-lux-scatters.png) | 37 | ЛУКС | €30.00 | €72.04 |
@@ -41,6 +65,14 @@ The [club-scene cover preview](art/scene-cover-contact-sheet.png) and [animation
 | [animation-expansion-frame-6.png](screenshots/animation-expansion-frame-6.png) | 1 | Middle xBet | €5.00 | €0.00 |
 | [animation-expansion-frame-7.png](screenshots/animation-expansion-frame-7.png) | 1 | Middle xBet | €5.00 | €0.00 |
 | [animation-expansion-frame-8.png](screenshots/animation-expansion-frame-8.png) | 1 | Middle xBet | €5.00 | €0.00 |
+| [animation-expansion-frame-9.png](screenshots/animation-expansion-frame-9.png) | 1 | Middle xBet | €5.00 | €0.00 |
+| [animation-expansion-frame-10.png](screenshots/animation-expansion-frame-10.png) | 1 | Middle xBet | €5.00 | €0.00 |
+| [animation-expansion-frame-11.png](screenshots/animation-expansion-frame-11.png) | 1 | Middle xBet | €5.00 | €0.00 |
+| [animation-expansion-frame-12.png](screenshots/animation-expansion-frame-12.png) | 1 | Middle xBet | €5.00 | €0.00 |
+| [animation-expansion-frame-13.png](screenshots/animation-expansion-frame-13.png) | 1 | Middle xBet | €5.00 | €0.00 |
+| [animation-expansion-frame-14.png](screenshots/animation-expansion-frame-14.png) | 1 | Middle xBet | €5.00 | €0.00 |
+| [animation-expansion-frame-15.png](screenshots/animation-expansion-frame-15.png) | 1 | Middle xBet | €5.00 | €0.00 |
+| [animation-expansion-frame-16.png](screenshots/animation-expansion-frame-16.png) | 1 | Middle xBet | €5.00 | €0.00 |
 | [shooter-expands-without-shots.png](screenshots/shooter-expands-without-shots.png) | 2 | Middle xBet | €5.00 | €3.16 |
 | [bonus-shooter-immediately-sticky.png](screenshots/bonus-shooter-immediately-sticky.png) | 3 | Ръба са обажда | €360.00 | €147.36 |
 | [bonus-shooter-spent-retained-total.png](screenshots/bonus-shooter-spent-retained-total.png) | 3 | Ръба са обажда | €360.00 | €147.36 |
@@ -77,6 +109,12 @@ The [club-scene cover preview](art/scene-cover-contact-sheet.png) and [animation
 | [god-shot.png](screenshots/god-shot.png) | 3 | God Spin | €600.00 | €3999.80 |
 | [max-win.png](screenshots/max-win.png) | 3 | God Spin | €600.00 | €3999.80 |
 | [god-miss-board.png](screenshots/god-miss-board.png) | 1 | God Spin | €600.00 | €0.00 |
+| [cast-seating-1440x900.png](screenshots/cast-seating-1440x900.png) | 37 | ОТ СТАРОТО | €500.00 | €124.48 |
+| [cast-seating-1920x1080.png](screenshots/cast-seating-1920x1080.png) | 37 | ОТ СТАРОТО | €500.00 | €124.48 |
+| [cast-seating-1920x800.png](screenshots/cast-seating-1920x800.png) | 37 | ОТ СТАРОТО | €500.00 | €124.48 |
+| [cast-seating-400x840.png](screenshots/cast-seating-400x840.png) | 37 | ОТ СТАРОТО | €500.00 | €124.48 |
+| [cast-seating-320x720.png](screenshots/cast-seating-320x720.png) | 37 | ОТ СТАРОТО | €500.00 | €124.48 |
+| [cast-seating-640x360.png](screenshots/cast-seating-640x360.png) | 37 | ОТ СТАРОТО | €500.00 | €124.48 |
 
 The line captures show the exact reference chart and real winning paths. Shooter captures show multiple expanded reels, optional shots, immediately sticky bonus columns, persistent characters and bottom-row sums of the five retained Wild multipliers. The collector captures show finished reveals before collection, only the retained collector before re-reveal, and the next collector absorbing its stored value. The MAX example comes from an actual shot hitting the grid’s MAX cell. Sticky Wild examples show their fixed coordinates while spent and after recharge.
 

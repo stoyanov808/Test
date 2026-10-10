@@ -1,0 +1,644 @@
+{
+  "revision": 5,
+  "releaseFrame": 8,
+  "dimensions": {
+    "public/art/character-left-motion-a.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-left-motion-c.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-left-motion-b.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-left-motion-d.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-middle-motion-a.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-middle-motion-c.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-middle-motion-b.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-middle-motion-d.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-right-seated-a.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-right-seated-b.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-right-seated-c.png": [
+      1536,
+      1024
+    ],
+    "public/art/character-right-seated-d.png": [
+      1536,
+      1024
+    ]
+  },
+  "frames": {
+    "left": [
+      {
+        "sx": 212,
+        "sy": 21,
+        "width": 374,
+        "height": 484,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 184,
+        "anchorY": 478,
+        "atlasRelativePath": "public/art/character-left-motion-a.png"
+      },
+      {
+        "sx": 187,
+        "sy": 35,
+        "width": 420,
+        "height": 472,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 210,
+        "anchorY": 465,
+        "atlasRelativePath": "public/art/character-left-motion-c.png"
+      },
+      {
+        "sx": 919,
+        "sy": 37,
+        "width": 436,
+        "height": 468,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 196,
+        "anchorY": 462,
+        "atlasRelativePath": "public/art/character-left-motion-a.png"
+      },
+      {
+        "sx": 911,
+        "sy": 51,
+        "width": 518,
+        "height": 456,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 237,
+        "anchorY": 449,
+        "atlasRelativePath": "public/art/character-left-motion-c.png"
+      },
+      {
+        "sx": 206,
+        "sy": 536,
+        "width": 458,
+        "height": 463,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 209,
+        "anchorY": 457,
+        "atlasRelativePath": "public/art/character-left-motion-a.png"
+      },
+      {
+        "sx": 169,
+        "sy": 541,
+        "width": 528,
+        "height": 457,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 243,
+        "anchorY": 450,
+        "atlasRelativePath": "public/art/character-left-motion-c.png"
+      },
+      {
+        "sx": 943,
+        "sy": 517,
+        "width": 444,
+        "height": 481,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 177,
+        "anchorY": 475,
+        "atlasRelativePath": "public/art/character-left-motion-a.png"
+      },
+      {
+        "sx": 895,
+        "sy": 555,
+        "width": 558,
+        "height": 442,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 252,
+        "anchorY": 435,
+        "atlasRelativePath": "public/art/character-left-motion-c.png"
+      },
+      {
+        "sx": 148,
+        "sy": 30,
+        "width": 519,
+        "height": 458,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 222,
+        "anchorY": 452,
+        "attachmentX": 497,
+        "attachmentY": 147,
+        "atlasRelativePath": "public/art/character-left-motion-b.png"
+      },
+      {
+        "sx": 133,
+        "sy": 20,
+        "width": 606,
+        "height": 473,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 236,
+        "anchorY": 466,
+        "atlasRelativePath": "public/art/character-left-motion-d.png"
+      },
+      {
+        "sx": 869,
+        "sy": 30,
+        "width": 536,
+        "height": 458,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 221,
+        "anchorY": 452,
+        "atlasRelativePath": "public/art/character-left-motion-b.png"
+      },
+      {
+        "sx": 847,
+        "sy": 20,
+        "width": 575,
+        "height": 473,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 226,
+        "anchorY": 466,
+        "atlasRelativePath": "public/art/character-left-motion-d.png"
+      },
+      {
+        "sx": 158,
+        "sy": 534,
+        "width": 500,
+        "height": 465,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 227,
+        "anchorY": 459,
+        "atlasRelativePath": "public/art/character-left-motion-b.png"
+      },
+      {
+        "sx": 183,
+        "sy": 519,
+        "width": 498,
+        "height": 478,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 232,
+        "anchorY": 471,
+        "atlasRelativePath": "public/art/character-left-motion-d.png"
+      },
+      {
+        "sx": 941,
+        "sy": 502,
+        "width": 385,
+        "height": 497,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 194,
+        "anchorY": 491,
+        "atlasRelativePath": "public/art/character-left-motion-b.png"
+      },
+      {
+        "sx": 957,
+        "sy": 500,
+        "width": 393,
+        "height": 499,
+        "referenceWidth": 360,
+        "referenceHeight": 485,
+        "anchorX": 196,
+        "anchorY": 492,
+        "atlasRelativePath": "public/art/character-left-motion-d.png"
+      }
+    ],
+    "middle": [
+      {
+        "sx": 280,
+        "sy": 24,
+        "width": 301,
+        "height": 463,
+        "referenceWidth": 290,
+        "referenceHeight": 482,
+        "anchorX": 158,
+        "anchorY": 457,
+        "atlasRelativePath": "public/art/character-middle-motion-a.png"
+      },
+      {
+        "sx": 258,
+        "sy": 66,
+        "width": 315,
+        "height": 435,
+        "referenceWidth": 279,
+        "referenceHeight": 464,
+        "anchorX": 174,
+        "anchorY": 428,
+        "attachmentX": 288,
+        "attachmentY": 315,
+        "atlasRelativePath": "public/art/character-middle-motion-c.png"
+      },
+      {
+        "sx": 935,
+        "sy": 51,
+        "width": 336,
+        "height": 436,
+        "referenceWidth": 290,
+        "referenceHeight": 482,
+        "anchorX": 168,
+        "anchorY": 430,
+        "atlasRelativePath": "public/art/character-middle-motion-a.png"
+      },
+      {
+        "sx": 944,
+        "sy": 73,
+        "width": 357,
+        "height": 430,
+        "referenceWidth": 278,
+        "referenceHeight": 462,
+        "anchorX": 176,
+        "anchorY": 422,
+        "attachmentX": 343,
+        "attachmentY": 101,
+        "atlasRelativePath": "public/art/character-middle-motion-c.png"
+      },
+      {
+        "sx": 271,
+        "sy": 524,
+        "width": 375,
+        "height": 455,
+        "referenceWidth": 290,
+        "referenceHeight": 482,
+        "anchorX": 174,
+        "anchorY": 449,
+        "atlasRelativePath": "public/art/character-middle-motion-a.png"
+      },
+      {
+        "sx": 269,
+        "sy": 589,
+        "width": 437,
+        "height": 402,
+        "referenceWidth": 255,
+        "referenceHeight": 424,
+        "anchorX": 182,
+        "anchorY": 394,
+        "attachmentX": 421,
+        "attachmentY": 125,
+        "atlasRelativePath": "public/art/character-middle-motion-c.png"
+      },
+      {
+        "sx": 935,
+        "sy": 529,
+        "width": 371,
+        "height": 450,
+        "referenceWidth": 290,
+        "referenceHeight": 482,
+        "anchorX": 170,
+        "anchorY": 444,
+        "atlasRelativePath": "public/art/character-middle-motion-a.png"
+      },
+      {
+        "sx": 933,
+        "sy": 587,
+        "width": 470,
+        "height": 404,
+        "referenceWidth": 253,
+        "referenceHeight": 420,
+        "anchorX": 204,
+        "anchorY": 396,
+        "attachmentX": 451,
+        "attachmentY": 126,
+        "atlasRelativePath": "public/art/character-middle-motion-c.png"
+      },
+      {
+        "sx": 237,
+        "sy": 33,
+        "width": 464,
+        "height": 470,
+        "referenceWidth": 290,
+        "referenceHeight": 482,
+        "anchorX": 188,
+        "anchorY": 464,
+        "attachmentX": 363,
+        "attachmentY": 145,
+        "atlasRelativePath": "public/art/character-middle-motion-b.png"
+      },
+      {
+        "sx": 238,
+        "sy": 31,
+        "width": 492,
+        "height": 480,
+        "referenceWidth": 269,
+        "referenceHeight": 447,
+        "anchorX": 197,
+        "anchorY": 473,
+        "attachmentX": 361,
+        "attachmentY": 70,
+        "atlasRelativePath": "public/art/character-middle-motion-d.png"
+      },
+      {
+        "sx": 931,
+        "sy": 10,
+        "width": 396,
+        "height": 494,
+        "referenceWidth": 290,
+        "referenceHeight": 482,
+        "anchorX": 199,
+        "anchorY": 488,
+        "atlasRelativePath": "public/art/character-middle-motion-b.png"
+      },
+      {
+        "sx": 973,
+        "sy": 49,
+        "width": 416,
+        "height": 463,
+        "referenceWidth": 267,
+        "referenceHeight": 444,
+        "anchorX": 175,
+        "anchorY": 459,
+        "attachmentX": 352,
+        "attachmentY": 111,
+        "atlasRelativePath": "public/art/character-middle-motion-d.png"
+      },
+      {
+        "sx": 241,
+        "sy": 535,
+        "width": 484,
+        "height": 459,
+        "referenceWidth": 290,
+        "referenceHeight": 482,
+        "anchorX": 209,
+        "anchorY": 453,
+        "atlasRelativePath": "public/art/character-middle-motion-b.png"
+      },
+      {
+        "sx": 250,
+        "sy": 524,
+        "width": 341,
+        "height": 472,
+        "referenceWidth": 289,
+        "referenceHeight": 481,
+        "anchorX": 177,
+        "anchorY": 464,
+        "attachmentX": 292,
+        "attachmentY": 334,
+        "atlasRelativePath": "public/art/character-middle-motion-d.png"
+      },
+      {
+        "sx": 984,
+        "sy": 513,
+        "width": 327,
+        "height": 482,
+        "referenceWidth": 290,
+        "referenceHeight": 482,
+        "anchorX": 176,
+        "anchorY": 476,
+        "atlasRelativePath": "public/art/character-middle-motion-b.png"
+      },
+      {
+        "sx": 1003,
+        "sy": 527,
+        "width": 313,
+        "height": 472,
+        "referenceWidth": 288,
+        "referenceHeight": 479,
+        "anchorX": 154,
+        "anchorY": 464,
+        "attachmentX": 65,
+        "attachmentY": 395,
+        "atlasRelativePath": "public/art/character-middle-motion-d.png"
+      }
+    ],
+    "right": [
+      {
+        "sx": 271,
+        "sy": 26,
+        "width": 365,
+        "height": 475,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 204,
+        "anchorY": 470,
+        "seatAnchorX": 204,
+        "seatAnchorY": 329,
+        "atlasRelativePath": "public/art/character-right-seated-a.png"
+      },
+      {
+        "sx": 894,
+        "sy": 45,
+        "width": 342,
+        "height": 457,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 200,
+        "anchorY": 452,
+        "seatAnchorX": 200,
+        "seatAnchorY": 308,
+        "atlasRelativePath": "public/art/character-right-seated-a.png"
+      },
+      {
+        "sx": 269,
+        "sy": 529,
+        "width": 375,
+        "height": 460,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 208,
+        "anchorY": 455,
+        "seatAnchorX": 208,
+        "seatAnchorY": 328,
+        "atlasRelativePath": "public/art/character-right-seated-a.png"
+      },
+      {
+        "sx": 911,
+        "sy": 533,
+        "width": 362,
+        "height": 457,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 193,
+        "anchorY": 452,
+        "seatAnchorX": 193,
+        "seatAnchorY": 326,
+        "atlasRelativePath": "public/art/character-right-seated-a.png"
+      },
+      {
+        "sx": 252,
+        "sy": 9,
+        "width": 384,
+        "height": 493,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 205,
+        "anchorY": 488,
+        "seatAnchorX": 205,
+        "seatAnchorY": 344,
+        "atlasRelativePath": "public/art/character-right-seated-b.png"
+      },
+      {
+        "sx": 926,
+        "sy": 12,
+        "width": 379,
+        "height": 497,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 197,
+        "anchorY": 492,
+        "seatAnchorX": 197,
+        "seatAnchorY": 341,
+        "atlasRelativePath": "public/art/character-right-seated-b.png"
+      },
+      {
+        "sx": 248,
+        "sy": 513,
+        "width": 409,
+        "height": 482,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 221,
+        "anchorY": 477,
+        "seatAnchorX": 221,
+        "seatAnchorY": 345,
+        "atlasRelativePath": "public/art/character-right-seated-b.png"
+      },
+      {
+        "sx": 928,
+        "sy": 540,
+        "width": 402,
+        "height": 457,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 200,
+        "anchorY": 452,
+        "seatAnchorX": 200,
+        "seatAnchorY": 324,
+        "atlasRelativePath": "public/art/character-right-seated-b.png"
+      },
+      {
+        "sx": 155,
+        "sy": 9,
+        "width": 512,
+        "height": 489,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 350,
+        "anchorY": 484,
+        "attachmentX": 69,
+        "attachmentY": 179,
+        "seatAnchorX": 350,
+        "seatAnchorY": 340,
+        "atlasRelativePath": "public/art/character-right-seated-c.png"
+      },
+      {
+        "sx": 817,
+        "sy": 10,
+        "width": 535,
+        "height": 489,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 361,
+        "anchorY": 484,
+        "seatAnchorX": 361,
+        "seatAnchorY": 339,
+        "atlasRelativePath": "public/art/character-right-seated-c.png"
+      },
+      {
+        "sx": 169,
+        "sy": 503,
+        "width": 509,
+        "height": 497,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 342,
+        "anchorY": 492,
+        "seatAnchorX": 342,
+        "seatAnchorY": 353,
+        "atlasRelativePath": "public/art/character-right-seated-c.png"
+      },
+      {
+        "sx": 914,
+        "sy": 507,
+        "width": 418,
+        "height": 490,
+        "referenceWidth": 340.0,
+        "referenceHeight": 470,
+        "anchorX": 217,
+        "anchorY": 485,
+        "seatAnchorX": 217,
+        "seatAnchorY": 353,
+        "atlasRelativePath": "public/art/character-right-seated-c.png"
+      },
+      {
+        "sx": 306,
+        "sy": 123,
+        "width": 258,
+        "height": 343,
+        "referenceWidth": 253.1915,
+        "referenceHeight": 350,
+        "anchorX": 131,
+        "anchorY": 338,
+        "seatAnchorX": 131,
+        "seatAnchorY": 244,
+        "atlasRelativePath": "public/art/character-right-seated-d.png"
+      },
+      {
+        "sx": 1002,
+        "sy": 124,
+        "width": 255,
+        "height": 345,
+        "referenceWidth": 253.1915,
+        "referenceHeight": 350,
+        "anchorX": 126,
+        "anchorY": 340,
+        "seatAnchorX": 126,
+        "seatAnchorY": 245,
+        "atlasRelativePath": "public/art/character-right-seated-d.png"
+      },
+      {
+        "sx": 312,
+        "sy": 629,
+        "width": 262,
+        "height": 345,
+        "referenceWidth": 253.1915,
+        "referenceHeight": 350,
+        "anchorX": 127,
+        "anchorY": 340,
+        "seatAnchorX": 127,
+        "seatAnchorY": 243,
+        "atlasRelativePath": "public/art/character-right-seated-d.png"
+      },
+      {
+        "sx": 1003,
+        "sy": 631,
+        "width": 268,
+        "height": 344,
+        "referenceWidth": 253.1915,
+        "referenceHeight": 350,
+        "anchorX": 130,
+        "anchorY": 339,
+        "seatAnchorX": 130,
+        "seatAnchorY": 242,
+        "atlasRelativePath": "public/art/character-right-seated-d.png"
+      }
+    ]
+  }
+}

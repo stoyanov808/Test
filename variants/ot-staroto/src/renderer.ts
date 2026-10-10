@@ -1,10 +1,15 @@
-import { carURL, characterAnimationSprites, characterFrameCount, characterFrameSprite, coinURL, sceneURL, symbolSprite } from './art';
+import { carURL, characterAnimationSprites, characterFrameCount, characterFrameSprite, characterReleaseFrame, characterSprite, coinURL, sceneURL, symbolSprite } from './art';
 import { REGULARS, TIER_CHARACTERS } from './engine';
 import type { Cell, Character, Coin, CoinCollection, Feature, Grid, Matrix, Round, Spin, SymbolId, Tier, Win } from './types';
 
 const W = 1240, H = 900;
 const BOARD = { x: 200, y: 170, w: 840, h: 630 };
 const COLS = 6, ROWS = 5, CW = BOARD.w / COLS, CH = BOARD.h / ROWS;
+// The contact sits on the front cabinet's sloping top in the original club
+// illustration. Both the desktop contact and the narrow-screen crop use these
+// source pixels; LUX is a separate actor, never baked into the backdrop.
+const CLUB = { width: 1672, height: 941 };
+const SPEAKER = { x: 1318, y: 390, width: 266, height: 425, seatX: 1394, seatY: 406 };
 const CHARACTERS: Character[] = ['left', 'middle', 'right'];
 const SYMBOLS: SymbolId[] = [...REGULARS, ...CHARACTERS, 'wild', 'scatter', 'max'];
 const cloneGrid = (grid: Grid): Grid => grid.map(column => [...column]);
@@ -51,6 +56,21 @@ interface ShooterReelView {
   reel: number; character: 'middle'; sticky: boolean; totalMultiplier: number;
   cellMultipliers: number[]; inactiveRows: number[]; avatarVisible: true; multiplierRow: 4;
 }
+interface SpeakerSeatView {
+  originalBackground: true;
+  source: { x: number; y: number };
+  contact: { x: number; y: number };
+  relocated: boolean;
+  sourceWindow: { x: number; y: number; width: number; height: number };
+  speakerBounds: { left: number; top: number; right: number; bottom: number };
+}
+interface CharacterStagingView {
+  character: Character; frame: number; index: number; count: number; scale: number; previousScale: number;
+  anchor: { x: number; y: number }; bounds: { left: number; top: number; right: number; bottom: number };
+  sourceCrop: readonly [number, number, number, number]; rotation: number; flip: number;
+  seatContact: { x: number; y: number } | null; drawnSeatContact: { x: number; y: number } | null;
+  canvas: 'character-stage' | 'game'; clip: 'none'; separate: true; speakerSeat: SpeakerSeatView | null;
+}
 export interface RendererUpdate {
   spin: Spin | null; round: Round | null; global: number; remaining: number; tier: Tier | null; totalCents: number;
 }
@@ -63,6 +83,8 @@ export interface RendererInspection extends Omit<RendererUpdate, 'spin' | 'round
   godGrid: Grid | null; godShots: Round['godShots'];
   coinFlips: { coin: Coin; progress: number }[];
   characterFrames: { character: Character; index: number; count: number; progress: number }[];
+  characterStaging: CharacterStagingView[];
+  characterViewport: { left: number; top: number; right: number; bottom: number; canvas: 'character-stage' | 'game' };
   coinTransits: { source: Cell; target: Cell; progress: number; arrival: number }[];
   winningLines: Win[]; activeLine: number | null; lineProgress: number;
   expandedReels: ReelExpansion[]; expansionProgress: number; expansionCells: Cell[];
@@ -140,7 +162,10 @@ function dropFrames(plan: DropPlan, elapsed: number, reduced: boolean): MovingSy
 
 /** A canvas replay of committed outcomes. It does not calculate a win or mutate a receipt. */
 export class GameRenderer {
-  private readonly ctx: CanvasRenderingContext2D;
+  private ctx: CanvasRenderingContext2D;
+  private readonly boardContext: CanvasRenderingContext2D;
+  private readonly castCanvas: HTMLCanvasElement | null;
+  private readonly castContext: CanvasRenderingContext2D | null;
   private readonly images = new Map<string, HTMLImageElement>();
   private readonly imageReady = new Map<string, Promise<void>>();
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -198,7 +223,15 @@ export class GameRenderer {
   constructor(private readonly canvas: HTMLCanvasElement, private readonly options: RendererOptions = {}) {
     const context = canvas.getContext('2d');
     if (!context) throw new Error('This browser needs Canvas 2D support.');
-    this.ctx = context;
+    this.ctx = this.boardContext = context;
+    const stage = canvas.closest<HTMLElement>('.stage');
+    this.castCanvas = stage ? document.createElement('canvas') : null;
+    this.castContext = this.castCanvas?.getContext('2d') ?? null;
+    if (this.castCanvas) {
+      this.castCanvas.id = 'character-stage'; this.castCanvas.setAttribute('aria-hidden', 'true');
+      Object.assign(this.castCanvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', pointerEvents: 'none', zIndex: '1' });
+      stage!.append(this.castCanvas);
+    }
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', 'ОТ СТАРОТО — шест колони, пет реда');
     canvas.removeAttribute('title');
@@ -279,6 +312,8 @@ export class GameRenderer {
       godShots: this.round?.godShots.map(shot => ({ ...shot, target: { ...shot.target } })) ?? [],
       coinFlips: this.coinFlips.map(flip => ({ coin: cloneCoin(flip.coin), progress: flip.progress })),
       characterFrames: this.activeCharacters.map(character => this.characterAnimationState(character)),
+      characterStaging: this.characterStaging(),
+      characterViewport: this.characterViewport(),
       coinTransits: this.effect?.kind === 'collect' && this.effect.collection ? this.effect.collection.sources.map((coin, index) => ({ source: { ...coin.cell }, target: { ...this.effect!.collection!.collector }, ...this.collectionTransit(this.effect!.progress, index, this.effect!.collection!.sources.length) })) : [],
       winningLines: this.winningLines.map(win => ({ ...win, cells: win.cells.map(cell => ({ ...cell })) })),
       activeLine: this.winningLines[this.activeLine]?.line ?? null, lineProgress: this.lineProgress,
@@ -304,6 +339,7 @@ export class GameRenderer {
     this.finishAnimation?.();
     cancelAnimationFrame(this.animationFrame);
     this.resizeObserver.disconnect();
+    this.castCanvas?.remove();
   }
 
   async play(round: Round, turbo: boolean): Promise<void> {
@@ -515,7 +551,7 @@ export class GameRenderer {
         this.effect = { kind: 'wild', progress: 0, source: feature.source, target: hit.cell, character: 'left', value: hit.multiplier, repeated: hit.repeated };
         this.options.onSound?.('throw');
         let impacted = false;
-        await this.animate(turbo ? 260 : 460, p => {
+        await this.animate(turbo ? 330 : 600, p => {
           if (this.effect) this.effect.progress = p;
           if (p >= .68 && !impacted) {
             impacted = true;
@@ -588,7 +624,7 @@ export class GameRenderer {
       this.effect = { kind: 'shot', progress: 0, source: { ...feature.source }, target: { ...shot.target }, character: 'middle', recipients: shot.hits.map(hit => ({ ...hit.cell })), value: column ? 2 : hit?.multiplier ?? 1, repeated: hit?.repeated ?? false, boostedReel: shot.expandedReel, sticky: shot.sticky, shot: index };
       this.options.onSound?.('shot');
       let applied = false;
-      await this.animate(turbo ? column ? 330 : 250 : column ? 580 : 430, p => {
+      await this.animate(turbo ? column ? 380 : 330 : column ? 660 : 600, p => {
         if (this.effect) this.effect.progress = p;
         if (p < .68 || applied) return;
         applied = true;
@@ -880,11 +916,11 @@ export class GameRenderer {
 
   private draw(): void {
     if (this.destroyed) return;
-    const ctx = this.ctx;
+    this.ctx = this.boardContext;
+    const ctx = this.boardContext;
     ctx.setTransform(this.deviceRatio, 0, 0, this.deviceRatio, 0, 0);
     ctx.clearRect(0, 0, W, H);
     this.drawScene();
-    if (!this.godCutscene) this.drawCharacters();
     this.drawFrame();
     ctx.save();
     ctx.beginPath();
@@ -931,14 +967,36 @@ export class GameRenderer {
     for (const coin of this.revealedCoins) this.drawCoin(coin);
     this.drawEffect(false);
     ctx.restore();
-    // Action hands may reach into a reel; the character body remains in the street rail.
-    if (!this.godCutscene && this.effect?.character) {
-      ctx.save(); ctx.beginPath(); ctx.rect(BOARD.x + 3, BOARD.y + 3, BOARD.w - 6, BOARD.h - 6); ctx.clip();
-      this.drawCharacters(true); ctx.restore();
-    }
     this.drawLabels();
+    // The transparent cast stage spans the viewport, even on wide displays
+    // where the actual club speaker lies beyond the narrower reel canvas.
+    this.prepareCastCanvas();
+    if (this.castContext) this.ctx = this.castContext;
+    // One complete foreground pass, without a reel or header mask.
+    if (!this.godCutscene) this.drawCharacters();
     this.drawEffect(true);
     if (this.godCutscene) this.drawGod();
+    this.ctx = this.boardContext;
+  }
+
+  private prepareCastCanvas(): void {
+    if (!this.castCanvas || !this.castContext) return;
+    const stage = this.castCanvas.getBoundingClientRect(), board = this.canvas.getBoundingClientRect();
+    const width = Math.max(1, Math.round(stage.width * this.deviceRatio)), height = Math.max(1, Math.round(stage.height * this.deviceRatio));
+    if (this.castCanvas.width !== width) this.castCanvas.width = width;
+    if (this.castCanvas.height !== height) this.castCanvas.height = height;
+    const ctx = this.castContext, scale = board.width / W;
+    ctx.setTransform(this.deviceRatio, 0, 0, this.deviceRatio, 0, 0); ctx.clearRect(0, 0, stage.width, stage.height);
+    ctx.setTransform(this.deviceRatio * scale, 0, 0, this.deviceRatio * scale,
+      this.deviceRatio * (board.left - stage.left), this.deviceRatio * (board.top - stage.top));
+  }
+
+  private characterViewport(): { left: number; top: number; right: number; bottom: number; canvas: 'character-stage' | 'game' } {
+    const stage = this.canvas.closest<HTMLElement>('.stage')?.getBoundingClientRect(), board = this.canvas.getBoundingClientRect();
+    const scale = board.width > 0 ? board.width / W : 1;
+    if (stage && this.castCanvas) return { left: (stage.left - board.left) / scale, top: (stage.top - board.top) / scale,
+      right: (stage.right - board.left) / scale, bottom: (stage.bottom - board.top) / scale, canvas: 'character-stage' };
+    return { left: 0, top: 0, right: W, bottom: H, canvas: 'game' };
   }
 
   private clearCellProgress(cell: Cell): number {
@@ -1185,46 +1243,144 @@ export class GameRenderer {
     }
   }
 
-  private characterPlacement(character: Character): { x: number; y: number; width: number; height: number } {
-    if (window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches) {
-      const height = Math.min(125, (this.viewportHeader?.height ?? BOARD.y) - 30);
-      return { x: ({ left: 400, middle: 620, right: 840 })[character], y: BOARD.y - 12, width: 130, height };
+  private speakerSeat(): SpeakerSeatView {
+    const source = { x: SPEAKER.seatX, y: SPEAKER.seatY };
+    const sourceWindow = { x: SPEAKER.x, y: SPEAKER.y, width: SPEAKER.width, height: SPEAKER.height };
+    const portrait = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
+    if (portrait) {
+      // The full-height cover crops the right cabinet completely offscreen.
+      // Re-stage that same cabinet, using its original pixels, in the header.
+      const scale = 58 / SPEAKER.height, contact = { x: 866, y: BOARD.y - 59 };
+      const left = contact.x - (SPEAKER.seatX - SPEAKER.x) * scale;
+      const top = contact.y - (SPEAKER.seatY - SPEAKER.y) * scale;
+      return { originalBackground: true, source, contact, relocated: true, sourceWindow, speakerBounds: { left, top, right: left + SPEAKER.width * scale, bottom: top + SPEAKER.height * scale } };
     }
-    const sharedRight = character === 'right' && this.activeCharacters.includes('middle');
-    return { x: character === 'left' ? 125 : 1105, y: sharedRight ? 437 : 788, width: character === 'left' ? 190 : sharedRight ? 172 : 190, height: sharedRight ? 246 : 426 };
+    if (this.options.background === 'transparent') {
+      const viewport = this.canvas.closest<HTMLElement>('.game-shell')?.getBoundingClientRect();
+      const canvas = this.canvas.getBoundingClientRect();
+      if (viewport && viewport.width > 0 && viewport.height > 0 && canvas.width > 0) {
+        const cover = Math.max(viewport.width / CLUB.width, viewport.height / CLUB.height);
+        const offsetX = viewport.left + (viewport.width - CLUB.width * cover) / 2;
+        const offsetY = viewport.top + (viewport.height - CLUB.height * cover) / 2;
+        const scale = canvas.width / W;
+        const project = (x: number, y: number) => ({ x: (offsetX + x * cover - canvas.left) / scale, y: (offsetY + y * cover - canvas.top) / scale });
+        const contact = project(source.x, source.y), topLeft = project(SPEAKER.x, SPEAKER.y), bottomRight = project(SPEAKER.x + SPEAKER.width, SPEAKER.y + SPEAKER.height);
+        return { originalBackground: true, source, contact, relocated: false, sourceWindow, speakerBounds: { left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y } };
+      }
+    }
+    const cover = Math.max(W / CLUB.width, H / CLUB.height);
+    const offsetX = (W - CLUB.width * cover) / 2, offsetY = (H - CLUB.height * cover) / 2;
+    return { originalBackground: true, source, contact: { x: offsetX + source.x * cover, y: offsetY + source.y * cover }, relocated: false, sourceWindow,
+      speakerBounds: { left: offsetX + SPEAKER.x * cover, top: offsetY + SPEAKER.y * cover, right: offsetX + (SPEAKER.x + SPEAKER.width) * cover, bottom: offsetY + (SPEAKER.y + SPEAKER.height) * cover } };
+  }
+
+  private characterPlacement(character: Character): { x: number; y: number; width: number; height: number } {
+    const portrait = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
+    if (character === 'right') {
+      const contact = this.speakerSeat().contact;
+      return { x: contact.x, y: contact.y, width: portrait ? 188 : 260, height: portrait ? 172 : 470 };
+    }
+    if (portrait) {
+      const height = Math.min(160, (this.viewportHeader?.height ?? BOARD.y) - 10);
+      return { x: character === 'left' ? 380 : 620, y: BOARD.y - 10, width: 170, height };
+    }
+    const shareLeftRail = character === 'middle' && this.activeCharacters.includes('right');
+    return { x: character === 'left' || shareLeftRail ? 70 : 1080, y: shareLeftRail ? 478 : 795,
+      width: character === 'left' ? 245 : 240, height: 470 };
+  }
+
+  private characterFlip(character: Character): number {
+    return character === 'middle' && !(this.activeCharacters.includes('right') && !window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches) ? -1 : 1;
+  }
+
+  private characterAnchor(character: Character, sprite: ReturnType<typeof characterFrameSprite>): { x: number; y: number } {
+    const seated = sprite as typeof sprite & { seatAnchorX?: number; seatAnchorY?: number };
+    return character === 'right' ? { x: seated.seatAnchorX ?? sprite.anchorX ?? sprite.width / 2, y: seated.seatAnchorY ?? sprite.anchorY ?? sprite.height }
+      : { x: sprite.anchorX ?? sprite.width / 2, y: sprite.anchorY ?? sprite.height };
+  }
+
+  private characterScale(character: Character, current = characterFrameSprite(character, 0)): number {
+    const box = this.characterPlacement(character), first = characterFrameSprite(character, 0);
+    let scale = Math.min(box.width / (first.referenceWidth ?? first.width), box.height / (first.referenceHeight ?? first.height));
+    const portrait = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
+    const visible = this.characterViewport();
+    const flip = this.characterFlip(character);
+    // Fit the complete pose envelope once, so a longer gesture never shrinks or
+    // shifts the actor. Only the hands intentionally pass in front of the rail.
+    for (const sprite of characterAnimationSprites(character)) {
+      const referenceRatio = (first.referenceHeight ?? first.height) / (sprite.referenceHeight ?? sprite.height);
+      const anchor = this.characterAnchor(character, sprite);
+      const minX = (flip > 0 ? -anchor.x : anchor.x - sprite.width) * referenceRatio;
+      const maxX = (flip > 0 ? sprite.width - anchor.x : anchor.x) * referenceRatio;
+      if (minX < 0) scale = Math.min(scale, (box.x - visible.left - 8) / -minX);
+      if (maxX > 0) scale = Math.min(scale, (visible.right - box.x - 8) / maxX);
+      if (anchor.y > 0) scale = Math.min(scale, (box.y - visible.top - 6) / (anchor.y * referenceRatio));
+      if (sprite.height > anchor.y) scale = Math.min(scale, ((portrait ? BOARD.y - 4 : visible.bottom - 8) - box.y) / ((sprite.height - anchor.y) * referenceRatio));
+    }
+    return Math.max(.01, scale) * (first.referenceHeight ?? first.height) / (current.referenceHeight ?? current.height);
   }
 
   private characterMuzzle(character: Character): { x: number; y: number } {
+    const sprite = characterSprite(character, 'action');
     if (character === 'middle' && this.effect?.source && this.shooterReelViews().some(view => view.reel === this.effect!.source!.reel)) {
-      const sprite = characterFrameSprite('middle', 4), scale = CH * 3.72 / (sprite.referenceHeight ?? sprite.height);
-      return { x: BOARD.x + (this.effect.source.reel + .5) * CW - ((sprite.attachmentX ?? sprite.width / 2) - (sprite.anchorX ?? sprite.width / 2)) * scale, y: BOARD.y + CH * 4.06 + ((sprite.attachmentY ?? sprite.height * .28) - (sprite.anchorY ?? sprite.height)) * scale };
+      const scale = CH * 3.72 / (sprite.referenceHeight ?? sprite.height);
+      return { x: BOARD.x + (this.effect.source.reel + .5) * CW - ((sprite.attachmentX ?? sprite.width / 2) - (sprite.anchorX ?? sprite.width / 2)) * scale,
+        y: BOARD.y + CH * 4.06 + ((sprite.attachmentY ?? sprite.height * .28) - (sprite.anchorY ?? sprite.height)) * scale };
     }
-    const box = this.characterPlacement(character), sprite = characterFrameSprite(character, 4);
-    const scale = Math.min(box.width / (sprite.referenceWidth ?? sprite.width), box.height / (sprite.referenceHeight ?? sprite.height));
-    const flip = character === 'middle' ? -1 : 1;
-    return {
-      x: box.x + flip * ((sprite.attachmentX ?? sprite.width / 2) - (sprite.anchorX ?? sprite.width / 2)) * scale,
-      y: box.y + ((sprite.attachmentY ?? sprite.height * .28) - (sprite.anchorY ?? sprite.height)) * scale,
-    };
+    const box = this.characterPlacement(character), anchor = this.characterAnchor(character, sprite), scale = this.characterScale(character, sprite);
+    const flip = this.characterFlip(character);
+    return { x: box.x + flip * ((sprite.attachmentX ?? sprite.width / 2) - anchor.x) * scale,
+      y: box.y + ((sprite.attachmentY ?? sprite.height * .28) - anchor.y) * scale };
   }
 
   private characterAnimationState(character: Character): { character: Character; index: number; count: number; progress: number } {
     const active = this.effect?.character === character || this.effect?.kind === 'tier';
     const progress = !active ? 0 : this.effect?.kind === 'coin' && character === 'right' ? this.coinRevealProgress : this.effect?.progress ?? 0;
-    const count = characterFrameCount(character);
+    const count = characterFrameCount(character), release = characterReleaseFrame(character);
     let index = 0;
     if (active) {
-      if (this.reducedMotion.matches) index = progress < .26 ? 0 : progress < .80 ? 4 : 7;
+      if (this.reducedMotion.matches) index = progress < .26 ? 0 : progress < .80 ? release : count - 1;
       else if (this.effect?.kind === 'reveal') {
-        // The badge introduces the actor. The following, separate action performs the release.
-        index = progress < .10 ? 0 : progress < .34 ? 1 : progress < .70 ? 2 : progress < .89 ? 1 : 0;
+        // Introduce the actor with a soft anticipation and return; the following
+        // action, rather than the badge reveal, performs the physical release.
+        const preparation = Math.round((count - 1) * .28);
+        const breathe = progress < .64 ? smooth(clamp(progress / .64)) : 1 - smooth(clamp((progress - .64) / .36));
+        index = Math.floor(breathe * preparation);
       } else {
-        // Genuine drawings receive readable holds; release coincides with the physical projectile.
-        const beats = [.018, .085, .17, .26, .43, .68, .85];
+        // Sixteen genuine poses, with the release drawing exactly at .26.
+        // Timings remain continuous, with a readable follow-through and settle.
+        const beats = count === 16 ? [.028, .058, .09, .124, .16, .194, .228, .26, .345, .43, .555, .68, .765, .85, .94]
+          : Array.from({ length: count - 1 }, (_, index) => index + 1 <= release ? .26 * (index + 1) / release : .26 + .68 * (index + 1 - release) / (count - 1 - release));
         index = beats.filter(beat => progress >= beat).length;
       }
     }
     return { character, index: Math.min(count - 1, index), count, progress };
+  }
+
+  private characterStaging(): CharacterStagingView[] {
+    if (this.godCutscene || this.effect?.kind === 'tier') return [];
+    return this.activeCharacters.flatMap(character => {
+      const active = this.effect?.character === character;
+      if (character === 'middle' && this.shooterReelViews().some(view => !active || this.effect?.source?.reel === view.reel)) return [];
+      const state = this.characterAnimationState(character), sprite = characterFrameSprite(character, state.index), box = this.characterPlacement(character);
+      const scale = this.characterScale(character, sprite), flip = this.characterFlip(character), origin = this.characterAnchor(character, sprite);
+      const p = state.progress;
+      const anticipation = character !== 'right' && active && !this.reducedMotion.matches && p < .26 ? Math.sin(p / .26 * Math.PI) * 1.7 : 0;
+      const rotation = active && !this.reducedMotion.matches && p > .68 ? Math.sin((p - .68) / .32 * Math.PI) * (character === 'right' ? .005 : .013) * (character === 'left' ? -1 : 1) : 0;
+      const anchor = { x: box.x, y: box.y + anticipation };
+      const corners = [[0, 0], [sprite.width, 0], [sprite.width, sprite.height], [0, sprite.height]].map(([x, y]) => {
+        const dx = (x - origin.x) * scale * flip, dy = (y - origin.y) * scale;
+        return { x: anchor.x + dx * Math.cos(rotation) - dy * Math.sin(rotation), y: anchor.y + dx * Math.sin(rotation) + dy * Math.cos(rotation) };
+      });
+      const speakerSeat = character === 'right' ? this.speakerSeat() : null;
+      const portrait = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches;
+      const previousScale = portrait ? Math.min(130 / (sprite.referenceWidth ?? sprite.width), 125 / (sprite.referenceHeight ?? sprite.height))
+        : Math.min(190 / (sprite.referenceWidth ?? sprite.width), 426 / (sprite.referenceHeight ?? sprite.height));
+      return [{ character, frame: state.index, index: state.index, count: state.count, scale, previousScale, anchor,
+        bounds: { left: Math.min(...corners.map(point => point.x)), top: Math.min(...corners.map(point => point.y)), right: Math.max(...corners.map(point => point.x)), bottom: Math.max(...corners.map(point => point.y)) },
+        sourceCrop: [sprite.sx, sprite.sy, sprite.width, sprite.height] as const, rotation, flip, canvas: this.castCanvas ? 'character-stage' as const : 'game' as const, clip: 'none' as const, separate: true as const,
+        speakerSeat, seatContact: speakerSeat?.contact ?? null, drawnSeatContact: speakerSeat ? { ...anchor } : null }];
+    });
   }
 
   private collectionTransit(p: number, index: number, count: number): { progress: number; arrival: number } {
@@ -1234,29 +1390,41 @@ export class GameRenderer {
     return { progress: clamp((p - launch) / flight), arrival: launch + flight };
   }
 
-  private drawCharacters(foregroundOnly = false): void {
-    // The entrance cast occupies the board; do not duplicate it in the street rails.
-    if (this.effect?.kind === 'tier') return;
-    const ctx = this.ctx;
-    for (const character of this.activeCharacters) {
-      const active = this.effect?.character === character;
-      if (character === 'middle' && this.shooterReelViews().some(view => !active || this.effect?.source?.reel === view.reel)) continue;
-      if (foregroundOnly && !active) continue;
-      const state = this.characterAnimationState(character), p = state.progress;
-      const sprite = characterFrameSprite(character, state.index), img = this.images.get(sprite.url);
+  private drawCharacters(): void {
+    const ctx = this.ctx, staged = this.characterStaging();
+    const seated = staged.find(actor => actor.character === 'right');
+    if (seated?.speakerSeat?.relocated) this.drawOriginalSpeaker(seated.speakerSeat);
+    for (const actor of staged) {
+      const sprite = characterFrameSprite(actor.character, actor.frame), img = this.images.get(sprite.url);
       if (!img?.complete || !img.naturalWidth) continue;
-      const box = this.characterPlacement(character);
-      const scale = Math.min(box.width / (sprite.referenceWidth ?? sprite.width), box.height / (sprite.referenceHeight ?? sprite.height));
-      const recoil = active && !this.reducedMotion.matches && p > .68 ? Math.sin((p - .68) / .32 * Math.PI) * .013 : 0;
-      const anticipation = active && !this.reducedMotion.matches && p < .26 ? Math.sin(p / .26 * Math.PI) * 1.7 : 0;
+      const origin = this.characterAnchor(actor.character, sprite);
       ctx.save();
-      ctx.fillStyle = 'rgba(0,0,0,.44)'; ctx.beginPath(); ctx.ellipse(box.x, box.y - 5, box.width * .39, 11, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.translate(box.x, box.y + anticipation); ctx.rotate(recoil * (character === 'left' ? -1 : 1));
-      if (character === 'middle') ctx.scale(-1, 1);
-      ctx.shadowColor = 'rgba(0,0,0,.54)'; ctx.shadowBlur = 9; ctx.shadowOffsetY = 4;
-      ctx.drawImage(img, sprite.sx, sprite.sy, sprite.width, sprite.height, -(sprite.anchorX ?? sprite.width / 2) * scale, -(sprite.anchorY ?? sprite.height) * scale, sprite.width * scale, sprite.height * scale);
+      // Feet cast a floor shadow; a seated actor instead contacts the cabinet.
+      ctx.fillStyle = 'rgba(0,0,0,.50)'; ctx.beginPath();
+      ctx.ellipse(actor.anchor.x, actor.anchor.y + (actor.character === 'right' ? 1 : -5), actor.character === 'right' ? 29 : 62, actor.character === 'right' ? 3.5 : 10, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.translate(actor.anchor.x, actor.anchor.y); ctx.rotate(actor.rotation); ctx.scale(actor.flip, 1);
+      ctx.shadowColor = 'rgba(0,0,0,.48)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+      ctx.drawImage(img, sprite.sx, sprite.sy, sprite.width, sprite.height, -origin.x * actor.scale, -origin.y * actor.scale, sprite.width * actor.scale, sprite.height * actor.scale);
       ctx.restore();
     }
+  }
+
+  private drawOriginalSpeaker(seat: SpeakerSeatView): void {
+    const image = this.images.get(sceneURL(this.tier));
+    if (!image?.complete || !image.naturalWidth) return;
+    const ctx = this.ctx, source = seat.sourceWindow, destination = seat.speakerBounds;
+    const scale = (destination.right - destination.left) / source.width;
+    // Cabinet silhouette from the same source illustration. Cropping a rectangle
+    // would leave a pasted background patch; this follows its original edges.
+    ctx.save(); ctx.shadowColor = '#090807'; ctx.shadowBlur = 7; ctx.shadowOffsetY = 3;
+    ctx.beginPath();
+    for (const [index, point] of [[1318, 409], [1502, 390], [1584, 398], [1584, 641], [1474, 680], [1474, 808], [1318, 757]].entries()) {
+      const x = destination.left + (point[0] - source.x) * scale, y = destination.top + (point[1] - source.y) * scale;
+      if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath(); ctx.clip();
+    ctx.drawImage(image, source.x, source.y, source.width, source.height, destination.left, destination.top, destination.right - destination.left, destination.bottom - destination.top);
+    ctx.restore();
   }
 
   private drawLabels(): void {

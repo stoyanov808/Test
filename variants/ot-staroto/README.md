@@ -1,6 +1,6 @@
-# ОТ СТАРОТО — version 5
+# ОТ СТАРОТО — version 5.1
 
-A student-club slot with matching ink cartoon symbol and character artwork, eight-frame character actions, a full-window integrated scene UI, 19 fixed paylines, Bulgarian/English controls and virtual euro credits. Run it through the repository's normal Vite server.
+A student-club slot with matching ink cartoon symbol and character artwork, 16-frame character actions, a full-window integrated scene UI, 19 fixed paylines, Bulgarian/English controls and virtual euro credits. Run it through the repository's normal Vite server.
 
 ## Start the server
 
@@ -61,11 +61,11 @@ The full round shares the cap, including any bonus. At a €0.20 base stake, the
 
 ## Presentation, saves and sound
 
-The ink club scene and compact edge controls fill the entire game window. The board scales to the available width and height without stretching its symbols. Each symbol falls independently; surviving symbols preserve identity and order, sticky positions stay fixed, and grid cells have no hover effects or tooltips. Each character has eight distinct illustrated drawings for anticipation, wind-up, release, follow-through, recoil and recovery. Falling pieces have independent acceleration and damped contact; coins travel along separate arcs into the collector. Winning paths, reel expansion, coin flips, transfers, recoil and shot impacts replay the recorded receipts.
+The ink club scene and compact edge controls fill the entire game window. The board scales to the available width and height without stretching its symbols. Each symbol falls independently; surviving symbols preserve identity and order, sticky positions stay fixed, and grid cells have no hover effects or tooltips. Each character has 16 distinct illustrated drawings for anticipation, wind-up, release, follow-through, recoil and recovery. Larger actors use a separate foreground layer so their hands and bodies are not cut by the board. LUX remains a separate seated sprite on the speaker already in the background; his pelvis stays fixed to its top during every pose. Falling pieces have independent acceleration and damped contact; coins travel along separate arcs into the collector. Winning paths, reel expansion, coin flips, transfers, recoil and shot impacts replay the recorded receipts.
 
 Small ordinary wins count in the HUD. Larger wins and bonus awards use the scene count-up, adding characters at 100× and 500×, shooting at 1,000× and the escape car at the actual cap. Space starts one round per physical press and release. Auto-repeat and native held-button activation are blocked. Board clicks cannot skip an entire round. Win count-ups use their explicit Continue action; a second fresh action is required to close them.
 
-The complete outcome is settled and saved before replay. Reload resumes the same receipt with no repeated debit or award. Version 5 uses its own save key and leaves previous version 1/2/3/4 bytes untouched. A structurally checked, fully settled previous virtual wallet can carry into a fresh version 5 session. Old receipts are preserved separately; they are not replayed or reinterpreted under changed Shooter rules. Pending old results remain in the old save. Language, turbo, X Bet and normal audio preferences remain available.
+The complete outcome is settled and saved before replay. Reload resumes the same receipt with no repeated debit or award. The version 5.1 presentation update retains version 5 receipts and the same save key. Version 5 uses its own save key and leaves previous version 1/2/3/4 bytes untouched. A structurally checked, fully settled previous virtual wallet can carry into a fresh version 5 session. Old receipts are preserved separately; they are not replayed or reinterpreted under changed Shooter rules. Pending old results remain in the old save. Language, turbo, X Bet and normal audio preferences remain available.
 
 Player audio uploads and the browser audio database are removed. Replace the WAV files under `public/audio`, or change filenames and cue settings in `src/audio-config.ts`, then rebuild for deployment. Normal player controls are volume, mute and music on/off. [File and cue instructions](public/audio/README.md) list all eleven bundled sounds.
 

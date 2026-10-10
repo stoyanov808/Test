@@ -1,0 +1,1193 @@
+{
+  "presentationVersion": "5.1.0",
+  "newIllustratedDrawings": 32,
+  "characters": {
+    "left": {
+      "character": "left",
+      "generatedDateEuropeSofia": "2026-10-10",
+      "generationTool": "image_gen.imagegen",
+      "provenance": "Eight newly generated intermediary drawings; referenced existing left-motion-a/b sheets to preserve original identity. Each final sheet was recomposed through image_gen for spacing; no raster-edit scripts used. Reference image softness produces very-low-alpha halos outside the main ink contour; crops each isolate one full connected figure above alpha32. Exact uniform quadrant padding was not achieved by the tool; source windows intentionally use actual component bounds, including bottom-right D starting at y500 to keep the full head.",
+      "sourceReferences": [
+        "public/art/character-left-motion-a.png",
+        "public/art/character-left-motion-b.png"
+      ],
+      "sources": [
+        {
+          "atlasRelativePath": "public/art/character-left-motion-c.png",
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "mode": "RGBA",
+          "sha256": "635938e81f8ca7eb07d08cec00cf3c9ae2bf4a6426d799a118f7d3bc385e0c7a",
+          "alphaZeroPixels": 1072900,
+          "alphaSemiPixels": 499964,
+          "alphaOpaquePixels": 0,
+          "figureComponentsAlphaAbove32": [
+            {
+              "rect": [
+                193,
+                41,
+                408,
+                460
+              ],
+              "pixelCount": 110259
+            },
+            {
+              "rect": [
+                917,
+                57,
+                506,
+                444
+              ],
+              "pixelCount": 117578
+            },
+            {
+              "rect": [
+                175,
+                547,
+                516,
+                445
+              ],
+              "pixelCount": 122712
+            },
+            {
+              "rect": [
+                901,
+                561,
+                546,
+                430
+              ],
+              "pixelCount": 123468
+            }
+          ]
+        },
+        {
+          "atlasRelativePath": "public/art/character-left-motion-d.png",
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "mode": "RGBA",
+          "sha256": "ce0d6a82e4e8d3b2644369628b1ebd707cee1e289a9a993e5ec996351f52205f",
+          "alphaZeroPixels": 1068295,
+          "alphaSemiPixels": 504569,
+          "alphaOpaquePixels": 0,
+          "figureComponentsAlphaAbove32": [
+            {
+              "rect": [
+                139,
+                26,
+                594,
+                461
+              ],
+              "pixelCount": 121614
+            },
+            {
+              "rect": [
+                853,
+                26,
+                563,
+                461
+              ],
+              "pixelCount": 121068
+            },
+            {
+              "rect": [
+                189,
+                525,
+                486,
+                466
+              ],
+              "pixelCount": 120755
+            },
+            {
+              "rect": [
+                963,
+                506,
+                381,
+                487
+              ],
+              "pixelCount": 114070
+            }
+          ]
+        }
+      ],
+      "frames": [
+        {
+          "character": "left",
+          "interstitialIndex": 0,
+          "afterOriginalFrame": 0,
+          "intendedSequenceIndex": 1,
+          "pose": "idle-to-anticipation",
+          "atlasRelativePath": "public/art/character-left-motion-c.png",
+          "sx": 187,
+          "sy": 35,
+          "width": 420,
+          "height": 472,
+          "anchorX": 210,
+          "anchorY": 465,
+          "referenceWidth": 360,
+          "referenceHeight": 485,
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "cropMajorFigureCountAlphaAbove32": 1
+        },
+        {
+          "character": "left",
+          "interstitialIndex": 1,
+          "afterOriginalFrame": 1,
+          "intendedSequenceIndex": 3,
+          "pose": "anticipation-to-preparation",
+          "atlasRelativePath": "public/art/character-left-motion-c.png",
+          "sx": 911,
+          "sy": 51,
+          "width": 518,
+          "height": 456,
+          "anchorX": 237,
+          "anchorY": 449,
+          "referenceWidth": 360,
+          "referenceHeight": 485,
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "cropMajorFigureCountAlphaAbove32": 1
+        },
+        {
+          "character": "left",
+          "interstitialIndex": 2,
+          "afterOriginalFrame": 2,
+          "intendedSequenceIndex": 5,
+          "pose": "preparation-to-windup",
+          "atlasRelativePath": "public/art/character-left-motion-c.png",
+          "sx": 169,
+          "sy": 541,
+          "width": 528,
+          "height": 457,
+          "anchorX": 243,
+          "anchorY": 450,
+          "referenceWidth": 360,
+          "referenceHeight": 485,
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "cropMajorFigureCountAlphaAbove32": 1
+        },
+        {
+          "character": "left",
+          "interstitialIndex": 3,
+          "afterOriginalFrame": 3,
+          "intendedSequenceIndex": 7,
+          "pose": "windup-to-release",
+          "atlasRelativePath": "public/art/character-left-motion-c.png",
+          "sx": 895,
+          "sy": 555,
+          "width": 558,
+          "height": 442,
+          "anchorX": 252,
+          "anchorY": 435,
+          "referenceWidth": 360,
+          "referenceHeight": 485,
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "cropMajorFigureCountAlphaAbove32": 1
+        },
+        {
+          "character": "left",
+          "interstitialIndex": 4,
+          "afterOriginalFrame": 4,
+          "intendedSequenceIndex": 9,
+          "pose": "release-to-follow-through",
+          "atlasRelativePath": "public/art/character-left-motion-d.png",
+          "sx": 133,
+          "sy": 20,
+          "width": 606,
+          "height": 473,
+          "anchorX": 236,
+          "anchorY": 466,
+          "referenceWidth": 360,
+          "referenceHeight": 485,
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "cropMajorFigureCountAlphaAbove32": 1
+        },
+        {
+          "character": "left",
+          "interstitialIndex": 5,
+          "afterOriginalFrame": 5,
+          "intendedSequenceIndex": 11,
+          "pose": "follow-through-to-recoil",
+          "atlasRelativePath": "public/art/character-left-motion-d.png",
+          "sx": 847,
+          "sy": 20,
+          "width": 575,
+          "height": 473,
+          "anchorX": 226,
+          "anchorY": 466,
+          "referenceWidth": 360,
+          "referenceHeight": 485,
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "cropMajorFigureCountAlphaAbove32": 1
+        },
+        {
+          "character": "left",
+          "interstitialIndex": 6,
+          "afterOriginalFrame": 6,
+          "intendedSequenceIndex": 13,
+          "pose": "recoil-to-recovery",
+          "atlasRelativePath": "public/art/character-left-motion-d.png",
+          "sx": 183,
+          "sy": 519,
+          "width": 498,
+          "height": 478,
+          "anchorX": 232,
+          "anchorY": 471,
+          "referenceWidth": 360,
+          "referenceHeight": 485,
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "cropMajorFigureCountAlphaAbove32": 1
+        },
+        {
+          "character": "left",
+          "interstitialIndex": 7,
+          "afterOriginalFrame": 7,
+          "intendedSequenceIndex": 15,
+          "pose": "recovery-to-idle",
+          "atlasRelativePath": "public/art/character-left-motion-d.png",
+          "sx": 957,
+          "sy": 500,
+          "width": 393,
+          "height": 499,
+          "anchorX": 196,
+          "anchorY": 492,
+          "referenceWidth": 360,
+          "referenceHeight": 485,
+          "imageWidth": 1536,
+          "imageHeight": 1024,
+          "cropMajorFigureCountAlphaAbove32": 1
+        }
+      ],
+      "integrationNotes": [
+        "Interleave old0,new0,old1,new1,...old7,new7 giving16 actual poses.",
+        "Old releaseframe4 becomes index8; newly generated motion-d firstpose follows release.",
+        "Reference body size360x485matchesexistingleft actor; source-window anchors are explicitly recorded.",
+        "Four body figure components per atlas and exactlyone majorcomponent per providedcrop verified read-only.",
+        "No text or grid and no detached props; full handsfeet withinactualsourcecrops."
+      ]
+    },
+    "middle": {
+      "character": "middle",
+      "newFrameCount": 8,
+      "fullAnimationFrameCount": 16,
+      "metadataVersion": 1,
+      "alphaNote": "Alpha\u22658 silhouettes fully contained with transparent quadrant borders; alpha1\u20137 soft antialiasing/grain exists outside crops just as existing assets. No pixel editing performed.",
+      "scaleNote": "referenceHeight normalizes each new full-body silhouette to the mean adjacent original pose height. Use placement.scale \u00d7 original idle referenceHeight / sprite.referenceHeight and analogous anchoring for consistent physical size. Original idle body reference is 290\u00d7482.",
+      "atlases": [
+        {
+          "atlas": "public/art/character-middle-motion-c.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "831f30bf179c960b25881da2fc8e60e52f124aa8ad228ec8d3f2560454a13502",
+          "method": "image_gen with existing motion-a/b references, transparent background; generated original copied without pixel edits"
+        },
+        {
+          "atlas": "public/art/character-middle-motion-d.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "ebf2487a17ea4d32de7d16635cee922fe75dd08e4f75a2b87d105704aecfed66",
+          "method": "image_gen with existing motion-a/b references, transparent background; generated original copied without pixel edits"
+        }
+      ],
+      "frames": [
+        {
+          "atlas": "public/art/character-middle-motion-c.png",
+          "sx": 258,
+          "sy": 66,
+          "width": 315,
+          "height": 435,
+          "anchorX": 174,
+          "anchorY": 428,
+          "referenceWidth": 279,
+          "referenceHeight": 464,
+          "attachmentX": 288,
+          "attachmentY": 315,
+          "atlasWidth": 1536,
+          "atlasHeight": 1024,
+          "quadrant": 0,
+          "newIndex": 0,
+          "interleavedFrame": 1,
+          "transitionFromOriginal": 0,
+          "transitionToOriginal": 1,
+          "alphaThreshold": 8,
+          "visibleBounds": [
+            264,
+            72,
+            303,
+            423
+          ],
+          "quadrantEdgeAlphaMax": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "physicalAnchorAbsolute": [
+            432,
+            494
+          ]
+        },
+        {
+          "atlas": "public/art/character-middle-motion-c.png",
+          "sx": 944,
+          "sy": 73,
+          "width": 357,
+          "height": 430,
+          "anchorX": 176,
+          "anchorY": 422,
+          "referenceWidth": 278,
+          "referenceHeight": 462,
+          "attachmentX": 343,
+          "attachmentY": 101,
+          "atlasWidth": 1536,
+          "atlasHeight": 1024,
+          "quadrant": 1,
+          "newIndex": 1,
+          "interleavedFrame": 3,
+          "transitionFromOriginal": 1,
+          "transitionToOriginal": 2,
+          "alphaThreshold": 8,
+          "visibleBounds": [
+            950,
+            79,
+            345,
+            418
+          ],
+          "quadrantEdgeAlphaMax": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "physicalAnchorAbsolute": [
+            1120,
+            495
+          ]
+        },
+        {
+          "atlas": "public/art/character-middle-motion-c.png",
+          "sx": 269,
+          "sy": 589,
+          "width": 437,
+          "height": 402,
+          "anchorX": 182,
+          "anchorY": 394,
+          "referenceWidth": 255,
+          "referenceHeight": 424,
+          "attachmentX": 421,
+          "attachmentY": 125,
+          "atlasWidth": 1536,
+          "atlasHeight": 1024,
+          "quadrant": 2,
+          "newIndex": 2,
+          "interleavedFrame": 5,
+          "transitionFromOriginal": 2,
+          "transitionToOriginal": 3,
+          "alphaThreshold": 8,
+          "visibleBounds": [
+            275,
+            595,
+            425,
+            390
+          ],
+          "quadrantEdgeAlphaMax": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "physicalAnchorAbsolute": [
+            451,
+            983
+          ]
+        },
+        {
+          "atlas": "public/art/character-middle-motion-c.png",
+          "sx": 933,
+          "sy": 587,
+          "width": 470,
+          "height": 404,
+          "anchorX": 204,
+          "anchorY": 396,
+          "referenceWidth": 253,
+          "referenceHeight": 420,
+          "attachmentX": 451,
+          "attachmentY": 126,
+          "atlasWidth": 1536,
+          "atlasHeight": 1024,
+          "quadrant": 3,
+          "newIndex": 3,
+          "interleavedFrame": 7,
+          "transitionFromOriginal": 3,
+          "transitionToOriginal": 4,
+          "alphaThreshold": 8,
+          "visibleBounds": [
+            939,
+            593,
+            458,
+            392
+          ],
+          "quadrantEdgeAlphaMax": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "physicalAnchorAbsolute": [
+            1137,
+            983
+          ]
+        },
+        {
+          "atlas": "public/art/character-middle-motion-d.png",
+          "sx": 238,
+          "sy": 31,
+          "width": 492,
+          "height": 480,
+          "anchorX": 197,
+          "anchorY": 473,
+          "referenceWidth": 269,
+          "referenceHeight": 447,
+          "attachmentX": 361,
+          "attachmentY": 70,
+          "atlasWidth": 1536,
+          "atlasHeight": 1024,
+          "quadrant": 0,
+          "newIndex": 4,
+          "interleavedFrame": 9,
+          "transitionFromOriginal": 4,
+          "transitionToOriginal": 5,
+          "alphaThreshold": 8,
+          "visibleBounds": [
+            244,
+            37,
+            480,
+            468
+          ],
+          "quadrantEdgeAlphaMax": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "physicalAnchorAbsolute": [
+            435,
+            504
+          ]
+        },
+        {
+          "atlas": "public/art/character-middle-motion-d.png",
+          "sx": 973,
+          "sy": 49,
+          "width": 416,
+          "height": 463,
+          "anchorX": 175,
+          "anchorY": 459,
+          "referenceWidth": 267,
+          "referenceHeight": 444,
+          "attachmentX": 352,
+          "attachmentY": 111,
+          "atlasWidth": 1536,
+          "atlasHeight": 1024,
+          "quadrant": 1,
+          "newIndex": 5,
+          "interleavedFrame": 11,
+          "transitionFromOriginal": 5,
+          "transitionToOriginal": 6,
+          "alphaThreshold": 8,
+          "visibleBounds": [
+            979,
+            55,
+            404,
+            455
+          ],
+          "quadrantEdgeAlphaMax": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "physicalAnchorAbsolute": [
+            1148,
+            508
+          ]
+        },
+        {
+          "atlas": "public/art/character-middle-motion-d.png",
+          "sx": 250,
+          "sy": 524,
+          "width": 341,
+          "height": 472,
+          "anchorX": 177,
+          "anchorY": 464,
+          "referenceWidth": 289,
+          "referenceHeight": 481,
+          "attachmentX": 292,
+          "attachmentY": 334,
+          "atlasWidth": 1536,
+          "atlasHeight": 1024,
+          "quadrant": 2,
+          "newIndex": 6,
+          "interleavedFrame": 13,
+          "transitionFromOriginal": 6,
+          "transitionToOriginal": 7,
+          "alphaThreshold": 8,
+          "visibleBounds": [
+            256,
+            530,
+            329,
+            460
+          ],
+          "quadrantEdgeAlphaMax": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "physicalAnchorAbsolute": [
+            427,
+            988
+          ]
+        },
+        {
+          "atlas": "public/art/character-middle-motion-d.png",
+          "sx": 1003,
+          "sy": 527,
+          "width": 313,
+          "height": 472,
+          "anchorX": 154,
+          "anchorY": 464,
+          "referenceWidth": 288,
+          "referenceHeight": 479,
+          "attachmentX": 65,
+          "attachmentY": 395,
+          "atlasWidth": 1536,
+          "atlasHeight": 1024,
+          "quadrant": 3,
+          "newIndex": 7,
+          "interleavedFrame": 15,
+          "transitionFromOriginal": 7,
+          "transitionToOriginal": 0,
+          "alphaThreshold": 8,
+          "visibleBounds": [
+            1009,
+            533,
+            301,
+            460
+          ],
+          "quadrantEdgeAlphaMax": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "physicalAnchorAbsolute": [
+            1157,
+            991
+          ]
+        }
+      ]
+    },
+    "right": {
+      "character": "right",
+      "frameCount": 16,
+      "releaseFrame": 8,
+      "seated": true,
+      "speakerIncluded": false,
+      "backgroundIncluded": false,
+      "sequence": "idle/preparation 0-3; wind-up 4-7; release/recoil 8-11; purse recovery/settle 12-15",
+      "provenance": "Generated with OpenAI image_gen using the existing LUX character and club scene as style/identity references; original generated PNGs copied unchanged to repository. Seated character is separate from the existing club background speaker.",
+      "sheets": [
+        {
+          "atlasRelativePath": "public/art/character-right-seated-a.png",
+          "dimensions": [
+            1536,
+            1024
+          ],
+          "sha256": "19a2fa3234ac9793a9e041d360043aa7d47e98364ae677ecefd971a4da1e23c5",
+          "generation": "OpenAI image_gen, transparent referenced character edit/generation; no raster pixel editing",
+          "principalAlphaThreshold": 8,
+          "generationId": "exec-26dbdf20-7030-410b-96d5-4ce8412d9f13",
+          "unchangedGeneratedPngCopy": true
+        },
+        {
+          "atlasRelativePath": "public/art/character-right-seated-b.png",
+          "dimensions": [
+            1536,
+            1024
+          ],
+          "sha256": "59995f73085faea1d44c094de84d33a947b5b9bfad6ed1fe040a1155707088c3",
+          "generation": "OpenAI image_gen, transparent referenced character edit/generation; no raster pixel editing",
+          "principalAlphaThreshold": 8,
+          "generationId": "exec-0e34f39f-461c-4495-a348-88620c8def95",
+          "unchangedGeneratedPngCopy": true
+        },
+        {
+          "atlasRelativePath": "public/art/character-right-seated-c.png",
+          "dimensions": [
+            1536,
+            1024
+          ],
+          "sha256": "a9e2c76868c79fe4132f66c66157aa08a8a0b69dafa6409abe9dd638f99131c2",
+          "generation": "OpenAI image_gen, transparent referenced character edit/generation; no raster pixel editing",
+          "principalAlphaThreshold": 8,
+          "generationId": "exec-4759287f-81af-48d3-95f7-5395ad5bdba4",
+          "unchangedGeneratedPngCopy": true
+        },
+        {
+          "atlasRelativePath": "public/art/character-right-seated-d.png",
+          "dimensions": [
+            1536,
+            1024
+          ],
+          "sha256": "212e2e09822abb98e4fc287dbfa60bb7aebf73ebc5e124062876021989932137",
+          "generation": "OpenAI image_gen, transparent referenced character edit/generation; no raster pixel editing",
+          "principalAlphaThreshold": 8,
+          "generationId": "exec-aeaf73db-81dc-467f-8b67-98f0ee8683d5",
+          "unchangedGeneratedPngCopy": true
+        }
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "atlasRelativePath": "public/art/character-right-seated-a.png",
+          "atlas": "a",
+          "sx": 271,
+          "sy": 26,
+          "width": 365,
+          "height": 475,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 204,
+          "anchorY": 470,
+          "seatAnchorX": 204,
+          "seatAnchorY": 329,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            274,
+            29,
+            633,
+            498
+          ],
+          "principalComponentPixels": 90801,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 6,
+          "absoluteSeatAnchor": [
+            475,
+            355
+          ],
+          "absoluteFootBaseline": 496
+        },
+        {
+          "index": 1,
+          "atlasRelativePath": "public/art/character-right-seated-a.png",
+          "atlas": "a",
+          "sx": 894,
+          "sy": 45,
+          "width": 342,
+          "height": 457,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 200,
+          "anchorY": 452,
+          "seatAnchorX": 200,
+          "seatAnchorY": 308,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            897,
+            48,
+            1233,
+            499
+          ],
+          "principalComponentPixels": 91499,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 6,
+          "absoluteSeatAnchor": [
+            1094,
+            353
+          ],
+          "absoluteFootBaseline": 497
+        },
+        {
+          "index": 2,
+          "atlasRelativePath": "public/art/character-right-seated-a.png",
+          "atlas": "a",
+          "sx": 269,
+          "sy": 529,
+          "width": 375,
+          "height": 460,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 208,
+          "anchorY": 455,
+          "seatAnchorX": 208,
+          "seatAnchorY": 328,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            272,
+            532,
+            641,
+            986
+          ],
+          "principalComponentPixels": 91970,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 2,
+          "absoluteSeatAnchor": [
+            477,
+            857
+          ],
+          "absoluteFootBaseline": 984
+        },
+        {
+          "index": 3,
+          "atlasRelativePath": "public/art/character-right-seated-a.png",
+          "atlas": "a",
+          "sx": 911,
+          "sy": 533,
+          "width": 362,
+          "height": 457,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 193,
+          "anchorY": 452,
+          "seatAnchorX": 193,
+          "seatAnchorY": 326,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            914,
+            536,
+            1270,
+            987
+          ],
+          "principalComponentPixels": 89656,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 9,
+          "absoluteSeatAnchor": [
+            1104,
+            859
+          ],
+          "absoluteFootBaseline": 985
+        },
+        {
+          "index": 4,
+          "atlasRelativePath": "public/art/character-right-seated-b.png",
+          "atlas": "b",
+          "sx": 252,
+          "sy": 9,
+          "width": 384,
+          "height": 493,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 205,
+          "anchorY": 488,
+          "seatAnchorX": 205,
+          "seatAnchorY": 344,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            255,
+            12,
+            633,
+            499
+          ],
+          "principalComponentPixels": 98932,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 9,
+          "absoluteSeatAnchor": [
+            457,
+            353
+          ],
+          "absoluteFootBaseline": 497
+        },
+        {
+          "index": 5,
+          "atlasRelativePath": "public/art/character-right-seated-b.png",
+          "atlas": "b",
+          "sx": 926,
+          "sy": 12,
+          "width": 379,
+          "height": 497,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 197,
+          "anchorY": 492,
+          "seatAnchorX": 197,
+          "seatAnchorY": 341,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            929,
+            15,
+            1302,
+            506
+          ],
+          "principalComponentPixels": 101125,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 1,
+          "absoluteSeatAnchor": [
+            1123,
+            353
+          ],
+          "absoluteFootBaseline": 504
+        },
+        {
+          "index": 6,
+          "atlasRelativePath": "public/art/character-right-seated-b.png",
+          "atlas": "b",
+          "sx": 248,
+          "sy": 513,
+          "width": 409,
+          "height": 482,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 221,
+          "anchorY": 477,
+          "seatAnchorX": 221,
+          "seatAnchorY": 345,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            251,
+            516,
+            654,
+            992
+          ],
+          "principalComponentPixels": 104875,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 3,
+          "absoluteSeatAnchor": [
+            469,
+            858
+          ],
+          "absoluteFootBaseline": 990
+        },
+        {
+          "index": 7,
+          "atlasRelativePath": "public/art/character-right-seated-b.png",
+          "atlas": "b",
+          "sx": 928,
+          "sy": 540,
+          "width": 402,
+          "height": 457,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 200,
+          "anchorY": 452,
+          "seatAnchorX": 200,
+          "seatAnchorY": 324,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            931,
+            543,
+            1327,
+            994
+          ],
+          "principalComponentPixels": 106696,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 10,
+          "absoluteSeatAnchor": [
+            1128,
+            864
+          ],
+          "absoluteFootBaseline": 992
+        },
+        {
+          "index": 8,
+          "atlasRelativePath": "public/art/character-right-seated-c.png",
+          "atlas": "c",
+          "sx": 155,
+          "sy": 9,
+          "width": 512,
+          "height": 489,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 350,
+          "anchorY": 484,
+          "seatAnchorX": 350,
+          "seatAnchorY": 340,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            158,
+            12,
+            664,
+            495
+          ],
+          "principalComponentPixels": 107844,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 5,
+          "absoluteSeatAnchor": [
+            505,
+            349
+          ],
+          "absoluteFootBaseline": 493,
+          "attachmentX": 69,
+          "attachmentY": 179,
+          "absoluteReleasePalm": [
+            224,
+            188
+          ]
+        },
+        {
+          "index": 9,
+          "atlasRelativePath": "public/art/character-right-seated-c.png",
+          "atlas": "c",
+          "sx": 817,
+          "sy": 10,
+          "width": 535,
+          "height": 489,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 361,
+          "anchorY": 484,
+          "seatAnchorX": 361,
+          "seatAnchorY": 339,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            820,
+            13,
+            1349,
+            496
+          ],
+          "principalComponentPixels": 107208,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 4,
+          "absoluteSeatAnchor": [
+            1178,
+            349
+          ],
+          "absoluteFootBaseline": 494
+        },
+        {
+          "index": 10,
+          "atlasRelativePath": "public/art/character-right-seated-c.png",
+          "atlas": "c",
+          "sx": 169,
+          "sy": 503,
+          "width": 509,
+          "height": 497,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 342,
+          "anchorY": 492,
+          "seatAnchorX": 342,
+          "seatAnchorY": 353,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            172,
+            506,
+            675,
+            997
+          ],
+          "principalComponentPixels": 111531,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 8,
+          "absoluteSeatAnchor": [
+            511,
+            856
+          ],
+          "absoluteFootBaseline": 995
+        },
+        {
+          "index": 11,
+          "atlasRelativePath": "public/art/character-right-seated-c.png",
+          "atlas": "c",
+          "sx": 914,
+          "sy": 507,
+          "width": 418,
+          "height": 490,
+          "referenceWidth": 340.0,
+          "referenceHeight": 470,
+          "anchorX": 217,
+          "anchorY": 485,
+          "seatAnchorX": 217,
+          "seatAnchorY": 353,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            917,
+            510,
+            1329,
+            994
+          ],
+          "principalComponentPixels": 110212,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 6,
+          "absoluteSeatAnchor": [
+            1131,
+            860
+          ],
+          "absoluteFootBaseline": 992
+        },
+        {
+          "index": 12,
+          "atlasRelativePath": "public/art/character-right-seated-d.png",
+          "atlas": "d",
+          "sx": 306,
+          "sy": 123,
+          "width": 258,
+          "height": 343,
+          "referenceWidth": 253.1915,
+          "referenceHeight": 350,
+          "anchorX": 131,
+          "anchorY": 338,
+          "seatAnchorX": 131,
+          "seatAnchorY": 244,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            309,
+            126,
+            561,
+            463
+          ],
+          "principalComponentPixels": 46300,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 3,
+          "absoluteSeatAnchor": [
+            437,
+            367
+          ],
+          "absoluteFootBaseline": 461
+        },
+        {
+          "index": 13,
+          "atlasRelativePath": "public/art/character-right-seated-d.png",
+          "atlas": "d",
+          "sx": 1002,
+          "sy": 124,
+          "width": 255,
+          "height": 345,
+          "referenceWidth": 253.1915,
+          "referenceHeight": 350,
+          "anchorX": 126,
+          "anchorY": 340,
+          "seatAnchorX": 126,
+          "seatAnchorY": 245,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            1005,
+            127,
+            1254,
+            466
+          ],
+          "principalComponentPixels": 46557,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 7,
+          "absoluteSeatAnchor": [
+            1128,
+            369
+          ],
+          "absoluteFootBaseline": 464
+        },
+        {
+          "index": 14,
+          "atlasRelativePath": "public/art/character-right-seated-d.png",
+          "atlas": "d",
+          "sx": 312,
+          "sy": 629,
+          "width": 262,
+          "height": 345,
+          "referenceWidth": 253.1915,
+          "referenceHeight": 350,
+          "anchorX": 127,
+          "anchorY": 340,
+          "seatAnchorX": 127,
+          "seatAnchorY": 243,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            315,
+            632,
+            571,
+            971
+          ],
+          "principalComponentPixels": 49840,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 5,
+          "absoluteSeatAnchor": [
+            439,
+            872
+          ],
+          "absoluteFootBaseline": 969
+        },
+        {
+          "index": 15,
+          "atlasRelativePath": "public/art/character-right-seated-d.png",
+          "atlas": "d",
+          "sx": 1003,
+          "sy": 631,
+          "width": 268,
+          "height": 344,
+          "referenceWidth": 253.1915,
+          "referenceHeight": 350,
+          "anchorX": 130,
+          "anchorY": 339,
+          "seatAnchorX": 130,
+          "seatAnchorY": 242,
+          "imageDimensions": [
+            1536,
+            1024
+          ],
+          "principalAlphaBounds": [
+            1006,
+            634,
+            1268,
+            972
+          ],
+          "principalComponentPixels": 48833,
+          "foreignPrincipalComponentCount": 0,
+          "foreignTinyAntialiasPixels": 14,
+          "absoluteSeatAnchor": [
+            1133,
+            873
+          ],
+          "absoluteFootBaseline": 970
+        }
+      ]
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import './style.css';
 import oswaldURL from '../public/Oswald.ttf?url&inline';
 import { AudioDirector } from './audio';
-import { characterURL, characterFrameSprite, characterFrameCount, characterSprite, sceneURL, carURL } from './art';
+import { characterURL, characterAnimationSprites, characterFrameSprite, characterFrameCount, characterReleaseFrame, characterSprite, sceneURL, carURL } from './art';
 import { CONFIG, TIER_ORDER, BONUS_NAMES, TIER_CHARACTERS, costCents, createSession, playRound, playFixtureRound, acknowledgeRound, deserializeSession, PAYLINES, PAYLINE_REFERENCE_READY, settledLegacyWallet } from './engine';
 import { GameRenderer } from './renderer';
 import type { Character, Choice, Round, Session, Tier } from './types';
@@ -131,7 +131,7 @@ function fitGameWindow() {
   const header = portrait ? 58 : compact ? 32 : height > 950 ? 100 : 90;
   // Scale the artwork uniformly around the actual board, rather than shrinking
   // it to fit unused scene margins. Every cell remains clear of the controls.
-  const scale = Math.min(portrait ? (width - 16) / 840 : width / 1240, Math.max(1, height - reserve - header) / 630);
+  const scale = Math.min(portrait ? (width - 16) / 840 : width / 1440, Math.max(1, height - reserve - header) / 630);
   const boardTop = portrait ? header + Math.max(0, height - reserve - header - 630 * scale) / 2 : header;
   const top = boardTop - 170 * scale;
   stage.style.setProperty('--canvas-width', `${1240 * scale}px`);
@@ -162,8 +162,8 @@ const renderer = new GameRenderer(canvas, {
 });
 fitRendererViewport = (top, height) => renderer.setViewportHeader(top, height);
 fitGameWindow();
-// Each win actor draws atlas crops into a canvas. The six intact sheets share
-// browser image decodes with the board, rather than decoding 24 SVG portraits.
+// Each win actor draws intact atlas windows into a canvas. Every action sheet
+// shares one browser decode; the 48 individual poses are never duplicated.
 const winAtlasImages = new Map<string, HTMLImageElement>();
 function winAtlas(url: string) {
   let image = winAtlasImages.get(url);
@@ -288,7 +288,7 @@ async function showWin(round: Round) {
       frame = requestAnimationFrame(tick);
     });
   }
-  await Promise.allSettled(CHARACTERS.flatMap(character => [0, 4].map(index => winAtlas(characterFrameSprite(character, index).url).decode())));
+  await Promise.allSettled([...new Set(CHARACTERS.flatMap(character => characterAnimationSprites(character).map(sprite => sprite.url)))].concat(sceneURL()).map(url => winAtlas(url).decode()));
   return new Promise<void>(resolve => {
     const ratio = round.payoutCents / round.betCents;
     let frame = 0; let completed = false; let closed = false; let tier = 0; const started = performance.now();
@@ -297,7 +297,7 @@ async function showWin(round: Round) {
     const actorFrames = new Map<Character, { index: number; changed: number }>();
     // Slow enough to read, short enough that ordinary wins do not stall play.
     const duration = turbo ? Math.min(2700, 650 + Math.log2(1 + ratio) * 110) : Math.min(6500, 1300 + Math.log2(1 + ratio) * 260);
-    openDialog(`<div class="win-scene" id="win-scene"><button id="win-mute" class="dialog-close" aria-label="${t('Звук', 'Sound')}">${icon(audio.muted ? 'muted' : 'sound')}</button><span class="win-kicker">ОТ СТАРОТО · THE OLD CREW</span><h2 id="modal-title">${t('ПЕЧАЛБА', 'WIN')}</h2><div class="win-cast">${CHARACTERS.map(character => `<canvas class="win-person ${character}" data-character="${character}" data-frame="-1" role="img" aria-label="${characterName(character)}"></canvas>`).join('')}<div class="muzzle-flashes" aria-hidden="true"><i data-character="left"></i><i data-character="middle"></i><i data-character="right"></i></div></div><div class="win-impact" aria-hidden="true"></div><div class="win-streaks" aria-hidden="true">${Array.from({ length: 12 }, (_, index) => `<i style="--i:${index}"></i>`).join('')}</div><strong id="win-counter">${euros(0)}</strong><span class="win-ratio" id="win-ratio">0×</span><div class="escape-car" aria-hidden="true"><img src="${carURL}" alt=""><i class="tyre-smoke"></i></div><button id="win-continue" class="primary" data-focus>${t('ПРЕСКОЧИ', 'SKIP')}</button></div>`, 'win-dialog');
+    openDialog(`<div class="win-scene" id="win-scene"><button id="win-mute" class="dialog-close" aria-label="${t('Звук', 'Sound')}">${icon(audio.muted ? 'muted' : 'sound')}</button><span class="win-kicker">ОТ СТАРОТО · THE OLD CREW</span><h2 id="modal-title">${t('ПЕЧАЛБА', 'WIN')}</h2><div class="win-cast"><canvas class="win-speaker" id="win-speaker" data-original-background="true" aria-hidden="true"></canvas>${CHARACTERS.map(character => `<canvas class="win-person ${character}" data-character="${character}" data-frame="-1" role="img" aria-label="${characterName(character)}"></canvas>`).join('')}<div class="muzzle-flashes" aria-hidden="true"><i data-character="left"></i><i data-character="middle"></i><i data-character="right"></i></div></div><div class="win-impact" aria-hidden="true"></div><div class="win-streaks" aria-hidden="true">${Array.from({ length: 12 }, (_, index) => `<i style="--i:${index}"></i>`).join('')}</div><strong id="win-counter">${euros(0)}</strong><span class="win-ratio" id="win-ratio">0×</span><div class="escape-car" aria-hidden="true"><img src="${carURL}" alt=""><i class="tyre-smoke"></i></div><button id="win-continue" class="primary" data-focus>${t('ПРЕСКОЧИ', 'SKIP')}</button></div>`, 'win-dialog');
     void audio.cue('win');
     function paint(value: number) {
       const reached = value / round.betCents;
@@ -326,7 +326,8 @@ async function showWin(round: Round) {
         if (!actorFrames.has(character)) actorFrames.set(character, { index: 0, changed: now + index * 47 });
         const sequence = actorFrames.get(character)!;
         const frameCount = characterFrameCount(character);
-        const hold = sequence.index === frameCount - 1 ? interval - (frameCount - 1) * 95 : 95;
+        const movingHold = interval * .62 / (frameCount - 1);
+        const hold = sequence.index === frameCount - 1 ? interval * .38 : movingHold;
         if (!reducedMotion && now - sequence.changed >= hold) { sequence.index = (sequence.index + 1) % frameCount; sequence.changed = now; }
         const frameIndex = reducedMotion ? 0 : sequence.index;
         const geometry = characterFrameSprite(character, frameIndex);
@@ -336,20 +337,66 @@ async function showWin(round: Round) {
           image.getContext('2d')!.drawImage(atlas, geometry.sx, geometry.sy, geometry.width, geometry.height, 0, 0, geometry.width, geometry.height);
           image.dataset.frame = String(frameIndex);
         }
-        const anchor = (geometry.anchorX ?? geometry.width / 2) / geometry.width * 100;
+        const seat = geometry as typeof geometry & { seatAnchorX?: number; seatAnchorY?: number };
+        const anchorX = character === 'right' ? seat.seatAnchorX ?? geometry.anchorX ?? geometry.width / 2 : geometry.anchorX ?? geometry.width / 2;
+        const anchor = anchorX / geometry.width * 100;
         const castHeight = modal.querySelector<HTMLElement>('.win-cast')!.clientHeight;
-        const actorScale = castHeight / (geometry.referenceHeight ?? characterSprite(character, 'idle').height);
-        const foot = geometry.anchorY ?? geometry.height;
+        const facing = character === 'left' ? 1 : -1;
+        let physicalHeight = castHeight;
+        if (character === 'right') {
+          const lowerEnvelope = Math.max(...characterAnimationSprites(character).map(sprite => { const pose = sprite as typeof sprite & { seatAnchorY?: number }; return (sprite.height - (pose.seatAnchorY ?? sprite.anchorY ?? sprite.height)) / (sprite.referenceHeight ?? sprite.height); }));
+          if (lowerEnvelope > 0) physicalHeight = Math.min(physicalHeight, (castHeight * .32 - 5) / lowerEnvelope);
+        }
+        const cast = modal.querySelector<HTMLElement>('.win-cast')!, scene = $('win-scene');
+        const castRect = cast.getBoundingClientRect(), sceneRect = scene.getBoundingClientRect();
+        const anchorPosition = castRect.left + image.offsetLeft;
+        // Fit every complete gesture against the scene, with one stable body
+        // size for the whole cycle. An outstretched hand must not hit its mask.
+        for (const sprite of characterAnimationSprites(character)) {
+          const pose = sprite as typeof sprite & { seatAnchorX?: number };
+          const origin = character === 'right' ? pose.seatAnchorX ?? sprite.anchorX ?? sprite.width / 2 : sprite.anchorX ?? sprite.width / 2;
+          const reference = sprite.referenceHeight ?? sprite.height;
+          const leftReach = (facing > 0 ? origin : sprite.width - origin) / reference;
+          const rightReach = (facing > 0 ? sprite.width - origin : origin) / reference;
+          if (leftReach > 0) physicalHeight = Math.min(physicalHeight, (anchorPosition - sceneRect.left - 6) / leftReach);
+          if (rightReach > 0) physicalHeight = Math.min(physicalHeight, (sceneRect.right - anchorPosition - 6) / rightReach);
+        }
+        const actorScale = physicalHeight / (geometry.referenceHeight ?? characterSprite(character, 'idle').height);
+        const foot = character === 'right' ? seat.seatAnchorY ?? geometry.anchorY ?? geometry.height : geometry.anchorY ?? geometry.height;
         image.style.height = `${actorScale * geometry.height}px`;
-        image.style.bottom = `${-(geometry.height - foot) * actorScale}px`;
+        image.style.bottom = `${(character === 'right' ? castHeight * .32 : 0) - (geometry.height - foot) * actorScale}px`;
         image.style.transformOrigin = `${anchor}% ${foot / geometry.height * 100}%`;
         const enter = reducedMotion ? 1 : Math.min(1, (now - actorEntries.get(character)!) / 460);
         const settle = 1 - (1 - enter) ** 3;
         const breathing = reducedMotion ? 0 : Math.sin(elapsed / 380 + index * 1.9) * 1.4;
-        const recoil = frameIndex === 5 ? 3 : 0;
-        image.style.transform = `translate(calc(${-anchor}% + ${(1 - settle) * (index === 1 ? 95 : -75)}px),${(1 - settle) * 60 + breathing + recoil}px) scale(${.96 + settle * .04})`;
+        const releaseFrame = characterReleaseFrame(character);
+        const recoil = frameIndex > releaseFrame && frameIndex <= releaseFrame + 2 ? 3 : 0;
+        const enterX = (1 - settle) * (index === 1 ? 95 : -75), enterY = (1 - settle) * 60 + breathing + recoil;
+        const actorZoom = .96 + settle * .04;
+        image.style.transform = `translate(calc(${-anchor}% + ${enterX}px),${enterY}px) scale(${facing * actorZoom},${actorZoom})`;
+        if (character === 'right') {
+          const cabinet = $<HTMLCanvasElement>('win-speaker'), scene = winAtlas(sceneURL());
+          if (cabinet.dataset.drawn !== 'true' && scene.complete && scene.naturalWidth) {
+            cabinet.width = 266; cabinet.height = 425;
+            const ink = cabinet.getContext('2d')!; ink.beginPath();
+            for (const [pointIndex, [x, y]] of [[1318, 409], [1502, 390], [1584, 398], [1584, 641], [1474, 680], [1474, 808], [1318, 757]].entries()) {
+              if (pointIndex === 0) ink.moveTo(x - 1318, y - 390); else ink.lineTo(x - 1318, y - 390);
+            }
+            ink.closePath(); ink.clip(); ink.drawImage(scene, 1318, 390, 266, 425, 0, 0, 266, 425); cabinet.dataset.drawn = 'true';
+          }
+          const cabinetScale = castHeight * .31 / 425;
+          cabinet.style.width = `${266 * cabinetScale}px`; cabinet.style.height = `${425 * cabinetScale}px`;
+          cabinet.style.left = `${image.offsetLeft + enterX}px`; cabinet.style.top = `${castHeight * .68 + enterY}px`;
+          cabinet.style.transform = `translate(${-76 * cabinetScale}px,${-16 * cabinetScale}px)`;
+          cabinet.style.opacity = String(enter);
+          cabinet.dataset.actorFrame = String(frameIndex);
+          image.dataset.seat = `${image.offsetLeft + enterX},${castHeight * .68 + enterY}`;
+        }
         const flash = modal.querySelector<HTMLElement>(`.muzzle-flashes [data-character="${character}"]`)!;
-        flash.dataset.active = String(!reducedMotion && tier >= 4 && frameIndex === 4);
+        const attachmentX = geometry.attachmentX ?? anchorX, attachmentY = geometry.attachmentY ?? foot;
+        flash.style.left = `${image.offsetLeft + enterX + (attachmentX - anchorX) * actorScale * facing * actorZoom - flash.offsetWidth / 2}px`;
+        flash.style.top = `${(character === 'right' ? castHeight * .68 : castHeight) + enterY + (attachmentY - foot) * actorScale * actorZoom - flash.offsetHeight / 2}px`;
+        flash.dataset.active = String(!reducedMotion && tier >= 4 && frameIndex === releaseFrame);
       }
     }
     function tick(now: number) {

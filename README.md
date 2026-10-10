@@ -1,6 +1,6 @@
 # ОТ СТАРОТО
 
-A browser slot set in an illustrated student club, with matching ink cartoon symbols and characters, eight-frame character actions, Bulgarian/English controls and virtual euro credits. This is the default game launched by the repository commands.
+A browser slot set in an illustrated student club, with matching ink cartoon symbols and characters, 16-frame character actions, Bulgarian/English controls and virtual euro credits. This is the default game launched by the repository commands.
 
 ## Run the game
 
@@ -32,7 +32,7 @@ Every marked coin box reveals a value, modifier or collector when the feature tr
 
 God Spin places one **MAX** symbol in an actual grid. The car's shots target recorded random grid cells; hitting MAX awards the shared **19,999×** round cap. Feature buys, X Bet prices, ordinary payouts and all animations follow the settled receipt. Reload cannot charge or pay it twice.
 
-The scene and compact controls fill the game window. Holding Space cannot repeat spins, and clicking the board cannot fast-forward a paid round. Settings retain BG/EN, mute, volume and music. Sounds come from files in `variants/ot-staroto/public/audio`, configured in `src/audio-config.ts`; there are no player sound uploads.
+The scene and compact controls fill the game window. Larger characters use 16 illustrated poses and a separate foreground layer, with complete gestures visible across the board edge. LUX sits on the existing right background speaker as a separate animated character. Holding Space cannot repeat spins, and clicking the board cannot fast-forward a paid round. Settings retain BG/EN, mute, volume and music. Sounds come from files in `variants/ot-staroto/public/audio`, configured in `src/audio-config.ts`; there are no player sound uploads.
 
 X BET · 5× CHANCE costs **3× the base bet** and increases the full bonus-trigger probability from **1/200 to 1/40**. Every offered mode has an exact **96.5% expected RTP** across all eight supported stakes, using a fixed weighted outcome catalogue and fresh Web Crypto ticket draws. This is a long-run expectation; individual sessions can return less. All credits are virtual. [The return calculation](variants/ot-staroto/docs/MATH-MODEL.md) describes the model and its limits.
 
